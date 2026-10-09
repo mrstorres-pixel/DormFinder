@@ -1,6 +1,6 @@
 # Deployment runbook — Codex execution
 
-Phases 1 and 2 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
+Phases 1–3 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
 
 ## October 9 continuation checkpoint
 
@@ -10,9 +10,9 @@ Use these existing resources; do not recreate them:
 - Render service `srv-db44ecrbc2fs73aj14q0`, workspace `tea-d7ip6vu7r5hc73ccjjng`, Free/Singapore. Keep websys2 untouched. [Service dashboard](https://dashboard.render.com/web/srv-db44ecrbc2fs73aj14q0).
 - Vercel project `prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1`, team `team_lakGFdG84Dlw3s6qfEG8IKQc` / mrstorres-pixels-projects, Hobby. [Project dashboard](https://vercel.com/mrstorres-pixels-projects/dormfinder).
 
-Released application source is `04f10c1b863be12ca3ef586d7ca81f8f48f99e02`. Vercel production `dpl_HWmecozMnoZzLVXBY2kYuVhrn5Xk` was deployed from a clean archive of that commit. Verified Render deployment is `dep-db4bacjl550s73b756jg`, with the same source commit. Readiness returns phase 2; all six deployed browser tests pass. Render auto-deploy is off and Vercel Git auto-deployment is not connected; later releases require explicit deployment.
+Released application source is `eae862f65cb0e2d9019eeb673a51b23d01aa1d16`. Vercel production `dpl_HAyhpqEfutMZMfQJnBAYTc6K5bPg` was deployed from a clean archive of that commit. Verified Render deployment is `dep-db4c3dp42hec73aqghu0`, with the same source commit. Readiness returns phase 3; all six deployed checks pass across Chromium and the targeted WebKit rerun. Render auto-deploy is off and Vercel Git auto-deployment is not connected; later releases require explicit deployment.
 
-The verified Phase 2 checkpoint has seven applied Laravel migrations, sixteen application tables, owner/runtime logins and private bucket `property-photos`. A private application-schema export preceded migration. Preserve applied migrations and stable APP_KEY/passwords. Never migrate or seed during container startup.
+Supabase now has eight applied Laravel migrations, eighteen application tables, owner/runtime logins and private bucket `property-photos`. A private application-schema export preceded migration. Preserve applied migrations and stable APP_KEY/passwords. Never migrate or seed during container startup.
 
 Render Docker context is `backend`, Dockerfile `backend/Dockerfile`, Docker Command **`/var/www/html/docker/entrypoint.sh`**. The user corrected the command after the original compound command failed. Successful deployments now pass startup/readiness. Health-check path is currently unset in the provider; `/api/v1/health` was manually verified.
 
@@ -103,3 +103,5 @@ The eighth additive migration creates campuses and favorites and adds discovery 
 Leaflet is already locked in the existing frontend dependencies. No API key or paid map service is required. Map tiles are requested only after Show map; the browser uses normal caching and Referer headers, with visible OpenStreetMap attribution. VITE_MAP_TILE_URL is optional; changing providers requires compatible attribution/terms.
 
 Reusable synthetic landlord/student fixtures are private .secrets/discovery-browser-{local|cloud}-{chromium|webkit}.json files. Codex provisions these only in the verified local database or confirmed DormFinder cloud project, preserving existing accounts/passwords. Browser tests sign in with them when present; fresh CI falls back to UI registration and records its generated fixtures privately. The original Phase 1 registration checks still run. The release archive must exclude every .secrets/.local file.
+
+Phase 3 deployment completed October 9: the backup catalog, additive migration, restricted runtime reads, security advisors and original draft/photo readback passed. The application release above remains the exact tested source. The separate evidence checkpoint includes an opt-in CampusSeeder for reference recovery; it uses insertOrIgnore, never overwrites an existing campus, is not wired into startup/default seeding, and was not run against production. No demo dataset or automatic destructive seed was introduced.
