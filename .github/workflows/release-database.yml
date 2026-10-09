@@ -1,0 +1,47 @@
+name: Controlled database release
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: production-database-release
+  cancel-in-progress: false
+jobs:
+  validate:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+  migrate:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${{ secrets.LARAVEL_APP_KEY }}
+      DB_CONNECTION: pgsql
+      DB_HOST: ${{ secrets.MIGRATION_DB_HOST }}
+      DB_PORT: "5432"
+      DB_DATABASE: postgres
+      DB_USERNAME: ${{ secrets.MIGRATION_DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.MIGRATION_DB_PASSWORD }}
+      DB_SCHEMA: dormfinder
+      DB_SSLMODE: verify-full
+      DB_SSLROOTCERT: /tmp/dormfinder-db-ca.pem
+      DB_SSL_CA_BASE64: ${{ secrets.DB_SSL_CA_BASE64 }}
+      CACHE_STORE: array
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_pgsql, gd, exif, intl, zip, mbstring
+          coverage: none
+      - name: Require secure migration settings
+        run: |
+          test -n "$APP_KEY" && test -n "$DB_HOST" && test -n "$DB_USERNAME" && test -n "$DB_PASSWORD" && test -n "$DB_SSL_CA_BASE64"
+          printf '%s' "$DB_SSL_CA_BASE64" | base64 --decode > "$DB_SSLROOTCERT"
+      - name: Migrate reviewed release
+        working-directory: backend
+        run: |
+          composer install --no-dev --no-interaction --prefer-dist
+          php artisan migrate --force --no-interaction

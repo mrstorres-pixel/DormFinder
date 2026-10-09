@@ -1,0 +1,83 @@
+name: Validate
+on:
+  workflow_call:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: dormfinder
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: dormfinder
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U dormfinder"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: dormfinder
+      DB_USERNAME: dormfinder
+      DB_PASSWORD: ci-only-password
+      DB_SCHEMA: dormfinder
+      DB_SSLMODE: disable
+      PGPASSWORD: ci-only-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo_pgsql, gd, exif, intl, zip, mbstring
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Prepare isolated databases
+        run: |
+          psql -h 127.0.0.1 -U dormfinder -d dormfinder -c 'CREATE SCHEMA dormfinder AUTHORIZATION dormfinder'
+          psql -h 127.0.0.1 -U dormfinder -d dormfinder -c 'CREATE DATABASE dormfinder_test OWNER dormfinder'
+          psql -h 127.0.0.1 -U dormfinder -d dormfinder_test -c 'CREATE SCHEMA dormfinder AUTHORIZATION dormfinder'
+      - name: Backend dependencies
+        working-directory: backend
+        run: |
+          cp .env.example .env
+          cp .env.example .env.testing
+          composer validate --strict
+          composer install --no-interaction --prefer-dist
+          php artisan key:generate
+          php artisan key:generate --env=testing
+          php artisan migrate --no-interaction
+      - name: Backend checks
+        working-directory: backend
+        run: |
+          vendor/bin/pint --test
+          php artisan test --compact
+      - name: Frontend checks
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm test
+          npm run build
+          npx playwright install --with-deps chromium webkit
+      - name: Browser integration
+        run: |
+          php backend/artisan serve --host=127.0.0.1 --port=8000 > /tmp/dormfinder-api.log 2>&1 &
+          (cd frontend && npm run dev -- --host 127.0.0.1 --strictPort) > /tmp/dormfinder-ui.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/api/v1/health > /dev/null && curl --fail --silent http://127.0.0.1:5173 > /dev/null; then break; fi
+            sleep 1
+          done
+          cd frontend && npm run test:e2e
+      - name: Container build
+        run: docker build --tag dormfinder-api:ci backend
+
