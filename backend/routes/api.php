@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ListingController;
+use App\Http\Controllers\Api\ModerationController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PhotoController;
 use App\Http\Controllers\Api\PropertyController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\RoomOptionController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +24,19 @@ Route::prefix('v1')->group(function (): void {
 
     Route::middleware(['auth:sanctum', 'active', 'throttle:api'])->group(function (): void {
         Route::get('me', [AuthController::class, 'me']);
+        Route::get('dashboard', DashboardController::class);
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::put('notifications/{notification}/read', [NotificationController::class, 'read'])->whereNumber('notification');
+        Route::get('reports', [ReportController::class, 'index']);
+        Route::post('listings/{property}/reports', [ReportController::class, 'store'])->whereNumber('property')->middleware('throttle:reports');
+        Route::get('admin/reports', [ReportController::class, 'queue']);
+        Route::post('admin/reports/{report}/resolve', [ReportController::class, 'resolve'])->whereNumber('report');
+        Route::get('admin/users', [ModerationController::class, 'users']);
+        Route::get('admin/properties', [ModerationController::class, 'properties']);
+        Route::post('admin/users/{user}/moderation', [ModerationController::class, 'account'])->whereNumber('user');
+        Route::post('admin/properties/{property}/moderation', [ModerationController::class, 'listing'])->whereNumber('property');
+        Route::get('admin/audit', [ModerationController::class, 'audit']);
+        Route::post('landlord/properties/{property}/lifecycle', [ModerationController::class, 'archive'])->whereNumber('property');
         Route::patch('me', [AuthController::class, 'update']);
         Route::patch('me/password', [AuthController::class, 'password']);
         Route::get('landlord/properties', [PropertyController::class, 'index']);

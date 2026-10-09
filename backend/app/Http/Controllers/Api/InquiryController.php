@@ -9,6 +9,7 @@ use App\Http\Resources\RoomOptionResource;
 use App\Models\Inquiry;
 use App\Models\InquiryMessage;
 use App\Models\Property;
+use App\Services\ActivityRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -68,7 +69,8 @@ class InquiryController extends Controller
                     'listing_snapshot' => ['title' => $locked->title, 'address' => $locked->address, 'city' => $locked->city, 'room_option' => (new RoomOptionResource($option))->resolve($request)],
                 ]);
             }
-            $thread->messages()->create(['sender_id' => $request->user()->id, 'client_id' => $data['client_id'], 'body' => trim($data['body'])]);
+            $message = $thread->messages()->create(['sender_id' => $request->user()->id, 'client_id' => $data['client_id'], 'body' => trim($data['body'])]);
+            app(ActivityRecorder::class)->notify($thread->landlord_id, 'message:'.$message->id, 'inquiry_message', 'You have a new private inquiry message.', '/inquiries/'.$thread->id);
             $thread->last_message_at = now();
             $thread->save();
 
@@ -94,6 +96,8 @@ class InquiryController extends Controller
             $thread->setRelation('property', $property);
             abort_unless($thread->canReply(), 409);
             $message = $thread->messages()->create(['sender_id' => $request->user()->id, 'client_id' => $data['client_id'], 'body' => trim($data['body'])]);
+            $recipient = $request->user()->id === $thread->student_id ? $thread->landlord_id : $thread->student_id;
+            app(ActivityRecorder::class)->notify($recipient, 'message:'.$message->id, 'inquiry_message', 'You have a new private inquiry message.', '/inquiries/'.$thread->id);
             $thread->last_message_at = now();
             $thread->save();
 

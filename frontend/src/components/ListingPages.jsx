@@ -9,6 +9,7 @@ import { useComparison, parseSelections, comparisonItems, cleanSelections } from
 import { ErrorNotice, Field, Loading } from './Feedback'
 import { RoomCharges } from './RoomOptions'
 import { FavoriteButton, ComparisonTray, SearchFilters, ListingCard, PhotoGallery, ListingMap } from './Discovery'
+import { ReportForm } from './ModerationPages'
 
 export function Listings({ favorites = false }) {
   const [params, setParams] = useSearchParams()
@@ -43,7 +44,7 @@ export function ListingDetails() {
   const campus = campuses.data?.find(item => item.id === property.distance_from_campus?.campus_id)
   const checked = selections.some(item => item.property_id === property.id)
   return <section className="container page-space"><Link className="back-link" to="/listings">← Browse listings</Link><div className="page-heading mt-4"><div><span className="eyebrow">{property.property_type.replaceAll('_', ' ')}</span><h1>{property.title}</h1><p>{property.address}, {property.city}</p></div>{property.is_demo && <span className="badge text-bg-warning">Synthetic demo listing</span>}</div>
-    <FavoriteButton propertyId={property.id} title={property.title} /><ComparisonTray /><PhotoGallery key={property.id} photos={property.photos} refresh={() => query.refetch()} />
+    <FavoriteButton propertyId={property.id} title={property.title} /><ComparisonTray /><PhotoGallery key={property.id} photos={property.photos} refresh={() => query.refetch()} />{user?.role === 'student' && <ReportForm key={'report-' + property.id} property={property} />}
     <div className="row g-4"><div className="col-lg-7"><section className="panel mb-4"><h2>About this property</h2><p className="preserve-lines">{property.description}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p><p className="small text-secondary">Location pin: {property.latitude}, {property.longitude}. Confirm directions with the owner.</p><p className="small text-secondary">Reviewed for listing content. This does not certify safety, legal compliance or ownership.</p></section><ListingMap properties={[property]} campus={campus} /></div><div className="col-lg-5"><section className="panel"><h2>Rooms and costs</h2>{option ? <><label htmlFor="selected-room" className="form-label">Choose a room option</label><select id="selected-room" className="form-select mb-3" value={option.id} onChange={event => { setChoice(event.target.value); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><RoomCharges option={option} />{user?.role === 'student' ? <><label className="d-flex gap-2 mb-3"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Add {property.title} to comparison</span></label><Link className="btn btn-outline-primary mb-4" to={`/compare?items=${property.id}:${option.id}`}>Compare this option</Link><NewInquiry key={option.id} property={property} option={option} /></> : !user ? <Link to="/login" className="btn btn-primary">Sign in to ask the owner</Link> : <p className="small text-secondary">Students can send private inquiries from this page.</p>}</> : <p>No room options currently available.</p>}</section></div></div>
   </section>
 }

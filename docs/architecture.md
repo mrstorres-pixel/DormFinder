@@ -48,7 +48,7 @@ Photos accept JPEG/PNG/WebP ≤3MB and ≤12 megapixels, max eight/property. Lar
 
 Collections use `data`, `links`, `meta`; resources use `data`. API errors include safe `code`, `message`, `errors`, `request_id`. Responses are not cached. Validation=422, guest=401, private ownership=404, role=403, outdated revision/locked state=409, CSRF=419, rate limit=429, storage/readiness failure=503.
 
-## Planned permission boundaries
+## Permission boundaries
 
 | Workflow | Student | Landlord | Administrator |
 |---|---|---|---|
@@ -69,7 +69,7 @@ Implemented room_options, room_option_fees, listing_reviews, inquiries and inqui
 
 Inquiries have one unique student/property thread and an immutable initial listing/option snapshot. Messages require a sender/thread/client UUID; identical retries return the original result and reused UUIDs with different bodies conflict. Lists/detail/messages/replies are participant-scoped, including administrator denial. Reads survive draft/rejected/archived states; suspended listings or participants freeze new replies. Property locks precede inquiry locks.
 
-Implemented Phase 3 campuses/favorites; later entities: amenities/pivot; notifications; listing_reports; moderation_actions. Unique favorite pair, student/property thread, sender/thread/message UUID and recipient/event prevent duplicates. Comparison validates at most three unique public properties and matching selected options.
+Implemented Phase 3 campuses/favorites and Phase 4 listing_reports/moderation_actions/user_notifications. Amenities remain optional. Unique favorite pair, student/property thread, sender/thread/message UUID and recipient/event prevent duplicates. Comparison validates at most three unique public properties and matching selected options.
 
 Review checks completeness, understandable charges, plausible address/pin, relevant images, misleading/prohibited content and obvious duplicates. Approval is content review, not safety inspection or ownership/legal certification. Material edits hide listings until reapproved. Archived/rejected/edited listings preserve inquiries; suspended listings freeze replies. Landlord suspension hides listings and revokes sessions; reactivation does not republish them.
 
@@ -84,7 +84,7 @@ TIP Manila Casal uses the approximate boundary center of [OpenStreetMap way 1742
 - POST .../{id}/submit: completeness, revision and inventory confirmation; draft/rejected → pending_review.
 - GET /api/v1/admin/reviews[/{id}] and POST .../{id}/decision: active administrator; current pending revision, review confirmation and rejection reason.
 - GET /api/v1/inquiries[/{id}] and /inquiries/{id}/messages; POST /listings/{id}/inquiries and /inquiries/{id}/messages: participants only, throttled writes, retry UUIDs and bounded pagination.
-- Readiness requires both Phase 2 and Phase 3 migrations and reports phase 3.
+- Readiness requires the Phase 2, Phase 3 and Phase 4 migrations and reports phase 4.
 
 ## Phase 3 discovery rules and API
 
@@ -94,3 +94,28 @@ TIP Manila Casal uses the approximate boundary center of [OpenStreetMap way 1742
 - GET /api/v1/favorites and /favorites/ids, PUT /favorites/{property}, DELETE /favorites/{property}: active student only, scoped to the current student. Unique student/property pairs and idempotent writes prevent duplicate saves. Saving requires a public listing. Unpublished favorites retain only their saved IDs, reveal no current private details, and can be removed; reapproval makes them visible again. Lists are paginated.
 - Comparison still validates up to three distinct public properties with one selected option each. Alternative live options let students switch selections; the table includes rent, fees, deposit, advance, utility terms, capacity, availability/freshness, address/type/photos and campus distance. A selection becoming unpublished returns a recoverable validation error. The public-ID-only basket survives page navigation/reload in sessionStorage; no credentials or messages are stored there.
 - Gallery has captions, buttons, keyboard arrows and failed-image link refresh. Map code loads only after Show map; the browse map contains the current page of public results. Leaflet renders campus/listing markers with text-safe popups, visible OSM attribution and no geolocation or routing calls. Address/source/external-map fallback remains usable without map tiles. Automated browser checks stub tiles to avoid provider scraping. The public tile URL can be configured with VITE_MAP_TILE_URL; maintain proper attribution and [OSM tile-policy](https://operations.osmfoundation.org/policies/tiles/) requirements.
+## Phase 4 moderation and event rules
+
+Students report only approved listings for active owners. Reports contain an immutable title snapshot and the student's concern. Student/client UUID uniqueness and a per-student transaction advisory lock make exact retries safe, including after the listing becomes private; changed retry content conflicts. A partial unique index allows one open report per student/listing. Reports are throttled to ten per hour per student. They do not automatically hide listings. Students list only their own reports/status; landlords cannot read reports. Administrator resolution notes stay administrator-only.
+
+Administrators inspect all listing states, resolve/dismiss open reports and suspend/archive/restore listings. Owners archive their own nonsuspended listings and restore archived rows only. Every action requires a trimmed explanation and the current revision; stale/repeated decisions return 409. Suspension hides public discovery and freezes inquiry replies; archive preserves participant history and replies. Restoration always creates a draft requiring fresh review.
+
+Account moderation is restricted to student/landlord targets; administrator accounts and self-moderation are excluded. Suspension deletes database sessions and the remember token, increments moderation_revision, and locks the owner's properties in ID order before updating the user. Approved/pending listings become drafts with incremented revisions and cleared publication/submission timestamps. Other states remain intact. Reactivation revokes any remaining sessions and does not republish drafts or restore independently suspended listings. A new login is required.
+
+Review, report closure, listing actions, account actions and affected listing demotions append actor/target/status/revision/reason/time to moderation_actions. Earlier listing_reviews are copied into this new history once by the additive migration. No audit update/delete endpoint exists; the cloud runtime also has UPDATE/DELETE revoked on this table. Operational migration credentials remain a privileged boundary.
+
+Notifications are stored synchronously in the same transaction as each new submission, review decision, inquiry message, report or moderation outcome. Unique recipient/event keys prevent duplicates. Notifications contain generic titles and application-generated paths, never inquiry bodies or report details. Only the recipient can list or mark them read; marking read is idempotent. They refresh on visits, with no worker, email or external messaging integration.
+
+Dashboard counts are current queries scoped to the authenticated role. Students receive their favorites/inquiries/open reports; landlords receive their own listing-state/inquiry counts; administrators receive published/review/report/account totals, with no inquiry content or per-thread metadata. All roles receive their own unread notification count.
+
+Phase 4 API additions:
+
+- GET /api/v1/dashboard; GET /notifications; PUT /notifications/{id}/read: active account, recipient scope.
+- GET /reports; POST /listings/{id}/reports: active student, own reports/public listing, retry UUID.
+- GET /admin/reports?status=open|resolved|dismissed; POST /admin/reports/{id}/resolve: active administrator, status/reason/current revision.
+- GET /admin/properties?status=...; POST /admin/properties/{id}/moderation: administrator listing inspection/action.
+- POST /landlord/properties/{id}/lifecycle: owner archive/restore.
+- GET /admin/users?q=...&id=...&status=...; POST /admin/users/{id}/moderation: administrator account lookup/action.
+- GET /admin/audit?property_id=...&user_id=...: administrator-only immutable history.
+
+New query-builder collections use the paginator's data/current_page/last_page/total envelope; existing resource collections retain data/links/meta. Both are bounded and ordered by ID. No Phase 4 schema changes require a dependency, paid resource or credential rotation.

@@ -160,7 +160,7 @@ class PhaseThreeTest extends TestCase
 
     public function test_readiness_requires_the_phase_three_migration(): void
     {
-        $this->getJson('/api/v1/health')->assertOk()->assertJsonPath('data.phase', 3);
+        $this->getJson('/api/v1/health')->assertOk()->assertJsonPath('data.phase', 4);
         DB::table('migrations')->where('migration', '2026_10_09_094508_create_phase_three_discovery_tables')->delete();
         $this->getJson('/api/v1/health')->assertStatus(503);
     }

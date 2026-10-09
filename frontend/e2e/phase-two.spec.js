@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { verifyDiscovery, withdrawSyntheticListings } from './discovery-flow'
+import { verifyModeration } from './moderation-flow'
 
 test('landlord, administrator and student complete the listing and private inquiry workflow', async ({ browser, baseURL }, testInfo) => {
   test.setTimeout(300_000)
@@ -24,6 +25,9 @@ test('landlord, administrator and student complete the listing and private inqui
     page.setDefaultNavigationTimeout(30_000)
     page.setDefaultTimeout(15_000)
     page.on('pageerror', error => errors.push(error.message))
+    page.on('console', message => {
+      if (message.type() === 'error' && /Encountered two children|unique.*key|React has detected/.test(message.text())) errors.push(message.text())
+    })
     return page
   }
   async function register(page, role) {
@@ -146,6 +150,7 @@ test('landlord, administrator and student complete the listing and private inqui
     await student.reload()
     await expect(student.getByText('Yes. Quiet hours start at 10 PM. This is synthetic test information.', { exact: true })).toBeVisible()
     await test.step('Phase 3 search, favorites, comparison, gallery and maps', async () => verifyDiscovery({ landlord, reviewer, student, originalId: propertyId, originalTitle: title, png }))
+    await test.step('Phase 4 reports, moderation, audit, notifications and counts', async () => verifyModeration({ landlord, reviewer, student, propertyId, title, inquiryId, ownerCredentials: accounts.landlord }))
     await student.goto('/inquiries/' + inquiryId)
     for (const width of [360, 768, 1440]) {
       await student.setViewportSize({ width, height: 900 })

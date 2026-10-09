@@ -10,6 +10,7 @@ import { Listings, ListingDetails, Comparison } from './components/ListingPages'
 import { ReviewQueue, ReviewDetails } from './components/ReviewPages'
 import { InquiryList, InquiryThread } from './components/InquiryPages'
 import ComparisonProvider from './components/ComparisonProvider'
+import { DashboardCounts, Notifications, StudentReports, ReportQueue, AccountModeration, AdminListings, AuditHistory, LifecycleControls } from './components/ModerationPages'
 
 function Layout({ children }) {
   const { data: user } = useCurrentUser()
@@ -30,6 +31,7 @@ function Layout({ children }) {
           <Link className="nav-link" to={user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account'}>{user.role === 'admin' ? 'Reviews' : 'My space'}</Link>
           {['student', 'landlord'].includes(user.role) && <Link className="nav-link" to="/inquiries">Inquiries</Link>}
           {user.role === 'student' && <Link className="nav-link" to="/favorites">Favorites</Link>}
+          <Link className="nav-link" to="/notifications">Notifications</Link>
           <Link className="nav-link d-none d-sm-inline" to="/profile">Profile</Link>
           <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => logout.mutate()}>Sign out</button>
         </> : <>
@@ -156,7 +158,7 @@ function Account() {
   const { data: user } = useCurrentUser()
   if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
   if (user?.role === 'admin') return <Navigate to="/admin" replace />
-  return <section className="container page-space"><span className="eyebrow">MY SPACE</span><h1>Welcome, {user?.name}.</h1><div className="panel empty-state mt-4"><span className="empty-icon" aria-hidden="true">⌂</span><h2>Find a place that fits your student life.</h2><p>Browse reviewed listings, compare selected room options, and keep your questions in private conversations.</p><div className="d-flex justify-content-center gap-3 flex-wrap"><Link className="btn btn-primary" to="/listings">Browse listings</Link><Link className="btn btn-outline-primary" to="/inquiries">Your inquiries</Link></div></div></section>
+  return <section className="container page-space"><span className="eyebrow">MY SPACE</span><h1>Welcome, {user?.name}.</h1><DashboardCounts /><Link to="/reports">Your reports</Link><div className="panel empty-state mt-4"><span className="empty-icon" aria-hidden="true">⌂</span><h2>Find a place that fits your student life.</h2><p>Browse reviewed listings, compare selected room options, and keep your questions in private conversations.</p><div className="d-flex justify-content-center gap-3 flex-wrap"><Link className="btn btn-primary" to="/listings">Browse listings</Link><Link className="btn btn-outline-primary" to="/inquiries">Your inquiries</Link></div></div></section>
 }
 
 function Landlord() {
@@ -164,7 +166,7 @@ function Landlord() {
   const query = useQuery({ queryKey: ['properties', page], queryFn: async () => (await api.get('/landlord/properties', { params: { page } })).data, retry: false, refetchInterval: 240_000 })
   return <section className="container page-space">
     <div className="page-heading"><div><span className="eyebrow">PROPERTY OWNER WORKSPACE</span><h1>Your properties</h1><p>Start with the details. Keep everything in one place.</p></div><Link to="/landlord/properties/new" className="btn btn-primary">+ Add a property</Link></div>
-    <div className="info-strip"><strong>A good listing starts with clarity.</strong><span>Prepare your property details and photos. Drafts are only visible to you.</span></div>
+    <DashboardCounts /><div className="info-strip"><strong>A good listing starts with clarity.</strong><span>Prepare your property details and photos. Drafts are only visible to you.</span></div>
     {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> :
       query.data.data.length ? <div className="row g-4 mt-1">{query.data.data.map((property) => <div className="col-md-6 col-xl-4" key={property.id}>
         <article className="property-card">
@@ -233,6 +235,7 @@ function PropertyForm({ property }) {
     </section>{property && <RoomManager property={property} />}</div><div className="col-lg-5">
       {property ? <PhotoManager property={property} /> : <aside className="panel muted-panel"><span className="empty-icon" aria-hidden="true">▧</span><h2 className="section-title">Let your place speak for itself.</h2><p>Save your draft to add photos. Clear, recent images help students understand the space.</p></aside>}
       {property && <SubmissionPanel property={property} />}
+      {property && <LifecycleControls property={property} />}
       <aside className="editor-note mt-4"><h2>Good to know</h2><p>Drafts are private. Add room options and submit complete listings for review. Material changes require another review.</p><p className="mb-0">Content review is not a safety inspection or ownership verification.</p></aside>
     </div></div>
   </section>
@@ -312,6 +315,12 @@ export default function App() {
     <Route path="/compare" element={<Protected role="student"><Comparison /></Protected>} />
     <Route path="/favorites" element={<Protected role="student"><Listings favorites /></Protected>} />
     <Route path="/admin" element={<Protected role="admin"><ReviewQueue /></Protected>} />
+    <Route path="/admin/reports" element={<Protected role="admin"><ReportQueue /></Protected>} />
+    <Route path="/admin/users" element={<Protected role="admin"><AccountModeration /></Protected>} />
+    <Route path="/admin/listings" element={<Protected role="admin"><AdminListings /></Protected>} />
+    <Route path="/admin/audit" element={<Protected role="admin"><AuditHistory /></Protected>} />
+    <Route path="/reports" element={<Protected role="student"><StudentReports /></Protected>} />
+    <Route path="/notifications" element={<Protected><Notifications /></Protected>} />
     <Route path="/admin/reviews/:id" element={<Protected role="admin"><ReviewDetails /></Protected>} />
     <Route path="/inquiries" element={<Protected role={['student', 'landlord']}><InquiryList /></Protected>} />
     <Route path="/inquiries/:id" element={<Protected role={['student', 'landlord']}><InquiryThread /></Protected>} />

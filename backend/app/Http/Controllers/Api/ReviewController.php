@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PropertyResource;
 use App\Models\ListingReview;
 use App\Models\Property;
+use App\Services\ActivityRecorder;
 use App\Services\ListingWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -31,6 +32,10 @@ class ReviewController extends Controller
             $locked->revision++;
             $locked->save();
 
+            foreach (DB::table('users')->where('role', 'admin')->where('status', 'active')->pluck('id') as $admin) {
+                app(ActivityRecorder::class)->notify($admin, 'submission:'.$locked->id.':'.$locked->revision, 'listing_submission', 'A listing is ready for content review.', '/admin/reviews/'.$locked->id);
+            }
+
             return $locked;
         });
 
@@ -42,7 +47,7 @@ class ReviewController extends Controller
         abort_unless($request->user()->role === 'admin', 403);
         $request->validate(['page' => ['nullable', 'integer', 'min:1']]);
 
-        return PropertyResource::collection(Property::query()->where('status', 'pending_review')->with(ListingController::relations())->oldest('submitted_at')->paginate(12));
+        return PropertyResource::collection(Property::query()->where('status', 'pending_review')->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->with(ListingController::relations())->oldest('submitted_at')->orderBy('id')->paginate(12));
     }
 
     public function show(Request $request, Property $property): PropertyResource
@@ -74,6 +79,10 @@ class ReviewController extends Controller
             $locked->approved_at = $data['decision'] === 'approved' ? now() : null;
             $locked->revision++;
             $locked->save();
+
+            $activity = app(ActivityRecorder::class);
+            $audit = $activity->audit($request->user()->id, 'listing_review', 'pending_review', $locked->status, $locked->revision, $data['reason'] ?? 'Content review completed.', $locked->id);
+            $activity->notify($locked->landlord_id, 'review:'.$audit, 'listing_review', 'Your listing review is complete: '.$locked->status.'.', '/landlord/properties/'.$locked->id);
 
             return $locked;
         });

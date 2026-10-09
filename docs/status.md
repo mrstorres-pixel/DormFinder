@@ -44,6 +44,8 @@ Implemented same-option rent/availability search, property type and price basis,
 
 ## Remaining phases
 
+Phase 4 implementation is locally verified: reports, listing/account moderation, archival/restoration, immutable audit history, private in-app notifications and role-scoped counts. All 79 backend tests, 15 frontend tests and six Chromium/WebKit checks pass. Cloud backup/migration/deployment and live acceptance remain the current release gate.
+
 | Phase | Deliverables | Acceptance gate |
 |---|---|---|
 | 4 | Reports, moderation, suspension/archival, audit history, notifications, counts | Negative access and lifecycle tests pass |
