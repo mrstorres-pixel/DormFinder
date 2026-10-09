@@ -9,22 +9,29 @@ use Illuminate\Validation\Rules\Password;
 
 class CreateAdministrator extends Command
 {
-    protected $signature = 'dormfinder:admin {email} {--name=Administrator}';
+    protected $signature = 'dormfinder:admin {email} {--name=Administrator} {--password-file= : Private password file for controlled noninteractive provisioning}';
 
     protected $description = 'Create an administrator with a hidden password prompt; never changes existing accounts.';
 
     public function handle(): int
     {
-        if (! $this->input->isInteractive()) {
-            $this->error('Use an interactive terminal so the password can be entered securely.');
+        $passwordFile = $this->option('password-file');
+        if (! $this->input->isInteractive() && ! $passwordFile) {
+            $this->error('Use an interactive terminal or a private password file.');
 
             return self::FAILURE;
         }
+        if ($passwordFile && (! is_file($passwordFile) || ! is_readable($passwordFile) || filesize($passwordFile) > 1024)) {
+            $this->error('The private password file is unavailable or invalid.');
+
+            return self::FAILURE;
+        }
+        $password = $passwordFile ? trim(file_get_contents($passwordFile)) : $this->secret('Administrator password (12+ characters, letters and numbers)');
         $data = [
             'email' => mb_strtolower(trim($this->argument('email'))),
             'name' => $this->option('name'),
-            'password' => $this->secret('Administrator password (12+ characters, letters and numbers)'),
-            'password_confirmation' => $this->secret('Confirm password'),
+            'password' => $password,
+            'password_confirmation' => $passwordFile ? $password : $this->secret('Confirm password'),
         ];
         $validator = Validator::make($data, [
             'email' => ['required', 'email', 'unique:users,email'],

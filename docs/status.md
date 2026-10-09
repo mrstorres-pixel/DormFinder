@@ -16,16 +16,27 @@ Completed locally:
 - Render Docker/blueprint, Vercel routing output, GitHub validation and controlled migration workflows.
 - Deployment, architecture, API and evidence documentation.
 
-## Phase 1 gate — outstanding
+## Phase 1 accepted with a documented CI exception
 
-1. User creates/signs in to **free** Supabase, Render and Vercel accounts and connects their integrations. Credentials stay in provider/local secret interfaces.
-2. Codex provisions database schema/roles, private bucket, Render and Vercel.
-3. Codex validates deployed CSRF/login/logout, browser cookies in Chromium/WebKit, private draft/photo storage, pooler TLS and restart/redeploy persistence.
-4. Record actual versions, provider limits, cold-start measurements and URLs.
+Account access is verified in the user-confirmed Supabase organization, Render workspace and Vercel team. Free resources only. The live frontend is [DormFinder](https://dormfinder-pink.vercel.app), backed by [Render](https://dormfinder-api.onrender.com) and Supabase project `zujrpipjkgwqwlipgpwe`.
 
-GitHub source is now committed and pushed. CI is additionally blocked by GitHub's account billing lock; the job never started. The account owner must resolve the restriction without assuming permission for any paid upgrade. Local validation passes independently.
+Completed in the cloud:
 
-No major Phase 2 work starts until this gate passes, as required by the approved plan.
+- All six Laravel migrations, eleven owner-owned application tables, restricted runtime login, certificate-verified pooler TLS and private S3 Storage.
+- Render Docker build/startup and Vercel production routing from source commit `f1df38f692573619298b066bbbce5af98826f8c1`.
+- Four deployed Playwright tests in Chromium/WebKit: registration, login/logout, password revocation, CSRF, cookies, drafts, photos and responsive layouts.
+- Session, draft and normalized private photo persistence across a backend redeploy; guest/other-owner denial, signed URL expiry and no-store responses.
+- Public asset scan found none of the server credentials; Supabase security advisors reported no lints after migration.
+
+Confirmed Render sleep/cold wake-up passed after a controlled 20-minute interval with tabs/monitors closed. The provider sleep response and fresh startup logs establish the restart; readiness through Vercel took 24.3 seconds. The existing session, draft and private photo survived. GitHub Actions is blocked before any steps execute by an account billing lock; the account owner must resolve the restriction and rerun CI. No paid upgrade is authorized. The user approved deferring this external CI blocker and proceeding to Phase 2 on October 9. Phase 1 is accepted with this exception, not claimed as a passing GitHub CI run. Local validation must pass before every release; migrations remain controlled, additive and backed up. GitHub Support can resolve the lock separately.
+
+Continuation: existing source, local Laravel environment and local database were preserved. Supabase `BodegaWebsite` and Render `websys2` were untouched. Persisted credentials and APP_KEY remain in ignored `.secrets/` files. A private application-schema export preceded migrations. Only synthetic browser-test accounts/drafts were added to the new cloud project; no destructive seeding or truncation ran. Preserve keys, roles, applied migrations and existing service/project IDs on resume.
+
+The initial automatic approval review rejected the secret-bearing Render creation payload. The user explicitly approved sending those credentials to DormFinder Render, and creation succeeded. The user corrected Docker Command to `/var/www/html/docker/entrypoint.sh`; the corrected service is live. Do not create a duplicate service.
+
+## Phase 2 in progress
+
+Implemented room options/inventory/charges, submission and administrator review, public listing details/comparison, and participant-only inquiries/replies. Local checks pass: 57 PHPUnit tests / 223 assertions, 6 frontend tests, lint/production build and 6 Chromium/WebKit tests including the full three-role workflow. A fresh private cloud application-schema export was verified before the seventh additive migration; the restricted runtime can read all five new tables and still cannot create schema objects. Cloud release/browser acceptance is in progress. Preserve Phase 1 source, credentials, local/cloud records and provider resources. Acceptance requires the deployed landlord → administrator → student → landlord → student workflow plus negative authorization and lifecycle checks.
 
 ## Remaining phases
 

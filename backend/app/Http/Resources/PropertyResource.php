@@ -15,6 +15,8 @@ class PropertyResource extends JsonResource
             'latitude' => $this->latitude, 'longitude' => $this->longitude,
             'status' => $this->status, 'revision' => $this->revision,
             'moderation_reason' => $this->moderation_reason, 'is_demo' => $this->is_demo,
+            'submitted_at' => $this->submitted_at, 'approved_at' => $this->approved_at,
+            'room_options' => RoomOptionResource::collection($this->whenLoaded('roomOptions')),
             'photos' => PhotoResource::collection($this->whenLoaded('photos')),
             'created_at' => $this->created_at, 'updated_at' => $this->updated_at,
         ];

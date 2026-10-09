@@ -71,6 +71,7 @@ jobs:
           npx playwright install --with-deps chromium webkit
       - name: Browser integration
         run: |
+          node frontend/scripts/e2e-admin.mjs
           php backend/artisan serve --host=127.0.0.1 --port=8000 > /tmp/dormfinder-api.log 2>&1 &
           (cd frontend && npm run dev -- --host 127.0.0.1 --strictPort) > /tmp/dormfinder-ui.log 2>&1 &
           for i in $(seq 1 30); do

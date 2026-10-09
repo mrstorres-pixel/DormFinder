@@ -5,6 +5,10 @@ import { api, fieldErrors, writeApi } from './lib/api'
 import { useCurrentUser } from './lib/auth'
 import { ErrorNotice, Field, Loading } from './components/Feedback'
 import Brand from './components/Brand'
+import { RoomManager, SubmissionPanel } from './components/RoomOptions'
+import { Listings, ListingDetails, Comparison } from './components/ListingPages'
+import { ReviewQueue, ReviewDetails } from './components/ReviewPages'
+import { InquiryList, InquiryThread } from './components/InquiryPages'
 
 function Layout({ children }) {
   const { data: user } = useCurrentUser()
@@ -19,9 +23,11 @@ function Layout({ children }) {
     <header className="site-header"><div className="container d-flex align-items-center justify-content-between gap-3">
       <Link className="brand-link" to="/" aria-label="DormFinder home"><Brand /></Link>
       <nav aria-label="Main navigation" className="d-flex align-items-center gap-2 gap-md-3">
+        <Link className="nav-link" to="/listings">Browse</Link>
         <span className="campus-nav d-none d-md-inline">TIP Manila</span>
         {user ? <>
-          <Link className="nav-link" to={user.role === 'landlord' ? '/landlord' : '/account'}>My space</Link>
+          <Link className="nav-link" to={user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account'}>{user.role === 'admin' ? 'Reviews' : 'My space'}</Link>
+          {['student', 'landlord'].includes(user.role) && <Link className="nav-link" to="/inquiries">Inquiries</Link>}
           <Link className="nav-link d-none d-sm-inline" to="/profile">Profile</Link>
           <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => logout.mutate()}>Sign out</button>
         </> : <>
@@ -49,10 +55,10 @@ function Home() {
         <h1>A place to stay.<br /><span>A little closer<br className="d-none d-lg-block" /> to your future.</span></h1>
         <p className="hero-copy">Less searching through scattered posts. More clarity about the place you’ll call home during your student years.</p>
         <div className="d-flex flex-wrap gap-3 mt-4">
-          <Link className="btn btn-primary btn-lg" to="/register?role=student">Create a student account <span aria-hidden="true">↗</span></Link>
+          <Link className="btn btn-primary btn-lg" to="/listings">Browse listings <span aria-hidden="true">↗</span></Link>
           <Link className="btn btn-link text-dark" to="/register?role=landlord">List your property</Link>
         </div>
-        <p className="small text-secondary mt-3">Early access · Property owners can start preparing their listings.</p>
+        <p className="small text-secondary mt-3">Explore reviewed listings, compare room costs, and ask owners privately.</p>
       </div>
       <div className="col-lg-6"><div className="hero-art" aria-label="An illustration of a student room near campus" role="img">
         <svg viewBox="0 0 600 460" className="room-illustration" aria-hidden="true">
@@ -105,7 +111,7 @@ function AuthPage({ register = false }) {
   const client = useQueryClient()
   const mutation = useMutation({
     mutationFn: (values) => writeApi('post', register ? '/auth/register/' + role : '/auth/login', values),
-    onSuccess: (user) => { client.setQueryData(['me'], user); navigate(user.role === 'landlord' ? '/landlord' : '/account') },
+    onSuccess: (user) => { client.setQueryData(['me'], user); navigate(user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account') },
   })
   function submit(event) {
     event.preventDefault()
@@ -140,14 +146,15 @@ function Protected({ children, role }) {
   if (query.isPending) return <div className="container page-space"><Loading /></div>
   if (query.error) return <div className="container page-space"><ErrorNotice error={query.error} retry={() => query.refetch()} /></div>
   if (!query.data) return <Navigate to="/login" replace />
-  if (role && query.data.role !== role) return <Navigate to="/account" replace />
+  if (role && !(Array.isArray(role) ? role : [role]).includes(query.data.role)) return <Navigate to="/account" replace />
   return children
 }
 
 function Account() {
   const { data: user } = useCurrentUser()
   if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
-  return <section className="container page-space"><span className="eyebrow">MY SPACE</span><h1>Welcome, {user?.name}.</h1><div className="panel empty-state mt-4"><span className="empty-icon" aria-hidden="true">⌂</span><h2>You’re ready for what’s next.</h2><p>Public listings are not open yet. Your account is ready for the next stage of DormFinder.</p><Link className="btn btn-outline-primary" to="/profile">Manage profile</Link></div></section>
+  if (user?.role === 'admin') return <Navigate to="/admin" replace />
+  return <section className="container page-space"><span className="eyebrow">MY SPACE</span><h1>Welcome, {user?.name}.</h1><div className="panel empty-state mt-4"><span className="empty-icon" aria-hidden="true">⌂</span><h2>Find a place that fits your student life.</h2><p>Browse reviewed listings, compare selected room options, and keep your questions in private conversations.</p><div className="d-flex justify-content-center gap-3 flex-wrap"><Link className="btn btn-primary" to="/listings">Browse listings</Link><Link className="btn btn-outline-primary" to="/inquiries">Your inquiries</Link></div></div></section>
 }
 
 function Landlord() {
@@ -186,6 +193,7 @@ function PropertyEditor() {
 function PropertyForm({ property }) {
   const client = useQueryClient()
   const navigate = useNavigate()
+  const editable = !property || ['draft', 'rejected', 'approved'].includes(property.status)
   const mutation = useMutation({
     mutationFn: (values) => writeApi(property ? 'patch' : 'post', '/landlord/properties' + (property ? '/' + property.id : ''), values),
     onSuccess: async (saved) => {
@@ -205,11 +213,11 @@ function PropertyForm({ property }) {
   const errors = fieldErrors(mutation.error)
   return <section className="container page-space">
     <Link className="back-link" to="/landlord">← Your properties</Link>
-    <div className="page-heading mt-4"><div><span className="eyebrow">{property ? 'PROPERTY DETAILS' : 'A NEW BEGINNING'}</span><h1>{property ? property.title : 'Add your property'}</h1><p>Give students a clear picture of your place.</p></div>{property && <span className="status-badge position-static">Draft · private</span>}</div>
+    <div className="page-heading mt-4"><div><span className="eyebrow">{property ? 'PROPERTY DETAILS' : 'A NEW BEGINNING'}</span><h1>{property ? property.title : 'Add your property'}</h1><p>Give students a clear picture of your place.</p></div>{property && <span className="status-badge position-static">{property.status.replaceAll('_', ' ')} · {property.status === 'approved' ? 'public' : 'private'}</span>}</div>
     <div className="row g-4"><div className="col-lg-7"><section className="panel"><h2 className="section-title">The essentials</h2>
       <ErrorNotice error={mutation.error} />
       {mutation.isSuccess && <p className="alert alert-success" role="status">Your draft has been saved.</p>}
-      <form onSubmit={submit}>
+      <form onSubmit={submit}><fieldset disabled={!editable}>
         <Field label="Property name" name="title" defaultValue={property?.title} required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
         <div className="mb-3"><label className="form-label" htmlFor="property_type">Property type</label><select className="form-select" id="property_type" name="property_type" defaultValue={property?.property_type || 'dormitory'}>
           <option value="dormitory">Dormitory</option><option value="apartment">Apartment</option><option value="boarding_house">Boarding house</option><option value="rental_room">Rental room</option>
@@ -219,10 +227,11 @@ function PropertyForm({ property }) {
         <Field label="City" name="city" defaultValue={property?.city || 'Manila'} required maxLength={100} error={errors} />
         <div className="row"><div className="col-sm-6"><Field label="Latitude (optional)" name="latitude" type="number" step="any" min="-90" max="90" defaultValue={property?.latitude} error={errors} /></div><div className="col-sm-6"><Field label="Longitude (optional)" name="longitude" type="number" step="any" min="-180" max="180" defaultValue={property?.longitude} error={errors} /></div></div>
         <button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
-      </form>
-    </section></div><div className="col-lg-5">
+      </fieldset></form>
+    </section>{property && <RoomManager property={property} />}</div><div className="col-lg-5">
       {property ? <PhotoManager property={property} /> : <aside className="panel muted-panel"><span className="empty-icon" aria-hidden="true">▧</span><h2 className="section-title">Let your place speak for itself.</h2><p>Save your draft to add photos. Clear, recent images help students understand the space.</p></aside>}
-      <aside className="editor-note mt-4"><h2>Good to know</h2><p>Your draft is private. Room options and administrator submission will open in the next release.</p><p className="mb-0">A future content review will check listing information. It will not be a safety inspection or ownership verification.</p></aside>
+      {property && <SubmissionPanel property={property} />}
+      <aside className="editor-note mt-4"><h2>Good to know</h2><p>Drafts are private. Add room options and submit complete listings for review. Material changes require another review.</p><p className="mb-0">Content review is not a safety inspection or ownership verification.</p></aside>
     </div></div>
   </section>
 }
@@ -230,6 +239,7 @@ function PropertyForm({ property }) {
 function PhotoManager({ property }) {
   const client = useQueryClient()
   const [inputKey, setInputKey] = useState(0)
+  const editable = ['draft', 'rejected', 'approved'].includes(property.status)
   async function refresh() {
     await Promise.all([
       client.invalidateQueries({ queryKey: ['property', String(property.id)] }),
@@ -255,8 +265,8 @@ function PhotoManager({ property }) {
   return <section className="panel"><h2 className="section-title">Property photos <span className="text-secondary small">({property.photos.length}/8)</span></h2>
     <p className="small text-secondary">JPEG, PNG or WebP. Up to 3MB and 12 megapixels each. Photos remain private while your property is a draft.</p>
     <ErrorNotice error={upload.error || remove.error} />
-    <div className="photo-grid">{property.photos.map((photo) => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{photo.caption}</figcaption><button className="btn btn-sm btn-outline-danger" disabled={remove.isPending || upload.isPending} onClick={() => remove.mutate(photo.id)} aria-label={'Remove ' + photo.caption}>Remove</button></figure>)}</div>
-    {property.photos.length < 8 && <form key={inputKey} onSubmit={submit} className="upload-form">
+    <div className="photo-grid">{property.photos.map((photo) => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{photo.caption}</figcaption>{editable && <button className="btn btn-sm btn-outline-danger" disabled={remove.isPending || upload.isPending} onClick={() => remove.mutate(photo.id)} aria-label={'Remove ' + photo.caption}>Remove</button>}</figure>)}</div>
+    {editable && property.photos.length < 8 && <form key={inputKey} onSubmit={submit} className="upload-form">
       <Field label="Choose a photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
       <Field label="Photo description" name="caption" placeholder="e.g. Shared room facing the courtyard" maxLength={160} />
       <button className="btn btn-outline-primary w-100" disabled={upload.isPending || remove.isPending}>{upload.isPending ? 'Uploading…' : 'Upload photo'}</button>
@@ -295,6 +305,13 @@ export default function App() {
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />
+    <Route path="/listings" element={<Listings />} />
+    <Route path="/listings/:id" element={<ListingDetails />} />
+    <Route path="/compare" element={<Protected role="student"><Comparison /></Protected>} />
+    <Route path="/admin" element={<Protected role="admin"><ReviewQueue /></Protected>} />
+    <Route path="/admin/reviews/:id" element={<Protected role="admin"><ReviewDetails /></Protected>} />
+    <Route path="/inquiries" element={<Protected role={['student', 'landlord']}><InquiryList /></Protected>} />
+    <Route path="/inquiries/:id" element={<Protected role={['student', 'landlord']}><InquiryThread /></Protected>} />
     <Route path="/account" element={<Protected><Account /></Protected>} />
     <Route path="/profile" element={<Protected><Profile /></Protected>} />
     <Route path="/landlord" element={<Protected role="landlord"><Landlord /></Protected>} />

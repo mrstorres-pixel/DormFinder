@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PropertyRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
+use App\Services\ListingWorkflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,7 +20,7 @@ class PropertyController extends Controller
         Gate::authorize('viewAny', Property::class);
 
         return PropertyResource::collection(
-            $request->user()->properties()->with(['photos' => fn ($query) => $query->where('status', 'ready')])
+            $request->user()->properties()->with(ListingController::relations())
                 ->latest('id')->paginate(12)
         );
     }
@@ -29,32 +30,29 @@ class PropertyController extends Controller
         Gate::authorize('create', Property::class);
         $property = $request->user()->properties()->create($request->safe()->except('revision'));
 
-        return (new PropertyResource($property->fresh()->load('photos')))->response()->setStatusCode(201);
+        return (new PropertyResource($property->fresh()->load(ListingController::relations())))->response()->setStatusCode(201);
     }
 
     public function show(Property $property): PropertyResource
     {
         Gate::authorize('view', $property);
 
-        return new PropertyResource($property->load(['photos' => fn ($query) => $query->where('status', 'ready')]));
+        return new PropertyResource($property->load(ListingController::relations()));
     }
 
-    public function update(PropertyRequest $request, Property $property): PropertyResource
+    public function update(PropertyRequest $request, Property $property, ListingWorkflow $workflow): PropertyResource
     {
         Gate::authorize('view', $property);
-        $property = DB::transaction(function () use ($request, $property): Property {
+        $property = DB::transaction(function () use ($request, $property, $workflow): Property {
             $locked = Property::query()->lockForUpdate()->findOrFail($property->id);
             Gate::authorize('update', $locked);
             abort_unless($locked->revision === $request->integer('revision'), 409);
             $locked->fill($request->safe()->except('revision'));
-            $locked->status = 'draft';
-            $locked->approved_at = null;
-            $locked->revision++;
-            $locked->save();
+            $workflow->demote($locked);
 
             return $locked;
         });
 
-        return new PropertyResource($property->load(['photos' => fn ($query) => $query->where('status', 'ready')]));
+        return new PropertyResource($property->load(ListingController::relations()));
     }
 }

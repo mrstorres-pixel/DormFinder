@@ -12,11 +12,11 @@ class HealthController extends Controller
     {
         try {
             DB::select('select 1');
-            DB::table('migrations')->limit(1)->first();
+            abort_unless(DB::table('migrations')->where('migration', '2026_10_09_090053_create_phase_two_workflow_tables')->exists(), 503);
         } catch (\Throwable) {
             abort(503);
         }
 
-        return response()->json(['data' => ['status' => 'ready', 'service' => 'DormFinder API']]);
+        return response()->json(['data' => ['status' => 'ready', 'service' => 'DormFinder API', 'phase' => 2]]);
     }
 }

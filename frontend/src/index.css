@@ -47,4 +47,13 @@ h1,h2,h3{font-weight:650;letter-spacing:-.035em}h1{font-size:clamp(2rem,4vw,3rem
 @media(max-width:767px){.hero{text-align:center;padding:3rem 0 2rem}.hero-copy{margin-left:auto;margin-right:auto}.hero .d-flex{justify-content:center}.hero h1{font-size:2.85rem}.hero-art{max-width:420px}.values-section{padding-top:1.5rem;padding-bottom:2rem}.value-card{padding:1rem 0;border-bottom:1px solid #e3e9df}.page-space{padding-top:2rem;padding-bottom:3rem}.panel{padding:1.4rem}.auth-grid{grid-template-columns:1fr;gap:1rem;max-width:480px}.auth-intro{padding:0 0 1rem}.auth-intro h1{font-size:2rem;max-width:none}.auth-intro>p{margin-top:.7rem}.campus-card{display:none}.page-heading{align-items:flex-start;flex-direction:column;gap:.8rem}.site-footer{font-size:.7rem}.empty-state{padding:2.5rem 1rem}}
 @media(max-width:400px){.brand{font-size:1.2rem}.brand svg{width:25px}.brand small{font-size:.4rem}.nav-link{font-size:.8rem}.site-header .btn-sm{padding:.45rem .6rem}.hero h1{font-size:2.45rem}.art-note{padding:.65rem}.art-note strong{font-size:.74rem}.art-note small{font-size:.65rem}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+.site-header>.container,.site-header nav{flex-wrap:wrap}
+.room-option{padding:1.1rem;border:1px solid #dce5dc;border-radius:12px;background:#f9fbf7}
+.room-option h3,.room-form h3{font-size:1.05rem}
+.room-price{font-weight:700;color:var(--teal);font-size:1.2rem}.room-price span{font-size:.8rem;font-weight:500;color:#61716b}
+.charge-list{font-size:.85rem}.charge-list>div{display:flex;justify-content:space-between;gap:1rem;border-bottom:1px solid #e4ebe3;padding:.6rem 0}.charge-list dt{font-weight:500;max-width:65%;overflow-wrap:anywhere}.charge-list dd{margin:0;text-align:right}
+.fee-row{border:1px solid #dce5dc;border-radius:9px;padding:1rem;margin-bottom:1rem}
+.listing-search{display:flex;gap:.6rem;max-width:650px}.listing-search .form-control{min-width:0}
+.public-photos{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:1rem}.public-photos figure{margin:0}.public-photos img{width:100%;height:220px;object-fit:cover;border-radius:12px}.public-photos figcaption{font-size:.8rem;padding:.5rem 0;overflow-wrap:anywhere}
+.preserve-lines{white-space:pre-wrap;overflow-wrap:anywhere}.message{border-radius:12px;padding:1rem;background:#f0f4ec;margin-bottom:1rem}.message-own{background:#e1f0e7;margin-left:1.5rem}.conversation{max-height:600px;overflow-y:auto}
 

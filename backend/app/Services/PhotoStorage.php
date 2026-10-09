@@ -40,10 +40,7 @@ class PhotoStorage
                 'status' => 'uploading',
                 'sort_order' => (int) $locked->photos()->max('sort_order') + 1,
             ]);
-            $locked->status = 'draft';
-            $locked->approved_at = null;
-            $locked->revision++;
-            $locked->save();
+            app(ListingWorkflow::class)->demote($locked);
 
             return $photo;
         });

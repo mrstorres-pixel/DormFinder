@@ -32,4 +32,14 @@ class Property extends Model
     {
         return $this->hasMany(PropertyPhoto::class)->orderBy('sort_order')->orderBy('id');
     }
+
+    public function roomOptions(): HasMany
+    {
+        return $this->hasMany(RoomOption::class)->orderBy('id');
+    }
+
+    public function inquiries(): HasMany
+    {
+        return $this->hasMany(Inquiry::class);
+    }
 }

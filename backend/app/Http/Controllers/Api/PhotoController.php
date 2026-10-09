@@ -7,6 +7,7 @@ use App\Http\Requests\PhotoRequest;
 use App\Http\Resources\PhotoResource;
 use App\Models\Property;
 use App\Models\PropertyPhoto;
+use App\Services\ListingWorkflow;
 use App\Services\PhotoStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -35,10 +36,7 @@ class PhotoController extends Controller
             Gate::authorize('update', $locked);
             abort_unless($locked->revision === $request->integer('revision'), 409);
             $photo->update(['status' => 'pending_deletion']);
-            $locked->status = 'draft';
-            $locked->approved_at = null;
-            $locked->revision++;
-            $locked->save();
+            app(ListingWorkflow::class)->demote($locked);
         });
         $deleted = $storage->delete($photo);
 

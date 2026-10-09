@@ -4,13 +4,13 @@ Housing discovery and inquiries for students near Technological Institute of the
 
 ## Current implementation — October 9, 2026
 
-**Phase 1 local slice is implemented and validated. The full release is not complete.**
+**Phase 1 is deployed at [DormFinder](https://dormfinder-pink.vercel.app); Phase 2 is implemented and its release is being verified. The full release is not complete.**
 
 Available: student/landlord registration, session login/logout, profile name/password changes, controlled administrator creation, private landlord property drafts, optimistic revision checks, private normalized photo upload/removal, database sessions, PostgreSQL migrations, error states and a responsive interface.
 
-Pending: provision and test Vercel → Render → Supabase PostgreSQL/private Storage. Provider integrations are not connected. GitHub CI is blocked before execution by an account billing lock. The approved plan requires the deployment gate before substantial feature development.
+Deployed Vercel → Render → Supabase PostgreSQL/private Storage checks pass: four Chromium/WebKit browser tests, secure sessions/CSRF, private drafts/photos, certificate-verified pooler TLS and persistence after redeployment. Confirmed Render sleep/cold wake-up passes: readiness returned through Vercel in 24.3 seconds, and the existing session, draft and private photo survived. Phase 1 is accepted with the user-approved temporary GitHub CI exception. CI is blocked by an account billing lock; local checks and controlled deployments remain required before each release. Existing local work and unrelated provider resources were preserved.
 
-Later phases: room options, administrator review, public discovery, favorites/comparison, participant-only inquiries and notifications, reports/moderation, synthetic seed data and final demonstration. These are tracked in [implementation status](docs/status.md).
+Phase 2 adds room options with inventory and PHP charges, submission/administrator review, public listing details, selected-option comparison and participant-only inquiries/replies. Local acceptance passes; cloud release verification is in progress. Later phases add search filters/sorting, favorites, gallery/maps/campus distance, notifications, reports/moderation, safe demo seeds and final rehearsal. These are tracked in [implementation status](docs/status.md).
 
 ## Repository
 
@@ -48,11 +48,11 @@ cd backend
 & '..\.tools\php\php.exe' artisan dormfinder:admin administrator-email --name='Administrator name'
 ```
 
-The account owner chooses the real identity and enters the password securely. This command is not a public endpoint.
+The account owner chooses the real identity and enters the password securely. Controlled automation can pass --password-file with a private file instead of putting a password in command arguments. Existing accounts are never overwritten. This command is not a public endpoint. Synthetic test administrators use separate ignored credential files.
 
 ## Deployment and presentation
 
-See [deployment runbook](docs/deployment.md), [architecture and permissions](docs/architecture.md), and [validation evidence](docs/validation.md). Cloud deployment and container execution are explicitly unverified until account access and CI are available.
+See [deployment runbook](docs/deployment.md), [architecture and permissions](docs/architecture.md), and [validation evidence](docs/validation.md). Cloud Docker build/startup and deployed integration are verified; the separate Linux CI run remains blocked by the GitHub account restriction.
 
 DormFinder intends to support SDG 11 through centralized location information, SDG 4 through campus-oriented housing discovery, and SDG 1 through transparent housing costs. No proven safety, affordability, poverty-reduction or education outcome is claimed.
 

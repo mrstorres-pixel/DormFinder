@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         ]);
         RateLimiter::for('registration', fn (Request $request) => Limit::perHour(10)->by($request->ip()));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(12)->by($request->user()?->id ?: $request->ip()));
+        RateLimiter::for('messages', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
 
         if ($this->app->isProduction() && ! $this->app->runningInConsole()) {
