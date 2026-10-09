@@ -10,6 +10,8 @@
 - Mobile/tablet/desktop home layouts pass no-horizontal-overflow checks at 360, 768 and 1440px; screenshots were visually inspected.
 - Composer lockfile validates; Composer and npm advisory checks reported no vulnerabilities at execution time.
 - PowerShell scripts parse successfully. Render and workflow files parse as YAML.
+- Local bootstrap completed a clean dependency reinstall without resetting the database or credentials. Tracked server stop/start and subsequent readiness/check-script execution pass.
+- Vercel routing output builds and validates with a test-fixture origin; this does not prove a real deployment.
 
 Backend coverage includes fixed registration roles and forbidden elevation, duplicate normalized email, suspended login/access, owner isolation, material-edit demotion, optimistic revision conflict, upload format/size limits, eight-photo cap, signed URL expiry, upload retry identity, deletion and simulated storage failure consistency. These tests use PostgreSQL, not SQLite.
 
@@ -30,6 +32,8 @@ Backend coverage includes fixed registration roles and forbidden elevation, dupl
 Cloud deployment, production-cookie forwarding through Vercel, Render restart/redeploy persistence, private Supabase Storage operations, pooler certificate/role setup, free-tier cold starts/quotas and performance acceptance criteria require account access.
 
 Docker is not installed locally. Container build and Linux CI execution are prepared but cannot be called passing until the actual workflow runs. A local production build does not prove Docker startup or external integration.
+
+The first pushed CI run [37867523468](https://github.com/mrstorres-pixel/DormFinder/actions/runs/37867523468) was rejected **before any job steps executed**. GitHub's annotation states: “The job was not started because your account is locked due to a billing issue.” The account owner must resolve that restriction through GitHub account settings/support. No paid service or upgrade is authorized. CI needs to be rerun afterward; the failure is not test evidence.
 
 Room options, approval/discovery/comparison, favorites, inquiries, notifications, reporting/moderation and final synthetic seeds have not been implemented. The core three-role release acceptance scenario is consequently still pending.
 

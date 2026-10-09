@@ -8,7 +8,7 @@ Housing discovery and inquiries for students near Technological Institute of the
 
 Available: student/landlord registration, session login/logout, profile name/password changes, controlled administrator creation, private landlord property drafts, optimistic revision checks, private normalized photo upload/removal, database sessions, PostgreSQL migrations, error states and a responsive interface.
 
-Pending: provision and test Vercel → Render → Supabase PostgreSQL/private Storage. Provider integrations are not connected. The approved plan requires this deployment gate before substantial feature development.
+Pending: provision and test Vercel → Render → Supabase PostgreSQL/private Storage. Provider integrations are not connected. GitHub CI is blocked before execution by an account billing lock. The approved plan requires the deployment gate before substantial feature development.
 
 Later phases: room options, administrator review, public discovery, favorites/comparison, participant-only inquiries and notifications, reports/moderation, synthetic seed data and final demonstration. These are tracked in [implementation status](docs/status.md).
 

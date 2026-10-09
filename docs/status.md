@@ -23,6 +23,8 @@ Completed locally:
 3. Codex validates deployed CSRF/login/logout, browser cookies in Chromium/WebKit, private draft/photo storage, pooler TLS and restart/redeploy persistence.
 4. Record actual versions, provider limits, cold-start measurements and URLs.
 
+GitHub source is now committed and pushed. CI is additionally blocked by GitHub's account billing lock; the job never started. The account owner must resolve the restriction without assuming permission for any paid upgrade. Local validation passes independently.
+
 No major Phase 2 work starts until this gate passes, as required by the approved plan.
 
 ## Remaining phases
