@@ -4,13 +4,13 @@ Housing discovery and inquiries for students near Technological Institute of the
 
 ## Current implementation — October 9, 2026
 
-**Phases 1–3 are deployed and verified at [DormFinder](https://dormfinder-pink.vercel.app), with the user-approved temporary GitHub CI exception. Later phases remain outstanding.**
+**Phases 1–4 are deployed and verified at [DormFinder](https://dormfinder-pink.vercel.app), with the user-approved temporary GitHub CI exception. Later phases remain outstanding.**
 
 Available: student/landlord registration, session login/logout, profile name/password changes, controlled administrator creation, private landlord property drafts, optimistic revision checks, private normalized photo upload/removal, database sessions, PostgreSQL migrations, error states and a responsive interface.
 
 Deployed Vercel → Render → Supabase PostgreSQL/private Storage checks pass: four Chromium/WebKit browser tests, secure sessions/CSRF, private drafts/photos, certificate-verified pooler TLS and persistence after redeployment. Confirmed Render sleep/cold wake-up passes: readiness returned through Vercel in 24.3 seconds, and the existing session, draft and private photo survived. Phase 1 is accepted with the user-approved temporary GitHub CI exception. CI is blocked by an account billing lock; local checks and controlled deployments remain required before each release. Existing local work and unrelated provider resources were preserved.
 
-Phase 2 adds room options with inventory and PHP charges, submission/administrator review, public listing details, selected-option comparison and participant-only inquiries/replies. Local acceptance and all six deployed Chromium/WebKit tests pass, including the complete landlord, administrator and student workflow. Phase 3 adds same-option rent/availability search, property type and price-basis filters, stable sorting/pagination, private favorites, full comparison, photo gallery and maps/campus distance. Local and deployed acceptance pass in Chromium/WebKit. Later phases add notifications, reports/moderation, safe demo seeds and final rehearsal. These are tracked in [implementation status](docs/status.md).
+Phase 2 adds room options with inventory and PHP charges, submission/administrator review, public listing details, selected-option comparison and participant-only inquiries/replies. Local acceptance and all six deployed Chromium/WebKit tests pass, including the complete landlord, administrator and student workflow. Phase 3 adds same-option rent/availability search, property type and price-basis filters, stable sorting/pagination, private favorites, full comparison, photo gallery and maps/campus distance. Local and deployed acceptance pass in Chromium/WebKit. Phase 4 adds private listing reports, listing/account suspension, archival/restoration, audit history, in-app notifications and role-scoped counts. All 79 backend tests, 15 frontend tests, lint/build and six local plus six deployed Chromium/WebKit checks pass. Later phases add hardening, safe demo seeds and final rehearsal. These are tracked in [implementation status](docs/status.md).
 
 ## Repository
 

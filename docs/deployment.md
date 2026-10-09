@@ -1,6 +1,6 @@
 # Deployment runbook — Codex execution
 
-Phases 1–3 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
+Phases 1–4 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
 
 ## October 9 continuation checkpoint
 
@@ -10,9 +10,9 @@ Use these existing resources; do not recreate them:
 - Render service `srv-db44ecrbc2fs73aj14q0`, workspace `tea-d7ip6vu7r5hc73ccjjng`, Free/Singapore. Keep websys2 untouched. [Service dashboard](https://dashboard.render.com/web/srv-db44ecrbc2fs73aj14q0).
 - Vercel project `prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1`, team `team_lakGFdG84Dlw3s6qfEG8IKQc` / mrstorres-pixels-projects, Hobby. [Project dashboard](https://vercel.com/mrstorres-pixels-projects/dormfinder).
 
-Released application source is `eae862f65cb0e2d9019eeb673a51b23d01aa1d16`. Vercel production `dpl_HAyhpqEfutMZMfQJnBAYTc6K5bPg` was deployed from a clean archive of that commit. Verified Render deployment is `dep-db4c3dp42hec73aqghu0`, with the same source commit. Readiness returns phase 3; all six deployed checks pass across Chromium and the targeted WebKit rerun. Render auto-deploy is off and Vercel Git auto-deployment is not connected; later releases require explicit deployment.
+Released application source is `da0f30d6c9490fbee1ec199921a60c25bd547463`. Vercel production `dpl_6a3vc6AUdf2n3TmScgakC67tEiEG` was deployed from a clean archive of that commit. Verified Render deployment is `dep-db4d47rncjis73ck7m8g`, with the same source commit. Readiness returns phase 4; all six deployed checks pass in one Chromium/WebKit run (4.0 minutes). Render auto-deploy is off and Vercel Git auto-deployment is not connected; later releases require explicit deployment.
 
-Supabase now has eight applied Laravel migrations, eighteen application tables, owner/runtime logins and private bucket `property-photos`. A private application-schema export preceded migration. Preserve applied migrations and stable APP_KEY/passwords. Never migrate or seed during container startup.
+Supabase now has nine applied Laravel migrations, twenty-one application tables, owner/runtime logins and private bucket `property-photos`. A private application-schema export preceded migration. Preserve applied migrations and stable APP_KEY/passwords. Never migrate or seed during container startup.
 
 Render Docker context is `backend`, Dockerfile `backend/Dockerfile`, Docker Command **`/var/www/html/docker/entrypoint.sh`**. The user corrected the command after the original compound command failed. Successful deployments now pass startup/readiness. Health-check path is currently unset in the provider; `/api/v1/health` was manually verified.
 
@@ -30,7 +30,7 @@ Codex performs configuration, migrations, tests and documentation. The account o
 
 Codex records the actual PostgreSQL version and limits, provisions schema `dormfinder`, a migration owner and restricted runtime login. Application tables are outside exposed schemas. Disable Data API access to this schema and remove anonymous/authenticated grants. Supabase Auth is unused.
 
-Use dashboard-provided IPv4 session-pooler connection parameters, port 5432, TLS `verify-full`. Obtain the project CA if needed; do not fall back to disabled certificate verification. The runtime role gets schema usage, table CRUD and sequence usage, with default privileges from the migration owner covering new tables; it gets no schema creation privileges. Keep migration credentials separate.
+Use dashboard-provided IPv4 session-pooler connection parameters, port 5432, TLS `verify-full`. Obtain the project CA if needed; do not fall back to disabled certificate verification. The runtime role gets schema usage, table CRUD and sequence usage, with default privileges from the migration owner covering new tables; it gets no schema creation privileges. Phase 4 revokes UPDATE/DELETE on moderation_actions, preserving SELECT/INSERT for append-only application history. Keep migration credentials separate.
 
 Create private bucket `property-photos`. No anonymous read/upload policies. Generate server-only S3 credentials and copy endpoint/region from Supabase. S3 credentials bypass RLS, so Laravel ownership/visibility checks are mandatory. Uploaded images never use Render disk.
 
@@ -81,7 +81,7 @@ Verify:
 - Render idle wake-up and retry state; no paid upgrades.
 - Actual free limits and Supabase inactivity behavior.
 
-Record outcomes and provider URLs in validation.md. Phases 1 and 2 passed deployed acceptance with the user-approved temporary GitHub CI exception. Until CI is restored, complete local checks before every release and keep migrations backed up and controlled.
+Record outcomes and provider URLs in validation.md. Phases 1–4 passed deployed acceptance with the user-approved temporary GitHub CI exception. Until CI is restored, complete local checks before every release and keep migrations backed up and controlled.
 
 ## Recovery and later release
 
@@ -104,4 +104,16 @@ Leaflet is already locked in the existing frontend dependencies. No API key or p
 
 Reusable synthetic landlord/student fixtures are private .secrets/discovery-browser-{local|cloud}-{chromium|webkit}.json files. Codex provisions these only in the verified local database or confirmed DormFinder cloud project, preserving existing accounts/passwords. Browser tests sign in with them when present; fresh CI falls back to UI registration and records its generated fixtures privately. The original Phase 1 registration checks still run. The release archive must exclude every .secrets/.local file.
 
-Phase 3 deployment completed October 9: the backup catalog, additive migration, restricted runtime reads, security advisors and original draft/photo readback passed. The application release above remains the exact tested source. The separate evidence checkpoint includes an opt-in CampusSeeder for reference recovery; it uses insertOrIgnore, never overwrites an existing campus, is not wired into startup/default seeding, and was not run against production. No demo dataset or automatic destructive seed was introduced.
+Phase 3 deployment completed October 9: the backup catalog, additive migration, restricted runtime reads, security advisors and original draft/photo readback passed. The Phase 3 application release was the exact tested eae862f source. Its separate evidence checkpoint includes an opt-in CampusSeeder for reference recovery; it uses insertOrIgnore, never overwrites an existing campus, is not wired into startup/default seeding, and was not run against production. No demo dataset or automatic destructive seed was introduced.
+
+## Phase 4 controlled release
+
+The ninth additive migration creates listing_reports, moderation_actions and user_notifications, adds users.moderation_revision, copies existing listing reviews into audit history and revokes audit UPDATE/DELETE from the existing restricted runtime. A fresh private application-schema export and pg_restore catalog inspection passed first. No existing users, passwords, listings, photos, role assignments or source migrations were overwritten; no new fixtures or provider resources were needed.
+
+The reviewed commit above was deployed explicitly to the existing Render/Vercel projects. Render became live at 11:39:01 UTC / 19:39:01 Singapore on October 9. Vercel production is READY with the existing pink alias; local CLI 58.11.0 and cloud build CLI 62.1.0 were used. Runtime read/insert and revoked privileges, security advisors, readiness, original private data, public assets and the complete deployed browser flow passed.
+
+Use the existing private synthetic browser fixtures for acceptance. The extended check temporarily suspends only its verified Synthetic/example.test landlord, reactivates through the administrator endpoint, signs in again, and verifies drafts stay unpublished. Recovery reactivates that fixture if interrupted after suspension. Archive/suspension preserves photos and inquiry history. No cleanup resets a database or deletes real users/listings. The public demo fixtures are withdrawn through normal owner edits.
+
+Notifications require no queue, email provider, keys or paid service. Keep them inside the existing database transaction and retain recipient scoping. No audit mutation API exists. Existing migration credentials remain separately privileged and are never transferred to the application host.
+
+GitHub validation run 37924843463 / job 113801198599 was blocked before all steps by the existing account billing restriction. The approved exception remains; Phase 5 still needs hardening, safe synthetic seed tooling, rollback/local fallback and two deployed rehearsals.

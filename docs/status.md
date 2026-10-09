@@ -42,13 +42,14 @@ Implemented room options/inventory/charges, submission and administrator review,
 
 Implemented same-option rent/availability search, property type and price basis, stable pagination and newest/rent/distance sorting; private student favorites; complete selected-option comparison; keyboard/button photo gallery; and opt-in Leaflet maps with backend-calculated campus distances. All local checks pass: 67 PHPUnit tests / 303 assertions, 10 frontend tests, ESLint/production build and 6 Chromium/WebKit tests (1.7 minutes) covering Phases 1–3. The eighth additive cloud migration passed after a verified private application-schema export. Source `eae862f65cb0e2d9019eeb673a51b23d01aa1d16` is live on the existing Render/Vercel projects. All six deployed checks passed across the Chromium run and targeted WebKit rerun, including the Phase 3 flow (49.9s / 49.2s respectively). The original draft/private photo remain intact; runtime schema CREATE and anonymous/authenticated schema usage remain denied. Three public assets passed the credential scan; Supabase security advisors reported no lints. A single external campus tile returned HTTP 200/image/png. The initial WebKit authentication run reported an access-control network page error; all functional assertions passed and the unchanged rerun passed with no page errors. See validation evidence for the exact limits. Preserve existing credentials, provider IDs, source migrations and records.
 
-## Remaining phases
+## Phase 4 accepted with the documented CI exception
 
-Phase 4 implementation is locally verified: reports, listing/account moderation, archival/restoration, immutable audit history, private in-app notifications and role-scoped counts. All 79 backend tests, 15 frontend tests and six Chromium/WebKit checks pass. Cloud backup/migration/deployment and live acceptance remain the current release gate.
+Phase 4 is accepted with the documented CI exception. All 79 backend tests / 452 assertions, 15 frontend tests, lint/build and six local Chromium/WebKit checks pass. The ninth additive cloud migration followed a verified private application-schema export. Runtime audit UPDATE/DELETE remain denied; INSERT/read are allowed; schema CREATE and anonymous/authenticated schema usage remain denied. Supabase security advisors returned no lints. Source da0f30d6c9490fbee1ec199921a60c25bd547463 is live on the existing Render/Vercel projects. All six deployed checks passed in one 4.0-minute Chromium/WebKit run, including the full report/moderation/lifecycle/notification/audit/count flow. Original draft/photo data survived; an expired fixture session was renewed normally. Three public assets passed the credential scan. Render returned no error-level logs in the inspected release window. No dependencies, credentials, paid resources or unrelated services were replaced. GitHub release CI run 37924843463 remains blocked before any steps by the account billing lock.
+
+## Remaining phases
 
 | Phase | Deliverables | Acceptance gate |
 |---|---|---|
-| 4 | Reports, moderation, suspension/archival, audit history, notifications, counts | Negative access and lifecycle tests pass |
 | 5 | Integration debugging, accessibility, safe synthetic seeds, final course/demo docs, rollback/local fallback | Two deployed rehearsals; all required checks pass |
 | 6 | October 14 rehearsal/submission | Provider availability, smoke checks, release evidence |
 
