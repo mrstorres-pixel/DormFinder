@@ -6,6 +6,8 @@ Housing discovery and inquiries for students near Technological Institute of the
 
 **Phases 1–4 are deployed and verified at [DormFinder](https://dormfinder-pink.vercel.app), with the user-approved temporary GitHub CI exception. Later phases remain outstanding.**
 
+The live and local databases now include 16 clearly labeled fictional sample listings, each with two room options and two illustrative layout images. [Browse the samples](https://dormfinder-pink.vercel.app/listings?q=DEMO). Prices, addresses and map pins are synthetic. Three additional samples demonstrate draft, pending-review and rejected states and remain private. Student accounts can save favorites, compare options and send inquiries; sample-owner replies are for demonstration only.
+
 Available: student/landlord registration, session login/logout, profile name/password changes, controlled administrator creation, private landlord property drafts, optimistic revision checks, private normalized photo upload/removal, database sessions, PostgreSQL migrations, error states and a responsive interface.
 
 Deployed Vercel → Render → Supabase PostgreSQL/private Storage checks pass: four Chromium/WebKit browser tests, secure sessions/CSRF, private drafts/photos, certificate-verified pooler TLS and persistence after redeployment. Confirmed Render sleep/cold wake-up passes: readiness returned through Vercel in 24.3 seconds, and the existing session, draft and private photo survived. Phase 1 is accepted with the user-approved temporary GitHub CI exception. CI is blocked by an account billing lock; local checks and controlled deployments remain required before each release. Existing local work and unrelated provider resources were preserved.
@@ -28,7 +30,7 @@ powershell -ExecutionPolicy Bypass -File scripts/bootstrap.ps1
 powershell -ExecutionPolicy Bypass -File scripts/start-local.ps1
 ```
 
-Open **http://127.0.0.1:5173**. Register through the interface; there are no seeded passwords. Local database credentials are generated into ignored files. The database listens only on loopback port 54329. Images stay in private local storage during development.
+Open **http://127.0.0.1:5173**. Register through the interface; there are no shared default passwords. Generated credentials for synthetic demonstration accounts stay in ignored private files. Local database credentials are generated into ignored files. The database listens only on loopback port 54329. Images stay in private local storage during development.
 
 To validate with local servers running:
 

@@ -87,7 +87,7 @@ Record outcomes and provider URLs in validation.md. Phases 1–4 passed deployed
 
 Free Render sleeps after 15 minutes idle and has ephemeral disks; Supabase free projects may pause after a week inactive. See the dated limits and measurements in validation.md. Pre-demo checks and a tested local fallback are required. Keep small assets and track quotas. Restore the prior compatible application deployment for rollback; additive migrations must remain compatible. Never run destructive rollback against production without a reviewed backup/restore plan. Cleanup command: `artisan dormfinder:photos-cleanup --dry-run`, then controlled execution.
 
-Demo seeds are not implemented yet; no current seeder creates users or resets passwords. Final release requires explicit safe demo seeding, release tag, two rehearsals and a privately stored database export.
+The explicit sample command described below creates a dedicated fictional owner and preserves existing accounts and passwords. It is never run by the default database seeder or container startup. Final release still requires a release tag, two rehearsals and a privately stored database export.
 
 
 ## Phase 2 controlled release
@@ -116,4 +116,14 @@ Use the existing private synthetic browser fixtures for acceptance. The extended
 
 Notifications require no queue, email provider, keys or paid service. Keep them inside the existing database transaction and retain recipient scoping. No audit mutation API exists. Existing migration credentials remain separately privileged and are never transferred to the application host.
 
-GitHub validation run 37924843463 / job 113801198599 was blocked before all steps by the existing account billing restriction. The approved exception remains; Phase 5 still needs hardening, safe synthetic seed tooling, rollback/local fallback and two deployed rehearsals.
+GitHub validation run 37924843463 / job 113801198599 was blocked before all steps by the existing account billing restriction. The approved exception remains; Phase 5 still needs hardening, rollback/local fallback and two deployed rehearsals.
+
+## Explicit fictional sample dataset
+
+`php artisan dormfinder:demo-listings` shows a plan without writing records or images. Controlled execution adds 19 labeled fictional samples: 16 approved, one draft, one pending review and one rejected. Each has two separate inventory options, deposit/advance/fixed fees, coordinates and two generated layout illustrations uploaded through normal private photo storage. Sold-out, mixed-availability, stale-confirmation and exact-centavo examples exercise discovery behavior. The dedicated sample landlord is separate from the lifecycle acceptance fixtures, whose suspension tests must not hide this dataset.
+
+To apply locally, provide `--apply --administrator=existing-admin-email --password-file=private-file`. The password file must contain a strong generated password; never put its contents in chat, source or command arguments. Existing reserved accounts must match their identity and password, otherwise execution stops without resetting them. Preserve the private password file for repeat runs. Complete/edited samples are skipped, not republished or refreshed. Unknown or conflicting sample identities stop execution. Untouched incomplete drafts can resume after an image-generation interruption.
+
+Production additionally requires `--production-project=zujrpipjkgwqwlipgpwe`, the existing restricted runtime login, private schema and S3 bucket. Use the existing runtime environment through a private child-process environment, certificate-verified TLS and a freshly verified private schema backup. Migration-owner credentials remain local and are used only for the backup. No migration, paid service, startup command, provider setting, key or existing record needs replacement. The tested console code was run from the workspace against the confirmed live runtime; the previously accepted Phase 4 web deployments remain in place.
+
+On October 9 the local and live sets were added explicitly. The live run preserved snapshots of all prior property, room, fee, photo, inquiry, message and user rows; all 24 prior properties remained unchanged. A second live run skipped all 19 samples with zero new listings or uploads. Credentials, backup archives and ID manifests remain ignored under `.secrets/`. The sample browser test runs only when `E2E_DEMO_MANIFEST` points to that private manifest; it uses existing synthetic student fixtures and the dedicated sample owner's private credentials.

@@ -48,6 +48,8 @@ Phase 4 is accepted with the documented CI exception. All 79 backend tests / 452
 
 ## Remaining phases
 
+The user-requested safe synthetic dataset portion of Phase 5 is complete locally and live: 16 public fictional samples plus three private lifecycle examples, 38 room options and 38 private normalized layout images. All 24 existing live properties and their related prior records were preserved. Repeat execution skipped every sample and added nothing. Seven meaningful seed tests pass, and the full backend suite is now 86 tests / 596 assertions. The sample workflow passes in Chromium/WebKit both locally and live, including loaded images, filters, favorites, three-property comparison, map pins and participant-only inquiry/reply. The remaining Phase 5 work still includes hardening, rollback/local fallback and two deployed rehearsals; this dataset does not complete the full phase. Direct non-JSON guest API authentication currently returns a safe 500 rather than 401 and is recorded as a hardening follow-up.
+
 | Phase | Deliverables | Acceptance gate |
 |---|---|---|
 | 5 | Integration debugging, accessibility, safe synthetic seeds, final course/demo docs, rollback/local fallback | Two deployed rehearsals; all required checks pass |
