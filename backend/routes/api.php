@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\HealthController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\ListingController;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('health', HealthController::class);
+    Route::get('campuses', [ListingController::class, 'campuses'])->middleware('throttle:api');
     Route::get('listings', [ListingController::class, 'index'])->middleware('throttle:api');
     Route::get('listings/{property}', [ListingController::class, 'show'])->whereNumber('property')->middleware('throttle:api');
     Route::get('media/{photo}', [PhotoController::class, 'local'])->name('photos.local');
@@ -34,6 +36,10 @@ Route::prefix('v1')->group(function (): void {
         Route::get('admin/reviews/{property}', [ReviewController::class, 'show']);
         Route::post('admin/reviews/{property}/decision', [ReviewController::class, 'decide']);
         Route::post('compare', [ListingController::class, 'compare']);
+        Route::get('favorites', [FavoriteController::class, 'index']);
+        Route::get('favorites/ids', [FavoriteController::class, 'ids']);
+        Route::put('favorites/{property}', [FavoriteController::class, 'store'])->whereNumber('property');
+        Route::delete('favorites/{property}', [FavoriteController::class, 'destroy'])->whereNumber('property');
         Route::get('inquiries', [InquiryController::class, 'index']);
         Route::post('listings/{property}/inquiries', [InquiryController::class, 'store'])->middleware('throttle:messages');
         Route::get('inquiries/{inquiry}', [InquiryController::class, 'show']);

@@ -38,6 +38,10 @@ The initial automatic approval review rejected the secret-bearing Render creatio
 
 Implemented room options/inventory/charges, submission and administrator review, public listing details/comparison, and participant-only inquiries/replies. Local checks pass: 57 PHPUnit tests / 223 assertions, 6 frontend tests, lint/production build and 6 Chromium/WebKit tests including the full three-role workflow. A fresh private cloud application-schema export was verified before the seventh additive migration; the restricted runtime can read all five new tables and still cannot create schema objects. Source commit `04f10c1b863be12ca3ef586d7ca81f8f48f99e02` is live on the existing Render and Vercel projects. All six deployed Chromium/WebKit tests pass (1.7 minutes), including the complete three-role workflow, comparison, private replies, denial checks, material-edit hiding and snapshot retention. The original Phase 1 draft and private photo remain intact; its expired session was renewed through normal login. Public asset credential scans and Supabase security advisors pass. Preserve Phase 1 source, credentials, local/cloud records and provider resources. Deployed acceptance passed the landlord → administrator → student → landlord → student workflow plus negative authorization and lifecycle checks.
 
+## Phase 3 in progress
+
+Implemented same-option rent/availability search, property type and price basis, stable pagination and newest/rent/distance sorting; private student favorites; complete selected-option comparison; keyboard/button photo gallery; and opt-in Leaflet maps with backend-calculated campus distances. All local checks pass: 67 PHPUnit tests / 303 assertions, 10 frontend tests, ESLint/production build and 6 Chromium/WebKit tests (1.7 minutes) covering Phases 1–3. Cloud migration/release/browser acceptance is being verified. Preserve existing credentials, provider IDs, source migrations and records.
+
 ## Remaining phases
 
 | Phase | Deliverables | Acceptance gate |

@@ -9,6 +9,7 @@ import { RoomManager, SubmissionPanel } from './components/RoomOptions'
 import { Listings, ListingDetails, Comparison } from './components/ListingPages'
 import { ReviewQueue, ReviewDetails } from './components/ReviewPages'
 import { InquiryList, InquiryThread } from './components/InquiryPages'
+import ComparisonProvider from './components/ComparisonProvider'
 
 function Layout({ children }) {
   const { data: user } = useCurrentUser()
@@ -28,6 +29,7 @@ function Layout({ children }) {
         {user ? <>
           <Link className="nav-link" to={user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account'}>{user.role === 'admin' ? 'Reviews' : 'My space'}</Link>
           {['student', 'landlord'].includes(user.role) && <Link className="nav-link" to="/inquiries">Inquiries</Link>}
+          {user.role === 'student' && <Link className="nav-link" to="/favorites">Favorites</Link>}
           <Link className="nav-link d-none d-sm-inline" to="/profile">Profile</Link>
           <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => logout.mutate()}>Sign out</button>
         </> : <>
@@ -301,13 +303,14 @@ function Profile() {
 }
 
 export default function App() {
-  return <BrowserRouter><Layout><Routes>
+  return <BrowserRouter><ComparisonProvider><Layout><Routes>
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />
     <Route path="/listings" element={<Listings />} />
     <Route path="/listings/:id" element={<ListingDetails />} />
     <Route path="/compare" element={<Protected role="student"><Comparison /></Protected>} />
+    <Route path="/favorites" element={<Protected role="student"><Listings favorites /></Protected>} />
     <Route path="/admin" element={<Protected role="admin"><ReviewQueue /></Protected>} />
     <Route path="/admin/reviews/:id" element={<Protected role="admin"><ReviewDetails /></Protected>} />
     <Route path="/inquiries" element={<Protected role={['student', 'landlord']}><InquiryList /></Protected>} />
@@ -318,6 +321,6 @@ export default function App() {
     <Route path="/landlord/properties/new" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="/landlord/properties/:id" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="*" element={<section className="container page-space"><h1>We couldn’t find that page.</h1><Link to="/">Return home</Link></section>} />
-  </Routes></Layout></BrowserRouter>
+  </Routes></Layout></ComparisonProvider></BrowserRouter>
 }
 
