@@ -1,6 +1,6 @@
 # Deployment runbook — Codex execution
 
-The Phase 1 slice is live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
+Phases 1 and 2 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
 
 ## October 9 continuation checkpoint
 
@@ -10,7 +10,7 @@ Use these existing resources; do not recreate them:
 - Render service `srv-db44ecrbc2fs73aj14q0`, workspace `tea-d7ip6vu7r5hc73ccjjng`, Free/Singapore. Keep websys2 untouched. [Service dashboard](https://dashboard.render.com/web/srv-db44ecrbc2fs73aj14q0).
 - Vercel project `prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1`, team `team_lakGFdG84Dlw3s6qfEG8IKQc` / mrstorres-pixels-projects, Hobby. [Project dashboard](https://vercel.com/mrstorres-pixels-projects/dormfinder).
 
-Released source is `f1df38f692573619298b066bbbce5af98826f8c1`. Vercel production `dpl_3bW6KhFR5QfV636kSQpw9mUPETdB` was deployed from a committed-source archive. Latest verified Render deployment is `dep-db44kf3ncjis73bpfe3g`. Render auto-deploy is off and Vercel Git auto-deployment is not connected; later releases require explicit deployment.
+Released application source is `04f10c1b863be12ca3ef586d7ca81f8f48f99e02`. Vercel production `dpl_HWmecozMnoZzLVXBY2kYuVhrn5Xk` was deployed from a clean archive of that commit. Verified Render deployment is `dep-db4bacjl550s73b756jg`, with the same source commit. Readiness returns phase 2; all six deployed browser tests pass. Render auto-deploy is off and Vercel Git auto-deployment is not connected; later releases require explicit deployment.
 
 Supabase now has seven applied Laravel migrations, sixteen application tables, owner/runtime logins and private bucket `property-photos`. A private application-schema export preceded migration. Preserve applied migrations and stable APP_KEY/passwords. Never migrate or seed during container startup.
 
@@ -66,7 +66,7 @@ Build Output routing follows [Vercel's configuration reference](https://vercel.c
 
 Provider access exists and this release was deployed explicitly by Codex. CI must be rerun after the GitHub account restriction is resolved; the database-release workflow has not been used and its production secrets have not been configured.
 
-## Live Phase 1 acceptance gate
+## Live acceptance gates
 
 Run frontend Playwright with E2E_BASE_URL equal to the provisioned frontend URL. Tests register clearly synthetic test accounts and create test drafts, so use the designated demo environment with explicit test authorization.
 
@@ -81,7 +81,7 @@ Verify:
 - Render idle wake-up and retry state; no paid upgrades.
 - Actual free limits and Supabase inactivity behavior.
 
-Record outcomes and provider URLs in validation.md. Phase 1 is accepted with the user-approved temporary GitHub CI exception. Phase 2 is authorized. Until CI is restored, complete local checks before every release and keep migrations backed up and controlled.
+Record outcomes and provider URLs in validation.md. Phases 1 and 2 passed deployed acceptance with the user-approved temporary GitHub CI exception. Until CI is restored, complete local checks before every release and keep migrations backed up and controlled.
 
 ## Recovery and later release
 
@@ -94,4 +94,4 @@ Demo seeds are not implemented yet; no current seeder creates users or resets pa
 
 A fresh private application-schema export preceded the additive five-table migration. Keep the existing owner/runtime passwords, APP_KEY, S3 settings and provider projects. No migrations or seeds run at container startup. A synthetic cloud review administrator has credentials in ignored .secrets/phase2-cloud-admin.json; use E2E_ADMIN_FILE to point deployed browser checks at that fixture, never at a real administrator or chat-supplied password. Local/CI fixture setup is node frontend/scripts/e2e-admin.mjs with E2E_PHP_BINARY set to the isolated PHP path when needed. No fixture command truncates or overwrites accounts.
 
-The existing GitHub CI restriction is explicitly deferred by the user; local checks must pass before this release. Verify both provider deployments use the reviewed committed source, then run the full deployed browser story and retain prior sessions/drafts/photos.
+The existing GitHub CI restriction is explicitly deferred by the user; local checks must pass before this release. Both provider deployments use the reviewed committed source and the full deployed browser story passed on October 9. Prior drafts/photos are intact; the older Phase 1 session had exceeded its normal two-hour lifetime and was renewed through login. Preserve existing records and credentials in future releases.

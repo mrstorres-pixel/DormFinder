@@ -34,15 +34,14 @@ Continuation: existing source, local Laravel environment and local database were
 
 The initial automatic approval review rejected the secret-bearing Render creation payload. The user explicitly approved sending those credentials to DormFinder Render, and creation succeeded. The user corrected Docker Command to `/var/www/html/docker/entrypoint.sh`; the corrected service is live. Do not create a duplicate service.
 
-## Phase 2 in progress
+## Phase 2 accepted with the documented CI exception
 
-Implemented room options/inventory/charges, submission and administrator review, public listing details/comparison, and participant-only inquiries/replies. Local checks pass: 57 PHPUnit tests / 223 assertions, 6 frontend tests, lint/production build and 6 Chromium/WebKit tests including the full three-role workflow. A fresh private cloud application-schema export was verified before the seventh additive migration; the restricted runtime can read all five new tables and still cannot create schema objects. Cloud release/browser acceptance is in progress. Preserve Phase 1 source, credentials, local/cloud records and provider resources. Acceptance requires the deployed landlord → administrator → student → landlord → student workflow plus negative authorization and lifecycle checks.
+Implemented room options/inventory/charges, submission and administrator review, public listing details/comparison, and participant-only inquiries/replies. Local checks pass: 57 PHPUnit tests / 223 assertions, 6 frontend tests, lint/production build and 6 Chromium/WebKit tests including the full three-role workflow. A fresh private cloud application-schema export was verified before the seventh additive migration; the restricted runtime can read all five new tables and still cannot create schema objects. Source commit `04f10c1b863be12ca3ef586d7ca81f8f48f99e02` is live on the existing Render and Vercel projects. All six deployed Chromium/WebKit tests pass (1.7 minutes), including the complete three-role workflow, comparison, private replies, denial checks, material-edit hiding and snapshot retention. The original Phase 1 draft and private photo remain intact; its expired session was renewed through normal login. Public asset credential scans and Supabase security advisors pass. Preserve Phase 1 source, credentials, local/cloud records and provider resources. Deployed acceptance passed the landlord → administrator → student → landlord → student workflow plus negative authorization and lifecycle checks.
 
 ## Remaining phases
 
 | Phase | Deliverables | Acceptance gate |
 |---|---|---|
-| 2 | Room options/inventory/charges; listing submission and administrator review; public details; comparison; private inquiry/replies | Deployed landlord → administrator → student → landlord → student scenario |
 | 3 | Core same-option search, pagination/sorting, favorites, full comparison, gallery, maps, campus distance | Price/availability fixtures and responsive flows pass |
 | 4 | Reports, moderation, suspension/archival, audit history, notifications, counts | Negative access and lifecycle tests pass |
 | 5 | Integration debugging, accessibility, safe synthetic seeds, final course/demo docs, rollback/local fallback | Two deployed rehearsals; all required checks pass |

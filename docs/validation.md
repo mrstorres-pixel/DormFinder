@@ -83,7 +83,7 @@ At 02:18 UTC, Codex retried failed jobs on run 37867696380 (attempt 2). GitHub a
 
 The account owner should inspect GitHub billing/account notices and contact support if the lock is unexpected. GitHub documents [locked-account recovery](https://docs.github.com/en/billing/how-tos/troubleshooting/locked-account); this deployment did not change billing or authorize payment.
 
-Phase 2 room options, review/public details, basic comparison and private inquiries are implemented; its full three-role scenario passes locally and is being checked in the deployed release. Search filters/sorting, favorites, maps/campus distance, notifications, reporting/moderation and final demo seeds remain later-phase work. Reproduce local checks with scripts/check.ps1 while local servers run; existing local accounts/drafts remain intact.
+Phase 2 room options, review/public details, basic comparison and private inquiries are implemented; its full three-role scenario passes locally and in the deployed release. Search filters/sorting, favorites, maps/campus distance, notifications, reporting/moderation and final demo seeds remain later-phase work. Reproduce local checks with scripts/check.ps1 while local servers run; existing local accounts/drafts remain intact.
 
 ## Phase 2 local acceptance and migration checkpoint
 
@@ -92,4 +92,16 @@ Phase 2 room options, review/public details, basic comparison and private inquir
 - **6 Playwright tests pass (1.1 minutes)** in Chromium/WebKit: existing Phase 1 tests plus the landlord → administrator → student → landlord → student story, selected-option costs, private inquiry replies, administrator/guest denial, material-edit hiding, message retention and responsive thread layouts.
 - Existing initialized local database was started and migrated without resetting records or credentials. A separate synthetic local administrator was created through the controlled CLI. CI now provisions its own private synthetic admin fixture; it still has no production secrets.
 - Fresh private cloud application-schema export and archive catalog verification completed before the seventh additive migration. Runtime reads all five new tables and retains no schema CREATE privilege. Only a distinctly labeled synthetic cloud test administrator was added; no existing accounts, source migrations, keys or service settings were overwritten.
-- Render/Vercel release and deployed Phase 2 acceptance are in progress; the local results do not stand in for that deployed scenario.
+- Render/Vercel release and deployed Phase 2 acceptance passed; see the release evidence below.
+
+## Phase 2 deployed acceptance — October 9
+
+Application source: `04f10c1b863be12ca3ef586d7ca81f8f48f99e02`. Existing Render deployment `dep-db4bacjl550s73b756jg` became live at 09:35:24 UTC (17:35:24 Singapore). Vercel production `dpl_HWmecozMnoZzLVXBY2kYuVhrn5Xk` is READY and aliased to [DormFinder](https://dormfinder-pink.vercel.app). The Vercel release used a clean Git archive of that source, with explicit existing team/project scope. No provider resources, stable keys or unrelated services were replaced.
+
+- **6 deployed Playwright tests pass (1.7 minutes)** in Chromium/WebKit. The Phase 2 workflow takes 28.6s / 27.8s respectively: landlord creates a photo and two separate inventory options, submits, administrator approves, student browses/compares the selected option and sends an inquiry, landlord replies, and student reads/replies. Fixed monthly rent plus fees displays PHP 3,750.79 with a per-person basis.
+- Drafts return public 404; pending review locks editing. Guest inquiry reads return 401 and administrator inquiry reads return 404 without disclosing messages. A material edit removes the public listing while the original inquiry snapshot and messages remain accessible to its participants. Inquiry layouts pass at 360, 768 and 1440px. No browser page errors were recorded.
+- Existing Phase 1 authentication/photo tests also pass. The original persistence fixture's two-hour session had expired after the earlier cold test; normal login to that same account succeeded and its unchanged draft and private normalized JPEG passed readback. This confirms preserved data, without claiming that an expired session remained active. No fixture or credential was recreated.
+- Readiness through Vercel returns HTTP 200, ready, phase 2. Render returned no error-level logs for the inspected release window. Post-migration Supabase security advisors report no lints. The two deployed public assets contain none of the checked private server credentials; API 404 remains safe JSON with no-store.
+- Vercel build CLI was 62.7.0. Source dependencies remain locked; no dependency change or paid upgrade occurred.
+
+GitHub [Phase 2 validation run 37911758621](https://github.com/mrstorres-pixel/DormFinder/actions/runs/37911758621) failed before any steps. Job 113758316502 again reports the account billing lock. The previously approved CI exception remains in effect; local and deployed results above are separate evidence, not a passing Linux CI result. Phase 2 is accepted with that exception. Search/favorites/maps and later phases remain outstanding.

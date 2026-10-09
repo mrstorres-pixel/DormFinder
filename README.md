@@ -4,13 +4,13 @@ Housing discovery and inquiries for students near Technological Institute of the
 
 ## Current implementation — October 9, 2026
 
-**Phase 1 is deployed at [DormFinder](https://dormfinder-pink.vercel.app); Phase 2 is implemented and its release is being verified. The full release is not complete.**
+**Phases 1 and 2 are deployed and verified at [DormFinder](https://dormfinder-pink.vercel.app), with the user-approved temporary GitHub CI exception. Later phases remain in progress.**
 
 Available: student/landlord registration, session login/logout, profile name/password changes, controlled administrator creation, private landlord property drafts, optimistic revision checks, private normalized photo upload/removal, database sessions, PostgreSQL migrations, error states and a responsive interface.
 
 Deployed Vercel → Render → Supabase PostgreSQL/private Storage checks pass: four Chromium/WebKit browser tests, secure sessions/CSRF, private drafts/photos, certificate-verified pooler TLS and persistence after redeployment. Confirmed Render sleep/cold wake-up passes: readiness returned through Vercel in 24.3 seconds, and the existing session, draft and private photo survived. Phase 1 is accepted with the user-approved temporary GitHub CI exception. CI is blocked by an account billing lock; local checks and controlled deployments remain required before each release. Existing local work and unrelated provider resources were preserved.
 
-Phase 2 adds room options with inventory and PHP charges, submission/administrator review, public listing details, selected-option comparison and participant-only inquiries/replies. Local acceptance passes; cloud release verification is in progress. Later phases add search filters/sorting, favorites, gallery/maps/campus distance, notifications, reports/moderation, safe demo seeds and final rehearsal. These are tracked in [implementation status](docs/status.md).
+Phase 2 adds room options with inventory and PHP charges, submission/administrator review, public listing details, selected-option comparison and participant-only inquiries/replies. Local acceptance and all six deployed Chromium/WebKit tests pass, including the complete landlord, administrator and student workflow. Later phases add search filters/sorting, favorites, gallery/maps/campus distance, notifications, reports/moderation, safe demo seeds and final rehearsal. These are tracked in [implementation status](docs/status.md).
 
 ## Repository
 
