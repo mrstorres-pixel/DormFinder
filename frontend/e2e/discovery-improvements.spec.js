@@ -34,7 +34,11 @@ test('university discovery, guest comparison, map search and mobile navigation w
   await expect(page.locator('.listing-grid .property-card').first()).toBeVisible()
   for (const width of [360,768,1440]) {
     await page.setViewportSize({width,height:900})
+    const campusRead = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/campuses' && response.status() === 200)
+    const sessionRead = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/me' && response.status() === 401)
     await page.goto('/')
+    const responses = await Promise.all([campusRead, sessionRead])
+    for (const response of responses) expect(await response.finished()).toBeNull()
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
     if(width===360) {
       await page.getByRole('button',{name:'Menu',exact:true}).click()

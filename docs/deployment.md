@@ -133,3 +133,7 @@ On October 9 the local and live sets were added explicitly. The live run preserv
 The existing projects now run application source 605085b1063f7d86cbf47531d88e83cb8b3428e2. The tenth additive migration adds nullable campus/preference/amenity fields and widens the report snapshot title; it does not reset records. A fresh verified private backup and preserved-row fingerprint check preceded rollout. The directory is applied explicitly with artisan dormfinder:campuses --apply, never from startup.
 
 Restore a prior compatible application deployment for recovery while retaining the additive schema. Do not run destructive down migrations or database resets. Keep backups and provider credentials in ignored private files. The two latest provider IDs and acceptance evidence are in validation.md; the delivery plan and remaining refinements are in improvement-plan.md.
+
+## Map continuity frontend release — October 11
+
+Vercel deployment dpl_DonovPo2yh2iVtdnQJes9KrKKBrP serves frontend source 916df82f2e10ecb7e35615631330e3d17365fec3 on the existing DormFinder alias. Render remains on the preceding 605085b source; no backend deployment, migration or provider environment change was needed. Per-search map/room context is public UI state in bounded browser tab storage. Keep the preceding Vercel deployment available for application rollback. Acceptance outcomes and the existing CI exception are recorded in validation.md.
