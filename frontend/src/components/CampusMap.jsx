@@ -15,7 +15,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   const longitude = campus?.longitude
   const campusName = campus?.name
   const initialBounds = useRef({ bounds, viewport, campusId:campus?.id })
-  const previousSelection = useRef(selectedId)
+  const previousSelection = useRef(viewport?.campusId === campusId ? selectedId : null)
   useEffect(() => { callbacks.current = { onSelect, onAreaSearch, onViewportChange } }, [onSelect, onAreaSearch, onViewportChange])
   useEffect(() => {
     if (latitude == null || longitude == null) return

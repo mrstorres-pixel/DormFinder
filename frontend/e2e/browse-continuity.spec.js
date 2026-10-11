@@ -51,3 +51,17 @@ test('listing round trips restore unsubmitted map movement, room choice and disp
   await expect(map.locator('.leaflet-tile').first()).toHaveAttribute('src', /\/15\//)
   await expect(page.getByRole('article', { name: 'Selected map listing' })).toHaveCount(0)
 })
+
+test('a first mobile Show on map action centers the selected listing', async ({ page }) => {
+  const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
+  await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
+  await page.setViewportSize({ width: 360, height: 900 })
+  await page.goto('/listings?q=DEMO')
+  const card = page.locator('.listing-grid .property-card').first()
+  await expect(card).toBeVisible()
+  await card.getByRole('button', { name: 'Show on map' }).click()
+  const map = page.getByRole('region', { name: 'Listing map', exact: true })
+  await map.scrollIntoViewIfNeeded()
+  await expect(map.locator('.price-marker.is-selected,.price-cluster.is-selected')).toBeInViewport()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
