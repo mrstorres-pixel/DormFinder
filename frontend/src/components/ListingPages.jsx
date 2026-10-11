@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
@@ -14,15 +14,29 @@ import CampusMap from './CampusMap'
 import ListingInformation from './ListingInformation'
 import { preferredOption, searchParameters, amenities } from '../lib/housing'
 import { signInLink } from '../lib/navigation'
+import { browseKey, readBrowseState, saveBrowseState } from '../lib/browseState'
 
 export function Listings({ favorites = false }) {
+  const [params] = useSearchParams()
+  const searchKey = browseKey(params)
+  return <ListingResults key={(favorites ? 'favorites:' : 'browse:') + searchKey} favorites={favorites} searchKey={searchKey} />
+}
+
+function ListingResults({ favorites, searchKey }) {
   const compare = useComparison()
   const [params, setParams] = useSearchParams()
   const page = Math.max(1, Number(params.get('page')) || 1)
   const campuses = useCampuses()
-  const [showMap, setShowMap] = useState(() => window.innerWidth >= 992)
-  const [selectedId, setSelectedId] = useState(null)
-  const [choices, setChoices] = useState({})
+  const [browse, setBrowse] = useState(() => (!favorites && readBrowseState(searchKey)) || { showMap: window.innerWidth >= 992, selectedId: null, choices: {}, viewport: null })
+  const { showMap, selectedId, choices, viewport } = browse
+  useEffect(() => { if (!favorites) saveBrowseState(searchKey, browse) }, [favorites, searchKey, browse])
+  function setShowMap(value) { setBrowse(current => ({ ...current, showMap: typeof value === 'function' ? value(current.showMap) : value })) }
+  function setSelectedId(value) { setBrowse(current => ({ ...current, selectedId: value })) }
+  function setChoices(update) { setBrowse(current => ({ ...current, choices: update(current.choices) })) }
+  function rememberViewport(value) {
+    setBrowse(current => ({ ...current, viewport: value }))
+    saveBrowseState(searchKey, { ...browse, viewport: value })
+  }
   const query = useQuery({ queryKey: [favorites ? 'favorites' : 'listings', params.toString()], queryFn: async () => (await api.get(favorites ? '/favorites' : '/listings', { params: favorites ? { page } : searchParameters(params) })).data, retry: false, refetchInterval: 240_000 })
   const mapParams = searchParameters(params); delete mapParams.page
   const mapQuery = useQuery({ queryKey: ['listings-map', mapParams], enabled: !favorites && !!campuses.data && showMap, queryFn: async () => (await api.get('/listings-map', { params: mapParams })).data, retry: false, refetchInterval: 240_000 })
@@ -49,11 +63,11 @@ export function Listings({ favorites = false }) {
     {!favorites && <div className="discovery-toolbar"><p className="small mb-0" role="status">{query.data ? query.data.meta.total + ' listings found · Page ' + page + ' of ' + query.data.meta.last_page : 'Searching housing…'}</p><button className="btn btn-outline-primary btn-sm" aria-pressed={showMap} onClick={() => setShowMap(value => !value)}>{showMap ? 'List only' : 'Show map'}</button></div>}
     <div className={'discovery-layout ' + (showMap && !favorites ? 'with-map' : 'list-only')}>
       <div className="discovery-results">
-        {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="listing-grid">{rows.map(property => <ListingCard key={property.id} property={property} campus={campus} selectedId={selectedId} onSelect={favorites ? undefined : select} onOptionChange={(id,optionId) => setChoices(current => ({ ...current, [id]: optionId }))} />)}</div> : <div className="panel empty-state"><h2>{favorites ? 'No published favorites to show.' : 'No listings match your search.'}</h2><p>{favorites ? 'Save a reviewed listing to find it here later.' : 'This campus may not have nearby listings yet, or your filters may be too narrow.'}</p>{!favorites && <div className="d-flex gap-2 flex-wrap justify-content-center"><button className="btn btn-outline-primary" onClick={() => setParams(current => { const next = new URLSearchParams(current); for (const key of ['radius_km','south','north','west','east','page']) next.delete(key); return next })}>Remove distance limits</button><button className="btn btn-link" onClick={() => setParams({})}>Clear all filters</button></div>}</div>}
+        {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="listing-grid">{rows.map(property => <ListingCard key={property.id} property={property} campus={campus} chosenOptionId={choices[property.id]} selectedId={selectedId} onSelect={favorites ? undefined : select} onOptionChange={(id,optionId) => setChoices(current => ({ ...current, [id]: optionId }))} />)}</div> : <div className="panel empty-state"><h2>{favorites ? 'No published favorites to show.' : 'No listings match your search.'}</h2><p>{favorites ? 'Save a reviewed listing to find it here later.' : 'This campus may not have nearby listings yet, or your filters may be too narrow.'}</p>{!favorites && <div className="d-flex gap-2 flex-wrap justify-content-center"><button className="btn btn-outline-primary" onClick={() => setParams(current => { const next = new URLSearchParams(current); for (const key of ['radius_km','south','north','west','east','page']) next.delete(key); return next })}>Remove distance limits</button><button className="btn btn-link" onClick={() => setParams({})}>Clear all filters</button></div>}</div>}
         {query.data?.meta.last_page > 1 && <nav className="d-flex gap-3 align-items-center mt-4" aria-label="Listing pages"><button className="btn btn-outline-primary" disabled={page <= 1} onClick={() => turnPage(page - 1)}>Previous</button><span>Page {page} of {query.data.meta.last_page}</span><button className="btn btn-outline-primary" disabled={page >= query.data.meta.last_page} onClick={() => turnPage(page + 1)}>Next</button></nav>}
       </div>
       {!favorites && campus && <aside className="discovery-map-column" hidden={!showMap}>
-        {mapQuery.isPending ? <Loading>Preparing map results…</Loading> : mapQuery.error ? <ErrorNotice error={mapQuery.error} retry={() => mapQuery.refetch()} /> : <><p className="small">{mapQuery.data?.meta.total || 0} matching listings across all pages{mapQuery.data?.meta.limited ? ' · Showing the first 200; narrow your search for more detail.' : ''}</p><CampusMap properties={markers} campus={campus} radius={params.get('radius_km')} bounds={bounds} selectedId={selectedId} onSelect={select} onAreaSearch={searchArea} />
+        {mapQuery.isPending ? <Loading>Preparing map results…</Loading> : mapQuery.error ? <ErrorNotice error={mapQuery.error} retry={() => mapQuery.refetch()} /> : <><p className="small">{mapQuery.data?.meta.total || 0} matching listings across all pages{mapQuery.data?.meta.limited ? ' · Showing the first 200; narrow your search for more detail.' : ''}</p><CampusMap properties={markers} campus={campus} radius={params.get('radius_km')} bounds={bounds} viewport={viewport} onViewportChange={rememberViewport} selectedId={selectedId} onSelect={select} onAreaSearch={searchArea} />
           {preview && <article className="map-preview panel" aria-label="Selected map listing">{preview.photos?.[0] && <img src={preview.photos[0].url} alt={preview.photos[0].caption} />}<div><strong>{preview.title}</strong><p className="small mb-1">{previewOption && <>{pesos(previewOption.monthly_fixed_total_centavos)} known monthly · {previewOption.price_basis === 'per_person' ? 'per person' : 'per room'}<br />{previewOption.available_units} available · {previewOption.availability_stale ? 'Needs confirmation' : 'Recently confirmed'}</>}</p><Link to={'/listings/' + preview.id + '?campus_id=' + campus.id + '&option=' + (previewOption?.id || '')} state={{ browse: '/listings?' + params.toString() }}>View listing</Link>{previewOption && <button className="btn btn-link btn-sm" disabled={compare.selections.length >= 3 && !compare.selections.some(item => item.property_id === preview.id)} onClick={() => compare.choose(preview.id, previewOption.id)}>Add to comparison</button>}</div></article>}</>}
       </aside>}
     </div>

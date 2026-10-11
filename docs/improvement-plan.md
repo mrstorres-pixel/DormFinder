@@ -38,7 +38,7 @@ Local implementation: additive schema, campus command, search, preferences, radi
 - Preserve an unsent inquiry draft in account-scoped tab storage; clear it after successful submission or logout.
 - Replace TIP-only messaging, repair mobile navigation and provide clear loading, empty, error and retry states. Explain a waking free backend after a delay.
 
-Local implementation: core map, search, details, comparison, mobile navigation and inquiry recovery changes are implemented. Map interaction and responsive guest flows passed Chromium and WebKit. Tile requests are mocked in these browser checks; live provider tiles require release verification. Preserving every unsubmitted map movement across navigation remains a refinement to verify.
+Local implementation: core map, search, details, comparison, mobile navigation and inquiry recovery changes are implemented. Map interaction and responsive guest flows passed Chromium and WebKit. Map continuity now retains pan/zoom, pending Search this area, the selected listing/room and List/Map mode across browser Back and the Browse listings link. Context is kept per filtered search in bounded tab storage; result pages share that context, and different campuses stay separate. Storage failure falls back safely to normal browsing. The new round-trip and campus-switch checks pass locally in Chromium and WebKit; deployed acceptance is recorded in validation.md. Tile imagery was separately verified in the preceding live release.
 
 ## Part 3: Landlord publishing and administrator review
 

@@ -91,13 +91,13 @@ export function SearchFilters({ params, onSearch, campuses = [] }) {
   </div>
 }
 
-export function ListingCard({ property, campus, selectedId, onSelect, onOptionChange }) {
+export function ListingCard({ property, campus, chosenOptionId, selectedId, onSelect, onOptionChange }) {
   const [params] = useSearchParams()
   const { data: user } = useCurrentUser()
   const { selections, choose } = useComparison()
   const [choice, setChoice] = useState('')
   const selected = selections.find(item => item.property_id === property.id)
-  const option = property.room_options.find(item => item.id === Number(choice || selected?.room_option_id)) || preferredOption(property.room_options)
+  const option = property.room_options.find(item => item.id === Number(choice || chosenOptionId || selected?.room_option_id)) || preferredOption(property.room_options)
   const checked = !!selected
   return <article id={'listing-card-' + property.id} className={'property-card h-100 ' + (selectedId === property.id ? 'is-selected' : '')}><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}{property.is_demo && <span className="status-badge">Synthetic demo</span>}</div><div className="p-4"><p className="small text-secondary text-uppercase">{property.property_type.replaceAll('_', ' ')}</p><h2><Link to={'/listings/' + property.id + '?option=' + (option?.id || '') + (campus ? '&campus_id=' + campus.id : '')} state={{ browse: '/listings?' + params.toString() }}>{property.title}</Link></h2><p>{property.address}, {property.city}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p>
     {option && <><label className="form-label" htmlFor={'option-' + property.id}>Room option for {property.title}</label><select className="form-select mb-3" id={'option-' + property.id} value={option.id} onChange={event => { setChoice(event.target.value); onOptionChange?.(property.id, Number(event.target.value)); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small">Known monthly charges: {pesos(option.monthly_fixed_total_centavos)}</p><p className="small">{option.available_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p></>}

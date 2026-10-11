@@ -3,7 +3,7 @@ import { preferredOption } from '../lib/housing'
 import { pesos } from '../lib/money'
 import 'leaflet/dist/leaflet.css'
 
-export default function CampusMap({ properties, campus, selectedId, onSelect, onAreaSearch, radius, bounds }) {
+export default function CampusMap({ properties, campus, selectedId, onSelect, onAreaSearch, radius, bounds, viewport, onViewportChange }) {
   const element = useRef(null)
   const callbacks = useRef({})
   const [engine, setEngine] = useState(null)
@@ -14,8 +14,9 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   const latitude = campus?.latitude
   const longitude = campus?.longitude
   const campusName = campus?.name
-  const initialBounds = useRef({ bounds, campusId:campus?.id })
-  useEffect(() => { callbacks.current = { onSelect, onAreaSearch } }, [onSelect, onAreaSearch])
+  const initialBounds = useRef({ bounds, viewport, campusId:campus?.id })
+  const previousSelection = useRef(selectedId)
+  useEffect(() => { callbacks.current = { onSelect, onAreaSearch, onViewportChange } }, [onSelect, onAreaSearch, onViewportChange])
   useEffect(() => {
     if (latitude == null || longitude == null) return
     let cancelled = false
@@ -25,12 +26,22 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
       const L = await import('leaflet')
       if (cancelled) return
       map = L.map(element.current, { scrollWheelZoom: false }).setView([latitude, longitude], 15)
-      if (initialBounds.current.bounds && initialBounds.current.campusId === campusId) map.fitBounds(initialBounds.current.bounds)
+      const remembered = initialBounds.current.viewport
+      const restore = remembered?.campusId === campusId
+      if (restore) map.setView(remembered.center, remembered.zoom)
+      else if (initialBounds.current.bounds && initialBounds.current.campusId === campusId) map.fitBounds(initialBounds.current.bounds)
+      setMoved(restore && remembered.needsSearch)
+      setFailed(false)
       const tile = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })
       tile.on('tileerror', () => { if (!cancelled) setFailed(true) }).addTo(map)
       const label = document.createElement('span'); label.textContent = campusName + ' — approximate campus reference'
       L.marker([latitude, longitude], { icon: L.divIcon({ className: 'campus-marker', html: '<span>C</span>', iconSize: [30, 30] }), title: campusName }).addTo(map).bindPopup(label)
-      map.on('moveend', () => { if (!cancelled) setMoved(true) })
+      map.on('moveend', () => {
+        if (cancelled) return
+        setMoved(true)
+        const center = map.getCenter()
+        callbacks.current.onViewportChange?.({ center: [center.lat, center.lng], zoom: map.getZoom(), campusId, needsSearch: true })
+      })
       observer = new ResizeObserver(() => map.invalidateSize({ pan: false }))
       observer.observe(element.current)
       setEngine({ L, map, campusId })
@@ -73,7 +84,8 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
       }
     }
     const selected = JSON.parse(pins).find(p => p.id === selectedId)
-    if (selected && !map.getBounds().contains([selected.latitude, selected.longitude])) map.panTo([selected.latitude, selected.longitude])
+    if (selectedId !== previousSelection.current && selected && !map.getBounds().contains([selected.latitude, selected.longitude])) map.panTo([selected.latitude, selected.longitude])
+    previousSelection.current = selectedId
     draw(); map.on('zoomend', draw)
     return () => { map.off('zoomend', draw); layer.remove() }
   }, [engine, pins, selectedId, campusId])
@@ -84,6 +96,8 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   }, [engine, radius, latitude, longitude, campusId])
   function searchArea() {
     const area = engine.map.getBounds()
+    const center = engine.map.getCenter()
+    callbacks.current.onViewportChange?.({ center: [center.lat, center.lng], zoom: engine.map.getZoom(), campusId, needsSearch: false })
     callbacks.current.onAreaSearch?.({ south: area.getSouth(), north: area.getNorth(), west: area.getWest(), east: area.getEast() })
     setMoved(false)
   }
