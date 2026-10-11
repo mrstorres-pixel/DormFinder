@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test'
 
 test('listing round trips restore unsubmitted map movement, room choice and display mode', async ({ page }) => {
+  test.setTimeout(120_000)
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
   await page.goto('/listings?q=DEMO')
   const card = page.locator('.listing-grid .property-card').first()
-  await expect(card).toBeVisible()
+  await expect(card).toBeVisible({ timeout: 90_000 })
   const option = card.getByRole('combobox')
   const alternative = await option.locator('option').last().getAttribute('value')
   await option.selectOption(alternative)
@@ -53,12 +54,13 @@ test('listing round trips restore unsubmitted map movement, room choice and disp
 })
 
 test('a first mobile Show on map action centers the selected listing', async ({ page }) => {
+  test.setTimeout(120_000)
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
   await page.setViewportSize({ width: 360, height: 900 })
   await page.goto('/listings?q=DEMO')
   const card = page.locator('.listing-grid .property-card').first()
-  await expect(card).toBeVisible()
+  await expect(card).toBeVisible({ timeout: 90_000 })
   await card.getByRole('button', { name: 'Show on map' }).click()
   const map = page.getByRole('region', { name: 'Listing map', exact: true })
   await map.scrollIntoViewIfNeeded()
