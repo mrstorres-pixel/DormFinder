@@ -7,33 +7,41 @@ import { useFavorites, distanceLabel } from '../lib/discovery'
 import { useComparison, comparisonItems } from '../lib/comparison'
 import { pesos, toCentavos } from '../lib/money'
 import { ErrorNotice } from './Feedback'
+import CampusSearch from './CampusSearch'
+import { amenities, preferredOption, recommendationReasons } from '../lib/housing'
+import { signInLink } from '../lib/navigation'
 import 'leaflet/dist/leaflet.css'
 
 export function FavoriteButton({ propertyId, title = 'listing' }) {
+  const [params] = useSearchParams()
   const { data: user } = useCurrentUser()
   const favorites = useFavorites()
   const client = useQueryClient()
   const saved = favorites.data?.includes(propertyId) || false
   const mutation = useMutation({ mutationFn: () => writeApi(saved ? 'delete' : 'put', '/favorites/' + propertyId), onSuccess: async () => { await client.invalidateQueries({ queryKey: ['favorite-ids'] }); await client.invalidateQueries({ queryKey: ['favorites'] }) } })
-  if (user?.role !== 'student') return null
-  return <div className="mt-3"><ErrorNotice error={favorites.error || mutation.error} /><button className="btn btn-outline-primary btn-sm" aria-label={(saved ? 'Remove favorite ' : 'Save favorite ') + title} aria-pressed={saved} disabled={favorites.isPending || !!favorites.error || mutation.isPending} onClick={() => mutation.mutate()}>{mutation.isPending ? 'Saving…' : saved ? '♥ Saved' : '♡ Save favorite'}</button></div>
+  if (!user) return <Link className="btn btn-outline-primary btn-sm mt-3" to={signInLink('/listings/' + propertyId + '?save=1')}>Sign in to save</Link>
+  if (user.role !== 'student') return null
+  return <div className="mt-3">{params.get('save') === '1' && !saved && <p className="small">You are signed in. Save this listing to finish adding it to your favorites.</p>}<ErrorNotice error={favorites.error || mutation.error} /><button className="btn btn-outline-primary btn-sm" aria-label={(saved ? 'Remove favorite ' : 'Save favorite ') + title} aria-pressed={saved} disabled={favorites.isPending || !!favorites.error || mutation.isPending} onClick={() => mutation.mutate()}>{mutation.isPending ? 'Saving…' : saved ? '♥ Saved' : '♡ Save favorite'}</button></div>
 }
 
 export function ComparisonTray() {
   const [params] = useSearchParams()
-  const { data: user } = useCurrentUser()
   const { selections, clear } = useComparison()
-  if (user?.role !== 'student' || !selections.length) return null
+  if (!selections.length) return null
   return <div className="comparison-tray" role="region" aria-label="Your comparison selection"><span>{selections.length} of 3 selected</span><Link className="btn btn-primary" to={'/compare?items=' + comparisonItems(selections) + (params.get('campus_id') ? '&campus_id=' + encodeURIComponent(params.get('campus_id')) : '')}>Compare {selections.length} {selections.length === 1 ? 'listing' : 'listings'}</Link><button className="btn btn-link" onClick={clear}>Clear selection</button></div>
 }
 
 export function SearchFilters({ params, onSearch, campuses = [] }) {
   const [error, setError] = useState('')
+  const [campusId, setCampusId] = useState(params.get('campus_id') || '')
+  const [expanded, setExpanded] = useState(() => window.innerWidth >= 768)
   function submit(event) {
     event.preventDefault()
-    const values = Object.fromEntries(new FormData(event.currentTarget))
+    const form = new FormData(event.currentTarget)
+    const values = Object.fromEntries(form)
     const next = {}
-    for (const key of ['q', 'property_type', 'price_basis', 'sort', 'campus_id', 'available_only']) if (values[key]) next[key] = values[key]
+    for (const key of ['q', 'property_type', 'price_basis', 'sort', 'campus_id', 'available_only', 'inventory_type', 'radius_km']) if (values[key]) next[key] = values[key]
+    if (next.radius_km && !next.campus_id) { setError('Choose a campus before filtering by distance.'); return }
     for (const name of ['min', 'max']) {
       if (values[name + '_rent']?.trim()) {
         let amount
@@ -44,35 +52,56 @@ export function SearchFilters({ params, onSearch, campuses = [] }) {
     if ((next.min_rent_centavos || next.max_rent_centavos || next.sort?.startsWith('rent_')) && !next.price_basis) { setError('Choose a price basis before filtering or sorting rent.'); return }
     if (next.min_rent_centavos && next.max_rent_centavos && Number(next.min_rent_centavos) > Number(next.max_rent_centavos)) { setError('Maximum rent must be at least the minimum rent.'); return }
     setError('')
-    onSearch(next)
+    const facilities = form.getAll('amenities[]')
+    if (facilities.length) {
+      const result = new URLSearchParams(next); facilities.forEach(value => result.append('amenities[]', value)); onSearch(result)
+    } else onSearch(next)
+    if (window.innerWidth < 768) setExpanded(false)
   }
-  return <form className="panel search-filters" key={params.toString()} onSubmit={submit}>
-    <div className="filter-grid">
-      <label>Search property or city<input className="form-control" name="q" defaultValue={params.get('q') || ''} placeholder="Property, address or city" maxLength={100} /></label>
-      <label>Property type<select aria-label="Property type" className="form-select" name="property_type" defaultValue={params.get('property_type') || ''}><option value="">All property types</option>{['dormitory', 'apartment', 'boarding_house', 'rental_room'].map(type => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}</select></label>
-      <label>Price basis<select aria-label="Price basis" className="form-select" name="price_basis" defaultValue={params.get('price_basis') || ''}><option value="">All price bases</option><option value="per_person">Per person</option><option value="per_room">Per room</option></select></label>
-      <label>Minimum monthly rent (PHP)<input className="form-control" name="min_rent" inputMode="decimal" defaultValue={params.has('min_rent_centavos') ? (Number(params.get('min_rent_centavos')) / 100).toFixed(2) : ''} /></label>
-      <label>Maximum monthly rent (PHP)<input className="form-control" name="max_rent" inputMode="decimal" defaultValue={params.has('max_rent_centavos') ? (Number(params.get('max_rent_centavos')) / 100).toFixed(2) : ''} /></label>
-      <label>Sort listings<select aria-label="Sort listings" className="form-select" name="sort" defaultValue={params.get('sort') || 'newest'}><option value="newest">Recently approved</option><option value="rent_asc">Monthly rent: low to high</option><option value="rent_desc">Monthly rent: high to low</option><option value="distance">Nearest campus first</option></select></label>
-      <label>Campus reference<select aria-label="Campus reference" className="form-select" name="campus_id" defaultValue={params.get('campus_id') || ''}><option value="">TIP Manila — P. Casal</option>{campuses.filter(campus => campus.slug !== 'tip-manila-casal').map(campus => <option key={campus.id} value={campus.id}>{campus.name}</option>)}</select></label>
-    </div>
-    <label className="d-flex gap-2 my-3"><input name="available_only" type="checkbox" value="1" defaultChecked={params.get('available_only') === '1'} />Available units confirmed within 14 days</label>
-    <p className="small text-secondary">Rent filters use monthly base rent. Fixed fees and variable utilities are shown separately. Price and availability must match the same room option; only matching options appear in results.</p>
-    {error && <p role="alert" className="text-danger">{error}</p>}
-    <div className="d-flex gap-3 flex-wrap"><button className="btn btn-primary">Search</button><button className="btn btn-outline-secondary" type="button" onClick={() => { setError(''); onSearch({}) }}>Reset filters</button></div>
-  </form>
+  function clear() { setError(''); setCampusId(''); onSearch({}) }
+  function remove(key, value) {
+    const next = new URLSearchParams(params)
+    if (key === 'amenities[]') { const keep = next.getAll(key).filter(item => item !== value); next.delete(key); keep.forEach(item => next.append(key, item)) }
+    else next.delete(key)
+    if (key === 'campus_id') { next.delete('radius_km'); setCampusId('') }
+    if (key === 'price_basis') { next.delete('min_rent_centavos'); next.delete('max_rent_centavos'); if (next.get('sort')?.startsWith('rent_')) next.delete('sort') }
+    next.delete('page'); onSearch(next)
+  }
+  return <div className="filters-workspace">
+    <button className="btn btn-outline-primary filter-toggle" aria-expanded={expanded} aria-controls="housing-filters" onClick={() => setExpanded(value => !value)}>{expanded ? 'Hide filters' : 'Filter and sort'}</button>
+    {expanded && <form id="housing-filters" className="panel search-filters" onSubmit={submit}>
+      <CampusSearch campuses={campuses} value={campusId} onChange={setCampusId} />
+      <div className="filter-grid">
+        <label>Search property or city<input className="form-control" name="q" defaultValue={params.get('q') || ''} placeholder="Property, address or city" maxLength={100} /></label>
+        <label>Property type<select aria-label="Property type" className="form-select" name="property_type" defaultValue={params.get('property_type') || ''}><option value="">All property types</option>{['dormitory', 'apartment', 'boarding_house', 'rental_room'].map(type => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}</select></label>
+        <label>Room type<select className="form-select" name="inventory_type" defaultValue={params.get('inventory_type') || ''}><option value="">All room types</option><option value="bedspace">Bedspace</option><option value="whole_room">Whole room</option></select></label>
+        <label>Price basis<select aria-label="Price basis" className="form-select" name="price_basis" defaultValue={params.get('price_basis') || ''}><option value="">All price bases</option><option value="per_person">Per person</option><option value="per_room">Per room</option></select></label>
+        <label>Minimum monthly rent (PHP)<input className="form-control" name="min_rent" inputMode="decimal" defaultValue={params.has('min_rent_centavos') ? (Number(params.get('min_rent_centavos')) / 100).toFixed(2) : ''} /></label>
+        <label>Maximum monthly rent (PHP)<input className="form-control" name="max_rent" inputMode="decimal" defaultValue={params.has('max_rent_centavos') ? (Number(params.get('max_rent_centavos')) / 100).toFixed(2) : ''} /></label>
+        <label>Sort listings<select aria-label="Sort listings" className="form-select" name="sort" defaultValue={params.get('sort') || 'newest'}><option value="recommended">Recommended near campus</option><option value="newest">Recently approved</option><option value="rent_asc">Monthly rent: low to high</option><option value="rent_desc">Monthly rent: high to low</option><option value="distance">Nearest campus first</option></select></label>
+        <label>Distance from campus<select className="form-select" name="radius_km" defaultValue={params.get('radius_km') || ''}><option value="">No distance limit</option>{[0.5,1,2,5].map(radius => <option key={radius} value={radius}>Within {radius} km</option>)}</select></label>
+      </div>
+      <fieldset className="mt-3"><legend className="h3">Shared amenities</legend><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input name="amenities[]" type="checkbox" value={value} defaultChecked={params.getAll('amenities[]').includes(value)} /> {label}</label>)}</div></fieldset>
+      <label className="d-flex gap-2 my-3"><input name="available_only" type="checkbox" value="1" defaultChecked={params.get('available_only') === '1'} />Available units confirmed within 14 days</label>
+      <p className="small text-secondary">Rent filters use monthly base rent. Fixed fees and variable utilities are shown separately. Price and availability must match the same room option; only matching options appear in results.</p>
+      {error && <p role="alert" className="text-danger">{error}</p>}
+      <div className="d-flex gap-3 flex-wrap"><button className="btn btn-primary">Search</button><button className="btn btn-outline-secondary" type="button" onClick={clear}>Reset filters</button></div>
+    </form>}
+    {!!params.size && <div className="active-filters" aria-label="Active search filters">{[...params.entries()].filter(([key]) => !['page','sort','south','north','east','west'].includes(key)).map(([key,value]) => <button type="button" className="filter-chip" key={key+value} onClick={() => remove(key,value)} aria-label={'Remove filter ' + key + ' ' + value}>{key === 'campus_id' ? campuses.find(c => String(c.id) === value)?.name || 'Campus' : key === 'amenities[]' ? amenities[value] : key === 'available_only' ? 'Recently confirmed vacancies' : key === 'radius_km' ? 'Within ' + value + ' km' : key.includes('rent_centavos') ? key.startsWith('min') ? 'From ' + pesos(Number(value)) : 'Up to ' + pesos(Number(value)) : value.replaceAll('_',' ')} <span aria-hidden="true">×</span></button>)}<button className="btn btn-link btn-sm" onClick={clear}>Clear all</button></div>}
+  </div>
 }
 
-export function ListingCard({ property, campus }) {
+export function ListingCard({ property, campus, selectedId, onSelect, onOptionChange }) {
+  const [params] = useSearchParams()
   const { data: user } = useCurrentUser()
   const { selections, choose } = useComparison()
   const [choice, setChoice] = useState('')
   const selected = selections.find(item => item.property_id === property.id)
-  const option = property.room_options.find(item => item.id === Number(choice || selected?.room_option_id)) || property.room_options[0]
+  const option = property.room_options.find(item => item.id === Number(choice || selected?.room_option_id)) || preferredOption(property.room_options)
   const checked = !!selected
-  return <article className="property-card h-100"><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}{property.is_demo && <span className="status-badge">Synthetic demo</span>}</div><div className="p-4"><p className="small text-secondary text-uppercase">{property.property_type.replaceAll('_', ' ')}</p><h2><Link to={'/listings/' + property.id + (campus ? '?campus_id=' + campus.id : '')}>{property.title}</Link></h2><p>{property.address}, {property.city}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p>
-    {option && <><label className="form-label" htmlFor={'option-' + property.id}>Room option for {property.title}</label><select className="form-select mb-3" id={'option-' + property.id} value={option.id} onChange={event => { setChoice(event.target.value); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small">Known monthly charges: {pesos(option.monthly_fixed_total_centavos)}</p><p className="small">{option.available_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p></>}
-    {user?.role === 'student' && option && <label className="d-flex gap-2"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare {property.title}</span></label>}<FavoriteButton propertyId={property.id} title={property.title} />
+  return <article id={'listing-card-' + property.id} className={'property-card h-100 ' + (selectedId === property.id ? 'is-selected' : '')}><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}{property.is_demo && <span className="status-badge">Synthetic demo</span>}</div><div className="p-4"><p className="small text-secondary text-uppercase">{property.property_type.replaceAll('_', ' ')}</p><h2><Link to={'/listings/' + property.id + '?option=' + (option?.id || '') + (campus ? '&campus_id=' + campus.id : '')} state={{ browse: '/listings?' + params.toString() }}>{property.title}</Link></h2><p>{property.address}, {property.city}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p>
+    {option && <><label className="form-label" htmlFor={'option-' + property.id}>Room option for {property.title}</label><select className="form-select mb-3" id={'option-' + property.id} value={option.id} onChange={event => { setChoice(event.target.value); onOptionChange?.(property.id, Number(event.target.value)); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small">Known monthly charges: {pesos(option.monthly_fixed_total_centavos)}</p><p className="small">{option.available_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p></>}
+    {(!user || user.role === 'student') && option && <label className="d-flex gap-2"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare {property.title}</span></label>}{recommendationReasons(property,params).length > 0 && <ul className="match-reasons">{recommendationReasons(property,params).map(reason => <li key={reason}>{reason}</li>)}</ul>}{onSelect && <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button>}<FavoriteButton propertyId={property.id} title={property.title} />
   </div></article>
 }
 

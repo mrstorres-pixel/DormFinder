@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { errorMessage, fieldErrors } from '../lib/api'
 
 export function ErrorNotice({ error, retry }) {
@@ -12,9 +13,11 @@ export function ErrorNotice({ error, retry }) {
 }
 
 export function Loading({ children = 'Getting things ready…' }) {
+  const [delayed, setDelayed] = useState(false)
+  useEffect(() => { const timer = setTimeout(() => setDelayed(true), 8000); return () => clearTimeout(timer) }, [])
   return <div className="loading-state" role="status">
     <span className="spinner-border spinner-border-sm text-teal" aria-hidden="true" />
-    <span>{children}</span>
+    <span>{delayed ? 'DormFinder may be waking up. This can take a little longer; your search is still in progress.' : children}</span>
   </div>
 }
 

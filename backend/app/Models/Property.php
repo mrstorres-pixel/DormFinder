@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['title', 'description', 'property_type', 'address', 'city', 'latitude', 'longitude'])]
+#[Fillable(['title', 'description', 'property_type', 'address', 'city', 'latitude', 'longitude', 'amenities', 'house_rules'])]
 class Property extends Model
 {
     /** @use HasFactory<PropertyFactory> */
@@ -19,7 +19,7 @@ class Property extends Model
     {
         return [
             'latitude' => 'float', 'longitude' => 'float', 'revision' => 'integer',
-            'is_demo' => 'boolean', 'submitted_at' => 'datetime', 'approved_at' => 'datetime',
+            'amenities' => 'array', 'is_demo' => 'boolean', 'submitted_at' => 'datetime', 'approved_at' => 'datetime',
         ];
     }
 

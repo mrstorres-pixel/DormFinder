@@ -17,6 +17,9 @@ class PropertyRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'amenities' => ['nullable', 'array', 'max:6'],
+            'amenities.*' => ['string', 'distinct', Rule::in(config('discovery.amenities'))],
+            'house_rules' => ['nullable', 'string', 'max:2000'],
             'property_type' => ['required', Rule::in(['dormitory', 'apartment', 'boarding_house', 'rental_room'])],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],

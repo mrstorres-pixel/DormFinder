@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
 import { ErrorNotice, Field, Loading } from './Feedback'
 import { RoomCharges } from './RoomOptions'
+import ListingInformation from './ListingInformation'
 import { AdminNavigation, DashboardCounts, LifecycleControls } from './ModerationPages'
 
 export function ReviewQueue() {
@@ -31,7 +32,7 @@ export function ReviewDetails() {
     mutation.mutate({ ...values, revision: property.revision, review_confirmed: confirmed })
   }
   return <section className="container page-space"><Link to="/admin">← Review queue</Link><h1 className="mt-4">Review: {property.title}</h1><p>{property.address}, {property.city}</p><p className="preserve-lines">{property.description}</p><p>Coordinates: {property.latitude}, {property.longitude}</p>
-    <div className="public-photos mb-4">{property.photos.map(photo => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{photo.caption}</figcaption></figure>)}</div>
+    <ListingInformation property={property} /><div className="public-photos mb-4">{property.photos.map(photo => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{photo.caption}</figcaption></figure>)}</div>
     <div className="row g-4">{property.room_options.map(option => <div className="col-lg-6" key={option.id}><article className="panel"><h2>{option.name}</h2><RoomCharges option={option} /></article></div>)}</div>
     <section className="panel mt-4 narrow-page"><h2>Review decision</h2><ul><li>Information, room inventory and charge terms are complete and understandable.</li><li>The address and coordinates are plausible and photos match the listing.</li><li>Check for misleading or prohibited content and obvious duplicate listings.</li><li>Approval is a content review, not a safety inspection or ownership certification.</li></ul>
       <ErrorNotice error={mutation.error} />{property.status === 'pending_review' ? <form onSubmit={decide}><label className="d-flex gap-2 mb-3"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} /><span>I have checked the listing against these review criteria.</span></label><label className="form-label" htmlFor="review-decision">Decision</label><select className="form-select mb-3" id="review-decision" name="decision"><option value="approved">Approve for publication</option><option value="rejected">Return with feedback</option></select><Field label="Feedback for the owner" name="reason" as="textarea" maxLength={2000} hint="Required when returning a listing. Explain what the owner should correct." rows={3} /><button className="btn btn-primary" disabled={!confirmed || mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save review decision'}</button></form> : <p>This listing is now {property.status.replaceAll('_', ' ')}. Return to the queue for current submissions.</p>}

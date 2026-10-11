@@ -1,0 +1,121 @@
+[
+  {
+    "slug": "tip-manila-casal",
+    "name": "TIP Manila — P. Casal",
+    "institution_name": "Technological Institute of the Philippines",
+    "address": "363 P. Casal St., Quiapo, Manila",
+    "latitude": 14.5953363,
+    "longitude": 120.9881329,
+    "aliases": [
+      "TIP",
+      "T.I.P.",
+      "Casal"
+    ],
+    "city": "Manila",
+    "source_url": "https://www.openstreetmap.org/way/174249109",
+    "official_source_url": "https://tip.edu.ph/",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "pup-mabini",
+    "name": "PUP — A. Mabini, Sta. Mesa",
+    "institution_name": "Polytechnic University of the Philippines",
+    "address": "Anonas Street, Sta. Mesa, Manila",
+    "latitude": 14.59791,
+    "longitude": 121.01058,
+    "aliases": [
+      "PUP",
+      "PUP Main",
+      "Sta Mesa",
+      "Santa Mesa"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/W131706188",
+    "official_source_url": "https://www.pup.edu.ph/about/campuses",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ust-manila",
+    "name": "UST — España, Manila",
+    "institution_name": "University of Santo Tomas",
+    "address": "España Boulevard, Sampaloc, Manila",
+    "latitude": 14.60982,
+    "longitude": 120.98949,
+    "aliases": [
+      "UST",
+      "Santo Tomas",
+      "España"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/W18334415",
+    "official_source_url": "https://registrar.ust.edu.ph/contact",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "feu-manila",
+    "name": "FEU — Manila",
+    "institution_name": "Far Eastern University",
+    "address": "Nicanor Reyes Street, Sampaloc, Manila",
+    "latitude": 14.60376,
+    "longitude": 120.98648,
+    "aliases": [
+      "FEU",
+      "Far Eastern"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/W28788717",
+    "official_source_url": "https://www.feu.edu.ph/feu-manila-accredited-dormitories/",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ue-manila",
+    "name": "UE — Manila",
+    "institution_name": "University of the East",
+    "address": "C. M. Recto Avenue, Sampaloc, Manila",
+    "latitude": 14.60205,
+    "longitude": 120.98977,
+    "aliases": [
+      "UE",
+      "University of the East",
+      "Recto"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/W71236251",
+    "official_source_url": "https://www.ue.edu.ph/mla/ue-campus-tour/",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "nu-manila",
+    "name": "NU — Manila",
+    "institution_name": "National University",
+    "address": "M. F. Jhocson Street, Sampaloc, Manila",
+    "latitude": 14.60433,
+    "longitude": 120.99433,
+    "aliases": [
+      "NU",
+      "National U",
+      "Jhocson"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/W160192354",
+    "official_source_url": "https://www.nu.edu.ph/campus-page/nu-manila",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "dlsu-manila",
+    "name": "DLSU — Taft, Manila",
+    "institution_name": "De La Salle University",
+    "address": "2401 Taft Avenue, Malate, Manila",
+    "latitude": 14.5646,
+    "longitude": 120.99303,
+    "aliases": [
+      "DLSU",
+      "La Salle",
+      "Taft"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/30414840",
+    "official_source_url": "https://old.dlsu.edu.ph/campuses/manila/",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  }
+]

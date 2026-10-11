@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\PhotoRequest;
 use App\Http\Resources\PhotoResource;
+use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\PropertyPhoto;
 use App\Services\ListingWorkflow;
@@ -14,10 +15,42 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PhotoController extends Controller
 {
+    public function order(Request $request, Property $property): PropertyResource
+    {
+        Gate::authorize('view', $property);
+        $data = $request->validate([
+            'revision' => ['required', 'integer', 'min:1'],
+            'photo_ids' => ['required', 'array', 'min:1', 'max:8'],
+            'photo_ids.*' => ['required', 'integer', 'distinct'],
+        ]);
+        $updated = DB::transaction(function () use ($property, $data): Property {
+            $locked = Property::query()->lockForUpdate()->findOrFail($property->id);
+            Gate::authorize('update', $locked);
+            abort_unless($locked->revision === $data['revision'], 409);
+            $ids = $locked->photos()->where('status', 'ready')->pluck('id')->all();
+            $ordered = $data['photo_ids'];
+            sort($ids);
+            $sorted = $ordered;
+            sort($sorted);
+            if ($ids !== $sorted) {
+                throw ValidationException::withMessages(['photo_ids' => 'Include every ready photo from this property exactly once.']);
+            }
+            foreach ($ordered as $position => $id) {
+                $locked->photos()->whereKey($id)->update(['sort_order' => $position]);
+            }
+            app(ListingWorkflow::class)->demote($locked);
+
+            return $locked;
+        });
+
+        return new PropertyResource($updated->load(ListingController::relations()));
+    }
+
     public function store(PhotoRequest $request, Property $property, PhotoStorage $storage): JsonResponse
     {
         Gate::authorize('view', $property);

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
@@ -61,6 +62,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
+            'preferred_campus_id' => [$request->user()->role === 'student' ? 'sometimes' : 'prohibited', 'nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)],
             'email' => ['prohibited'], 'role' => ['prohibited'], 'status' => ['prohibited'],
         ]);
         $request->user()->update($data);

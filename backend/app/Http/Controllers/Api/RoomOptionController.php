@@ -7,6 +7,7 @@ use App\Http\Requests\RoomOptionRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\RoomOption;
+use App\Services\ActivityRecorder;
 use App\Services\ListingWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,38 @@ use Illuminate\Validation\ValidationException;
 
 class RoomOptionController extends Controller
 {
+    public function availability(Request $request, Property $property): PropertyResource
+    {
+        Gate::authorize('view', $property);
+        $data = $request->validate([
+            'revision' => ['required', 'integer', 'min:1'],
+            'options' => ['required', 'array', 'min:1', 'max:20'],
+            'options.*' => ['array:id,available_units'],
+            'options.*.id' => ['required', 'integer', 'distinct'],
+            'options.*.available_units' => ['required', 'integer', 'min:0'],
+        ]);
+        $updated = DB::transaction(function () use ($request, $property, $data): Property {
+            $locked = Property::query()->lockForUpdate()->findOrFail($property->id);
+            Gate::authorize('view', $locked);
+            abort_unless($locked->status === 'approved' && $locked->revision === $data['revision'], 409);
+            $changes = [];
+            foreach ($data['options'] as $value) {
+                $option = $locked->roomOptions()->lockForUpdate()->findOrFail($value['id']);
+                if ($value['available_units'] > $option->total_units) {
+                    throw ValidationException::withMessages(['options' => 'Available inventory cannot exceed the existing total.']);
+                }
+                $changes[] = $option->id.': '.$option->available_units.' → '.$value['available_units'];
+                $option->update(['available_units' => $value['available_units'], 'availability_confirmed_at' => now()]);
+            }
+            $locked->increment('revision');
+            app(ActivityRecorder::class)->audit($request->user()->id, 'availability_update', 'approved', 'approved', $locked->revision, implode('; ', $changes), $locked->id);
+
+            return $locked;
+        });
+
+        return new PropertyResource($updated->load(ListingController::relations()));
+    }
+
     public function store(RoomOptionRequest $request, Property $property, ListingWorkflow $workflow): PropertyResource
     {
         return $this->save($request, $property, $workflow);

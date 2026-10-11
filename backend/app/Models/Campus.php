@@ -13,6 +13,6 @@ class Campus extends Model
 
     protected function casts(): array
     {
-        return ['latitude' => 'float', 'longitude' => 'float', 'active' => 'boolean'];
+        return ['latitude' => 'float', 'longitude' => 'float', 'active' => 'boolean', 'aliases' => 'array'];
     }
 }

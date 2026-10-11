@@ -41,7 +41,7 @@ class ListingController extends Controller
 
     public function compare(Request $request): AnonymousResourceCollection
     {
-        abort_unless($request->user()->role === 'student', 403);
+        abort_if($request->user() && $request->user()->role !== 'student', 403);
         $data = $request->validate([
             'campus_id' => ['nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)],
             'selections' => ['required', 'array', 'min:1', 'max:3'],
@@ -65,8 +65,21 @@ class ListingController extends Controller
         return PublicPropertyResource::collection($ordered);
     }
 
+    public function map(Request $request): JsonResponse
+    {
+        $query = ListingSearch::query(ListingSearch::parameters($request));
+        $total = (clone $query)->reorder()->count();
+        $rows = $query->with(['photos' => fn ($photos) => $photos->where('status', 'ready')->limit(1)])->limit(200)->get()->map(function (Property $property) use ($request): array {
+            $data = (new PublicPropertyResource($property))->resolve($request);
+
+            return array_intersect_key($data, array_flip(['id', 'title', 'address', 'city', 'latitude', 'longitude', 'is_demo', 'photos', 'room_options', 'distance_from_campus']));
+        });
+
+        return response()->json(['data' => $rows, 'meta' => ['total' => $total, 'limit' => 200, 'limited' => $total > 200]]);
+    }
+
     public function campuses(): JsonResponse
     {
-        return response()->json(['data' => Campus::query()->where('active', true)->orderBy('id')->get(['id', 'slug', 'name', 'address', 'latitude', 'longitude', 'source_url', 'reference_note'])]);
+        return response()->json(['data' => Campus::query()->where('active', true)->orderBy('id')->get(['id', 'slug', 'name', 'address', 'latitude', 'longitude', 'source_url', 'reference_note', 'institution_name', 'city', 'aliases'])]);
     }
 }

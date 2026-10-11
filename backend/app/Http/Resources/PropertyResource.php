@@ -16,7 +16,7 @@ class PropertyResource extends JsonResource
             'status' => $this->status, 'revision' => $this->revision,
             'landlord_id' => $this->when($request->user()?->role === 'admin', $this->landlord_id),
             'moderation_reason' => $this->moderation_reason, 'is_demo' => $this->is_demo,
-            'submitted_at' => $this->submitted_at, 'approved_at' => $this->approved_at,
+            'submitted_at' => $this->submitted_at, 'approved_at' => $this->approved_at, 'amenities' => $this->amenities, 'house_rules' => $this->house_rules,
             'room_options' => RoomOptionResource::collection($this->whenLoaded('roomOptions')),
             'photos' => PhotoResource::collection($this->whenLoaded('photos')),
             'created_at' => $this->created_at, 'updated_at' => $this->updated_at,

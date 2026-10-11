@@ -21,7 +21,15 @@ class ListingSearch
             'min_rent_centavos' => ['nullable', 'integer', 'between:0,100000000'],
             'max_rent_centavos' => ['nullable', 'integer', 'between:0,100000000'],
             'available_only' => ['nullable', 'boolean'],
-            'sort' => ['nullable', Rule::in(['newest', 'rent_asc', 'rent_desc', 'distance'])],
+            'inventory_type' => ['nullable', Rule::in(['bedspace', 'whole_room'])],
+            'amenities' => ['nullable', 'array', 'max:6'],
+            'amenities.*' => ['string', 'distinct', Rule::in(config('discovery.amenities'))],
+            'radius_km' => ['nullable', 'numeric', Rule::in([0.5, 1, 2, 5])],
+            'south' => ['nullable', 'required_with:north,west,east', 'numeric', 'between:-90,90'],
+            'north' => ['nullable', 'required_with:south,west,east', 'numeric', 'between:-90,90', 'gt:south'],
+            'west' => ['nullable', 'required_with:south,north,east', 'numeric', 'between:-180,180'],
+            'east' => ['nullable', 'required_with:south,north,west', 'numeric', 'between:-180,180', 'gt:west'],
+            'sort' => ['nullable', Rule::in(['newest', 'rent_asc', 'rent_desc', 'distance', 'recommended'])],
             'campus_id' => ['nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)],
         ]);
         if (isset($data['min_rent_centavos'], $data['max_rent_centavos']) && $data['max_rent_centavos'] < $data['min_rent_centavos']) {
@@ -31,11 +39,18 @@ class ListingSearch
             throw ValidationException::withMessages(['price_basis' => 'Choose per person or per room before sorting prices.']);
         }
 
+        if (isset($data['radius_km']) && empty($data['campus_id'])) {
+            throw ValidationException::withMessages(['campus_id' => 'Select a campus before filtering by distance.']);
+        }
+
         return $data;
     }
 
     public static function options(Builder|Relation $query, array $data): void
     {
+        if (! empty($data['inventory_type'])) {
+            $query->where('inventory_type', $data['inventory_type']);
+        }
         if (! empty($data['price_basis'])) {
             $query->where('price_basis', $data['price_basis']);
         }
@@ -53,7 +68,17 @@ class ListingSearch
     public static function query(array $data): Builder
     {
         $data['availability_cutoff'] = now()->subDays(14);
-        $query = CampusDistance::annotate(ListingController::publicQuery(), CampusDistance::reference($data['campus_id'] ?? null));
+        $campus = CampusDistance::reference($data['campus_id'] ?? null);
+        $query = CampusDistance::annotate(ListingController::publicQuery(), $campus);
+        if (isset($data['radius_km'])) {
+            CampusDistance::within($query, $campus, (float) $data['radius_km'] * 1000);
+        }
+        if (isset($data['south'])) {
+            $query->whereBetween('latitude', [$data['south'], $data['north']])->whereBetween('longitude', [$data['west'], $data['east']]);
+        }
+        foreach ($data['amenities'] ?? [] as $amenity) {
+            $query->whereJsonContains('amenities', $amenity);
+        }
         $query->with(['roomOptions' => function ($options) use ($data): void {
             self::options($options, $data);
             $options->reorder()->orderBy('monthly_rent_centavos')->orderBy('id');
@@ -72,7 +97,11 @@ class ListingSearch
         self::options($rent, $data);
         $query->addSelect(['matching_rent_centavos' => $rent]);
         $sort = $data['sort'] ?? 'newest';
-        if ($sort === 'distance') {
+        if ($sort === 'recommended') {
+            $fresh = RoomOption::query()->selectRaw('count(*)')->whereColumn('property_id', 'properties.id')->where('available_units', '>', 0)->where('availability_confirmed_at', '>=', $data['availability_cutoff']);
+            self::options($fresh, $data);
+            $query->addSelect(['fresh_available_options' => $fresh])->orderByRaw('(('.$fresh->toSql().') > 0) DESC', $fresh->getBindings())->orderByDesc('has_coordinates')->orderBy('distance_meters');
+        } elseif ($sort === 'distance') {
             $query->orderByDesc('has_coordinates')->orderBy('distance_meters');
         } elseif (in_array($sort, ['rent_asc', 'rent_desc'], true)) {
             $query->orderBy('matching_rent_centavos', $sort === 'rent_asc' ? 'asc' : 'desc');

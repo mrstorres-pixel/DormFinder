@@ -19,6 +19,8 @@ Route::prefix('v1')->group(function (): void {
     Route::get('health', HealthController::class);
     Route::get('campuses', [ListingController::class, 'campuses'])->middleware('throttle:api');
     Route::get('listings', [ListingController::class, 'index'])->middleware('throttle:api');
+    Route::get('listings-map', [ListingController::class, 'map'])->middleware('throttle:api');
+    Route::post('compare', [ListingController::class, 'compare'])->middleware('throttle:api');
     Route::get('listings/{property}', [ListingController::class, 'show'])->whereNumber('property')->middleware('throttle:api');
     Route::get('media/{photo}', [PhotoController::class, 'local'])->name('photos.local');
 
@@ -45,6 +47,8 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('landlord/properties/{property}', [PropertyController::class, 'update']);
         Route::post('landlord/properties/{property}/photos', [PhotoController::class, 'store'])->middleware('throttle:uploads');
         Route::delete('landlord/properties/{property}/photos/{photo}', [PhotoController::class, 'destroy']);
+        Route::patch('landlord/properties/{property}/availability', [RoomOptionController::class, 'availability']);
+        Route::put('landlord/properties/{property}/photos/order', [PhotoController::class, 'order']);
         Route::post('landlord/properties/{property}/room-options', [RoomOptionController::class, 'store']);
         Route::patch('landlord/properties/{property}/room-options/{roomOption}', [RoomOptionController::class, 'update']);
         Route::delete('landlord/properties/{property}/room-options/{roomOption}', [RoomOptionController::class, 'destroy']);
@@ -52,7 +56,6 @@ Route::prefix('v1')->group(function (): void {
         Route::get('admin/reviews', [ReviewController::class, 'index']);
         Route::get('admin/reviews/{property}', [ReviewController::class, 'show']);
         Route::post('admin/reviews/{property}/decision', [ReviewController::class, 'decide']);
-        Route::post('compare', [ListingController::class, 'compare']);
         Route::get('favorites', [FavoriteController::class, 'index']);
         Route::get('favorites/ids', [FavoriteController::class, 'ids']);
         Route::put('favorites/{property}', [FavoriteController::class, 'store'])->whereNumber('property');

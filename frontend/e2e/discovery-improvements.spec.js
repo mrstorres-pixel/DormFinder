@@ -1,0 +1,47 @@
+import { test, expect } from '@playwright/test'
+
+test('university discovery, guest comparison, map search and mobile navigation work together', async ({ page }) => {
+  test.setTimeout(120_000)
+  const errors=[]
+  page.on('pageerror',error=>errors.push(error.message))
+  const tile=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=','base64')
+  await page.route('https://tile.openstreetmap.org/**',route=>route.fulfill({contentType:'image/png',body:tile}))
+  await page.goto('/')
+  await page.getByRole('combobox',{name:'College or university'}).fill('UE Manila')
+  await page.getByRole('button',{name:/UE — Manila/}).click()
+  await page.getByRole('button',{name:'Find housing near my campus'}).click()
+  await expect(page).toHaveURL(/campus_id=\d+&radius_km=2&sort=recommended/)
+  await expect(page.locator('.listing-grid .property-card').first()).toBeVisible()
+  await expect(page.getByRole('region',{name:'Listing map'})).toBeVisible()
+  const markers=page.locator('.price-marker,.price-cluster')
+  await expect(markers.first()).toBeVisible()
+  await page.locator('.property-card').first().getByRole('button',{name:'Show on map'}).click()
+  await expect(page.getByRole('article',{name:'Selected map listing'})).toBeVisible()
+  const heading=page.locator('.property-card').first().getByRole('heading')
+  await page.locator('.property-card').first().getByRole('checkbox',{name:/Compare/}).check()
+  await page.getByRole('link',{name:'Compare 1 listing',exact:true}).click()
+  await expect(page.getByRole('table')).toBeVisible()
+  await page.getByRole('link',{name:'View and ask owner'}).click()
+  await page.getByRole('link',{name:'Sign in to ask the owner'}).click()
+  await expect(page).toHaveURL(/login\?returnTo=/)
+  const destination=new URL(page.url()).searchParams.get('returnTo')
+  expect(destination).toMatch(/^\/listings\/\d+\?option=\d+&campus_id=\d+$/)
+  await page.goto('/listings')
+  await page.getByRole('region',{name:'Listing map'}).locator('.leaflet-control-zoom-out').click()
+  await page.getByRole('button',{name:'Search this area'}).click()
+  await expect(page).toHaveURL(/south=/)
+  await expect(page.locator('.listing-grid .property-card').first()).toBeVisible()
+  for (const width of [360,768,1440]) {
+    await page.setViewportSize({width,height:900})
+    await page.goto('/')
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+    if(width===360) {
+      await page.getByRole('button',{name:'Menu',exact:true}).click()
+      await expect(page.getByRole('link',{name:'Sign in',exact:true})).toBeVisible()
+      await expect(page.getByRole('combobox')).toBeVisible()
+      await page.screenshot({path:'test-results/campus-mobile-'+test.info().project.name+'.png',fullPage:true})
+    }
+  }
+  expect(errors).toEqual([])
+  void heading
+})

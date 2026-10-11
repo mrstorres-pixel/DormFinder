@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
@@ -10,26 +10,58 @@ import { ErrorNotice, Field, Loading } from './Feedback'
 import { RoomCharges } from './RoomOptions'
 import { FavoriteButton, ComparisonTray, SearchFilters, ListingCard, PhotoGallery, ListingMap } from './Discovery'
 import { ReportForm } from './ModerationPages'
+import CampusMap from './CampusMap'
+import ListingInformation from './ListingInformation'
+import { preferredOption, searchParameters, amenities } from '../lib/housing'
+import { signInLink } from '../lib/navigation'
 
 export function Listings({ favorites = false }) {
+  const compare = useComparison()
   const [params, setParams] = useSearchParams()
   const page = Math.max(1, Number(params.get('page')) || 1)
   const campuses = useCampuses()
-  const query = useQuery({ queryKey: [favorites ? 'favorites' : 'listings', params.toString()], queryFn: async () => (await api.get(favorites ? '/favorites' : '/listings', { params: favorites ? { page } : Object.fromEntries(params) })).data, retry: false, refetchInterval: 240_000 })
+  const [showMap, setShowMap] = useState(() => window.innerWidth >= 992)
+  const [selectedId, setSelectedId] = useState(null)
+  const [choices, setChoices] = useState({})
+  const query = useQuery({ queryKey: [favorites ? 'favorites' : 'listings', params.toString()], queryFn: async () => (await api.get(favorites ? '/favorites' : '/listings', { params: favorites ? { page } : searchParameters(params) })).data, retry: false, refetchInterval: 240_000 })
+  const mapParams = searchParameters(params); delete mapParams.page
+  const mapQuery = useQuery({ queryKey: ['listings-map', mapParams], enabled: !favorites && !!campuses.data && showMap, queryFn: async () => (await api.get('/listings-map', { params: mapParams })).data, retry: false, refetchInterval: 240_000 })
   const rows = query.data?.data || []
-  const campus = campuses.data?.find(item => item.id === rows[0]?.distance_from_campus?.campus_id) || campuses.data?.find(item => item.slug === 'tip-manila-casal')
+  const campus = campuses.data?.find(item => String(item.id) === (params.get('campus_id') || String(rows[0]?.distance_from_campus?.campus_id || ''))) || campuses.data?.find(item => item.slug === 'tip-manila-casal')
+  const markers = (mapQuery.data?.data || []).map(p => ({ ...p, selected_room_option_id: choices[p.id] }))
+  const preview = markers.find(p => p.id === selectedId)
+  const previewOption = preview?.room_options.find(o => o.id === choices[preview.id]) || preferredOption(preview?.room_options)
+  const bounds = params.has('south') ? [[Number(params.get('south')), Number(params.get('west'))], [Number(params.get('north')), Number(params.get('east'))]] : undefined
   function turnPage(next) { setParams(current => { const result = new URLSearchParams(current); result.set('page', String(next)); return result }) }
-  return <section className="container page-space"><div className="page-heading"><div><span className="eyebrow">NEAR TIP MANILA</span><h1>{favorites ? 'Your favorites' : 'Find your place'}</h1><p>{favorites ? 'Your saved listings. Confirm availability and terms with the owner.' : 'Explore reviewed listings. Confirm availability and terms with the owner.'}</p></div>{favorites && <Link to="/listings" className="btn btn-outline-primary">Browse listings</Link>}</div>
-    {!favorites && <SearchFilters params={params} onSearch={setParams} campuses={campuses.data} />}
+  function searchArea(area) {
+    setParams(current => { const next = new URLSearchParams(current); next.delete('page'); for (const [key,value] of Object.entries(area)) next.set(key, String(value)); return next })
+  }
+  function select(id) {
+    setSelectedId(id); setShowMap(true)
+    document.getElementById('listing-card-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+  return <section className="container-fluid page-space discovery-page"><div className="page-heading"><div><span className="eyebrow">{params.has('campus_id') ? campus?.name || 'YOUR CAMPUS' : 'STUDENT HOUSING, WITH CLARITY'}</span><h1>{favorites ? 'Your favorites' : 'Find your place'}</h1><p>{favorites ? 'Your saved listings. Confirm availability and terms with the owner.' : 'Choose your university and discover nearby options that fit your student life.'}</p></div>{favorites && <Link to="/listings" className="btn btn-outline-primary">Browse listings</Link>}</div>
+    <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} />
+    {!favorites && <SearchFilters key={params.toString()} params={params} onSearch={setParams} campuses={campuses.data} />}
     <ComparisonTray />
     <p className="small text-secondary mt-3">Content review is not a safety inspection or ownership certification. Prices are labeled per person or per room; compare the same basis.</p>
     {favorites && query.data?.meta.unavailable_ids?.length > 0 && <div className="alert alert-info"><p role="status">{query.data.meta.unavailable_ids.length} saved listing(s) are currently unpublished. They remain saved and will return here if approved again.</p><div className="d-flex gap-2 flex-wrap">{query.data.meta.unavailable_ids.map(id => <FavoriteButton key={id} propertyId={id} title={'unpublished listing ' + id} />)}</div></div>}
-    {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <><p className="small" role="status">{query.data.meta.total} {query.data.meta.total === 1 ? 'listing' : 'listings'} found · Page {page} of {query.data.meta.last_page}</p><ListingMap properties={rows} campus={campus} /><div className="row g-4 mt-1">{rows.map(property => <div className="col-md-6 col-xl-4" key={property.id}><ListingCard property={property} campus={campus} /></div>)}</div></> : <div className="panel empty-state"><h2>{favorites ? 'No published favorites to show.' : 'No listings match your search.'}</h2><p>{favorites ? 'Save a reviewed listing to find it here later.' : 'Try a wider budget or reset your filters. Owners may still be preparing their listings.'}</p></div>}
-    {query.data?.meta.last_page > 1 && <nav className="d-flex gap-3 align-items-center mt-4" aria-label="Listing pages"><button className="btn btn-outline-primary" disabled={page <= 1} onClick={() => turnPage(page - 1)}>Previous</button><span>Page {page} of {query.data.meta.last_page}</span><button className="btn btn-outline-primary" disabled={page >= query.data.meta.last_page} onClick={() => turnPage(page + 1)}>Next</button></nav>}
+    {!favorites && <div className="discovery-toolbar"><p className="small mb-0" role="status">{query.data ? query.data.meta.total + ' listings found · Page ' + page + ' of ' + query.data.meta.last_page : 'Searching housing…'}</p><button className="btn btn-outline-primary btn-sm" aria-pressed={showMap} onClick={() => setShowMap(value => !value)}>{showMap ? 'List only' : 'Show map'}</button></div>}
+    <div className={'discovery-layout ' + (showMap && !favorites ? 'with-map' : 'list-only')}>
+      <div className="discovery-results">
+        {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="listing-grid">{rows.map(property => <ListingCard key={property.id} property={property} campus={campus} selectedId={selectedId} onSelect={favorites ? undefined : select} onOptionChange={(id,optionId) => setChoices(current => ({ ...current, [id]: optionId }))} />)}</div> : <div className="panel empty-state"><h2>{favorites ? 'No published favorites to show.' : 'No listings match your search.'}</h2><p>{favorites ? 'Save a reviewed listing to find it here later.' : 'This campus may not have nearby listings yet, or your filters may be too narrow.'}</p>{!favorites && <div className="d-flex gap-2 flex-wrap justify-content-center"><button className="btn btn-outline-primary" onClick={() => setParams(current => { const next = new URLSearchParams(current); for (const key of ['radius_km','south','north','west','east','page']) next.delete(key); return next })}>Remove distance limits</button><button className="btn btn-link" onClick={() => setParams({})}>Clear all filters</button></div>}</div>}
+        {query.data?.meta.last_page > 1 && <nav className="d-flex gap-3 align-items-center mt-4" aria-label="Listing pages"><button className="btn btn-outline-primary" disabled={page <= 1} onClick={() => turnPage(page - 1)}>Previous</button><span>Page {page} of {query.data.meta.last_page}</span><button className="btn btn-outline-primary" disabled={page >= query.data.meta.last_page} onClick={() => turnPage(page + 1)}>Next</button></nav>}
+      </div>
+      {!favorites && campus && <aside className="discovery-map-column" hidden={!showMap}>
+        {mapQuery.isPending ? <Loading>Preparing map results…</Loading> : mapQuery.error ? <ErrorNotice error={mapQuery.error} retry={() => mapQuery.refetch()} /> : <><p className="small">{mapQuery.data?.meta.total || 0} matching listings across all pages{mapQuery.data?.meta.limited ? ' · Showing the first 200; narrow your search for more detail.' : ''}</p><CampusMap properties={markers} campus={campus} radius={params.get('radius_km')} bounds={bounds} selectedId={selectedId} onSelect={select} onAreaSearch={searchArea} />
+          {preview && <article className="map-preview panel" aria-label="Selected map listing">{preview.photos?.[0] && <img src={preview.photos[0].url} alt={preview.photos[0].caption} />}<div><strong>{preview.title}</strong><p className="small mb-1">{previewOption && <>{pesos(previewOption.monthly_fixed_total_centavos)} known monthly · {previewOption.price_basis === 'per_person' ? 'per person' : 'per room'}<br />{previewOption.available_units} available · {previewOption.availability_stale ? 'Needs confirmation' : 'Recently confirmed'}</>}</p><Link to={'/listings/' + preview.id + '?campus_id=' + campus.id + '&option=' + (previewOption?.id || '')} state={{ browse: '/listings?' + params.toString() }}>View listing</Link>{previewOption && <button className="btn btn-link btn-sm" disabled={compare.selections.length >= 3 && !compare.selections.some(item => item.property_id === preview.id)} onClick={() => compare.choose(preview.id, previewOption.id)}>Add to comparison</button>}</div></article>}</>}
+      </aside>}
+    </div>
   </section>
 }
 
 export function ListingDetails() {
+  const location = useLocation()
   const { id } = useParams()
   const [params] = useSearchParams()
   const { data: user } = useCurrentUser()
@@ -40,27 +72,29 @@ export function ListingDetails() {
   if (query.isPending) return <div className="container page-space"><Loading /></div>
   if (query.error) return <div className="container page-space"><ErrorNotice error={query.error} retry={() => query.refetch()} /><Link to="/listings">Browse other listings</Link></div>
   const property = query.data
-  const option = property.room_options.find(item => item.id === Number(choice || params.get('option'))) || property.room_options[0]
+  const option = property.room_options.find(item => item.id === Number(choice || params.get('option'))) || preferredOption(property.room_options)
   const campus = campuses.data?.find(item => item.id === property.distance_from_campus?.campus_id)
   const checked = selections.some(item => item.property_id === property.id)
-  return <section className="container page-space"><Link className="back-link" to="/listings">← Browse listings</Link><div className="page-heading mt-4"><div><span className="eyebrow">{property.property_type.replaceAll('_', ' ')}</span><h1>{property.title}</h1><p>{property.address}, {property.city}</p></div>{property.is_demo && <span className="badge text-bg-warning">Synthetic demo listing</span>}</div>
+  return <section className="container page-space"><Link className="back-link" to={location.state?.browse || '/listings?' + (params.get('campus_id') ? 'campus_id=' + params.get('campus_id') + '&sort=recommended&radius_km=2' : '')}>← Browse listings</Link><div className="page-heading mt-4"><div><span className="eyebrow">{property.property_type.replaceAll('_', ' ')}</span><h1>{property.title}</h1><p>{property.address}, {property.city}</p></div>{property.is_demo && <span className="badge text-bg-warning">Synthetic demo listing</span>}</div>
     <FavoriteButton propertyId={property.id} title={property.title} /><ComparisonTray /><PhotoGallery key={property.id} photos={property.photos} refresh={() => query.refetch()} />{user?.role === 'student' && <ReportForm key={'report-' + property.id} property={property} />}
-    <div className="row g-4"><div className="col-lg-7"><section className="panel mb-4"><h2>About this property</h2><p className="preserve-lines">{property.description}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p><p className="small text-secondary">Location pin: {property.latitude}, {property.longitude}. Confirm directions with the owner.</p><p className="small text-secondary">Reviewed for listing content. This does not certify safety, legal compliance or ownership.</p></section><ListingMap properties={[property]} campus={campus} /></div><div className="col-lg-5"><section className="panel"><h2>Rooms and costs</h2>{option ? <><label htmlFor="selected-room" className="form-label">Choose a room option</label><select id="selected-room" className="form-select mb-3" value={option.id} onChange={event => { setChoice(event.target.value); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><RoomCharges option={option} />{user?.role === 'student' ? <><label className="d-flex gap-2 mb-3"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Add {property.title} to comparison</span></label><Link className="btn btn-outline-primary mb-4" to={`/compare?items=${property.id}:${option.id}`}>Compare this option</Link><NewInquiry key={option.id} property={property} option={option} /></> : !user ? <Link to="/login" className="btn btn-primary">Sign in to ask the owner</Link> : <p className="small text-secondary">Students can send private inquiries from this page.</p>}</> : <p>No room options currently available.</p>}</section></div></div>
+    <div className="row g-4"><div className="col-lg-7"><section className="panel mb-4"><h2>About this property</h2><p className="preserve-lines">{property.description}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p><p className="small text-secondary">Location pin: {property.latitude}, {property.longitude}. Confirm directions with the owner.</p><p className="small text-secondary">Reviewed for listing content. This does not certify safety, legal compliance or ownership.</p></section><ListingInformation property={property} /><ListingMap properties={[property]} campus={campus} /></div><div className="col-lg-5"><section className="panel"><h2>Rooms and costs</h2>{option ? <><label htmlFor="selected-room" className="form-label">Choose a room option</label><select id="selected-room" className="form-select mb-3" value={option.id} onChange={event => { setChoice(event.target.value); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><RoomCharges option={option} />{(!user || user.role === 'student') ? <><label className="d-flex gap-2 mb-3"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Add {property.title} to comparison</span></label><Link className="btn btn-outline-primary mb-4" to={`/compare?items=${property.id}:${option.id}${campus ? '&campus_id=' + campus.id : ''}`}>Compare this option</Link>{user ? <NewInquiry key={option.id} property={property} option={option} /> : <Link to={signInLink('/listings/' + property.id + '?option=' + option.id + (campus ? '&campus_id=' + campus.id : ''))} className="btn btn-primary">Sign in to ask the owner</Link>}</> : !user ? <Link to="/login" className="btn btn-primary">Sign in to ask the owner</Link> : <p className="small text-secondary">Students can send private inquiries from this page.</p>}</> : <p>No room options currently available.</p>}</section></div></div>
   </section>
 }
 
 function NewInquiry({ property, option }) {
+  const { data:user } = useCurrentUser()
   const navigate = useNavigate()
-  const [body, setBody] = useState('')
+  const draftKey = 'dormfinder-inquiry-' + user?.id + '-' + property.id + '-' + option.id
+  const [body, setBody] = useState(() => { try { return sessionStorage.getItem(draftKey) || '' } catch { return '' } })
   const [identity, setIdentity] = useState({ body: '', id: '' })
-  const mutation = useMutation({ mutationFn: data => writeApi('post', `/listings/${property.id}/inquiries`, data), onSuccess: data => navigate('/inquiries/' + data.id) })
+  const mutation = useMutation({ mutationFn: data => writeApi('post', `/listings/${property.id}/inquiries`, data), onSuccess: data => { try { sessionStorage.removeItem(draftKey) } catch { /* Storage is optional. */ } navigate('/inquiries/' + data.id) } })
   function send(event) {
     event.preventDefault()
     const clientId = identity.body === body && identity.id ? identity.id : crypto.randomUUID()
     setIdentity({ body, id: clientId })
     mutation.mutate({ room_option_id: option.id, body, client_id: clientId })
   }
-  return <form onSubmit={send}><h3>Ask the owner</h3><p className="small">Only you and this property's owner can read the conversation. Do not send identity documents, passwords or payment details.</p><ErrorNotice error={mutation.error} /><Field name="inquiry-body" label="Your question" as="textarea" rows={4} maxLength={3000} required value={body} onChange={event => setBody(event.target.value)} /><button className="btn btn-primary w-100" disabled={mutation.isPending}>{mutation.isPending ? 'Sending…' : 'Send private inquiry'}</button></form>
+  return <form onSubmit={send}><h3>Ask the owner</h3><p className="small">Only you and this property's owner can read the conversation. Do not send identity documents, passwords or payment details.</p><ErrorNotice error={mutation.error} />{[401,419].includes(mutation.error?.response?.status) && <Link className="btn btn-outline-primary mb-3" to={signInLink('/listings/' + property.id + '?option=' + option.id)}>Sign in again to continue your question</Link>}<Field name="inquiry-body" label="Your question" as="textarea" rows={4} maxLength={3000} required value={body} onChange={event => { setBody(event.target.value); try { sessionStorage.setItem(draftKey, event.target.value) } catch { /* Storage is optional. */ } }} /><button className="btn btn-primary w-100" disabled={mutation.isPending}>{mutation.isPending ? 'Sending…' : 'Send private inquiry'}</button></form>
 }
 
 export function Comparison() {
@@ -83,6 +117,8 @@ export function Comparison() {
   }
   const cells = [
     ['Property type', property => property.property_type.replaceAll('_', ' ')],
+    ['Shared amenities', property => property.amenities == null ? 'Not provided' : property.amenities.map(key => amenities[key] || key).join(', ') || 'None listed'],
+    ['House rules', property => property.house_rules || 'Not provided'],
     ['Address', property => `${property.address}, ${property.city}`],
     ['Campus distance', property => distanceLabel(property.distance_from_campus, campus)],
     ['Price basis', (_, option) => option.price_basis === 'per_person' ? 'Per person' : 'Per room'],
