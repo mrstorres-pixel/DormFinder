@@ -1,6 +1,22 @@
 import { test, expect } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 
+test('guest API requests consistently return JSON authentication errors', async ({ request }) => {
+  for (const accept of ['*/*', 'text/html', 'application/json']) {
+    for (const path of ['/me', '/landlord/properties', '/admin/reviews', '/favorites', '/inquiries/1/messages']) {
+      const response = await request.get('/api/v1' + path, { headers: { Accept: accept } })
+      expect(response.status()).toBe(401)
+      expect(response.headers()['content-type']).toContain('application/json')
+      expect(response.headers()['cache-control']).toContain('no-store')
+      expect(response.headers().location).toBeUndefined()
+      const body = await response.json()
+      expect(body.code).toBe('unauthenticated')
+      expect(body.exception).toBeUndefined()
+      expect(body.trace).toBeUndefined()
+    }
+  }
+})
+
 test('same-origin sessions, private drafts, image persistence and logout', async ({ page, context, browser, baseURL }) => {
   const suffix = randomUUID()
   const email = `landlord-${suffix}@example.test`
