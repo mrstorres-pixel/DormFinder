@@ -48,6 +48,25 @@ Phase 4 is accepted with the documented CI exception. All 79 backend tests / 452
 
 ## Remaining phases
 
+### October 11 student-first improvement review
+
+The user prioritized student search, listing details and overall usability. The earlier phase acceptance covers tested workflows; it does not mean the product is finished or easy enough to use. Local browser inspection reproduced the following student friction points: signing in from a listing lands on `/account` instead of returning to that listing; the Profile link is hidden at 360px; and the mixed-availability listing defaults to its PHP 2,000 sold-out option while a separate PHP 8,200 option is available. No horizontal overflow was seen on the inspected 360px account/browse screens.
+
+Prioritized follow-up work, with observable completion criteria:
+
+| Priority | Improvement | Evidence and completion criterion |
+|---|---|---|
+| 1 | Authentication errors and report reliability | Guest API requests without JSON Accept currently fail because Laravel tries to resolve an absent login route. The prepared fix disables guest redirects and keeps JSON 401 responses. Also align the report title snapshot length (120) with accepted property titles (150); cover long titles with a regression test before changing the schema. |
+| 2 | Keep students in their task | Preserve the intended listing/selected room through sign-in; expose profile/account actions on mobile; retain question text when recovering from an expired session. Verify each from the actual student flow. |
+| 3 | Make availability and costs easy to judge | Clearly distinguish sold-out, available and unconfirmed inventory. Avoid presenting a sold-out lowest price as the main actionable option. Show pricing basis, monthly fixed charges, move-in charges and variable utilities together. Verify mixed inventory and stale availability examples. |
+| 4 | More useful discovery | Existing filters cover text, property type, price basis, base rent, campus, availability and sort. Add room/inventory type and structured amenities first; consider distance radius and a compact mobile filter panel. Filters must continue matching the same eligible room option. |
+| 5 | Richer listing information | Current data centers on description, address, coordinates, photos and room costs. Add structured facilities and house rules, clearer freshness information, useful photo captions/cover selection and an owner-friendly map pin picker. Coordinates are currently entered manually and labeled optional for drafts despite being required for submission. |
+| 6 | Easier shortlisting and comparison | Review the registration gate for comparison of already-public information, make the three-selection limit clearer, and keep selected room options/price bases visible throughout. Preserve private favorites and avoid changing access rules accidentally. |
+| 7 | Clearer conversation and account recovery | Inquiry lists show participant/time but no per-conversation unread state; notifications live on a separate page. Add visible unread/new-reply cues and improve session-expiry recovery. Password recovery/email verification need a separate free-provider plan before use by real tenants/owners. |
+| 8 | Loading, accessibility and operational readiness | Give long backend wake-ups useful feedback; check keyboard focus, error recovery and mobile controls across real tasks. Complete backup/local-fallback recovery and two deployed rehearsals after the chosen improvements. |
+
+The approved API fix passes 17 authentication tests and the complete local backend suite (90 tests / 776 assertions). A browser check through the local frontend confirms JSON 401 with no redirect for wildcard, HTML and JSON Accept headers. Deployment evidence follows in validation.md. The other rows are a prioritized backlog, not claims of completed improvements; new facilities/filter data and changes to guest comparison require deliberate implementation and acceptance checks.
+
 The user-requested safe synthetic dataset portion of Phase 5 is complete locally and live: 16 public fictional samples plus three private lifecycle examples, 38 room options and 38 private normalized layout images. All 24 existing live properties and their related prior records were preserved. Repeat execution skipped every sample and added nothing. Seven meaningful seed tests pass, and the full backend suite is now 86 tests / 596 assertions. The sample workflow passes in Chromium/WebKit both locally and live, including loaded images, filters, favorites, three-property comparison, map pins and participant-only inquiry/reply. The remaining Phase 5 work still includes hardening, rollback/local fallback and two deployed rehearsals; this dataset does not complete the full phase. Direct non-JSON guest API authentication currently returns a safe 500 rather than 401 and is recorded as a hardening follow-up.
 
 | Phase | Deliverables | Acceptance gate |

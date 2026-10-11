@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->statefulApi();
+        $middleware->redirectGuestsTo(null);
         $middleware->web(replace: [PreventRequestForgery::class => RequireCsrfToken::class]);
         $middleware->append(ApiHeaders::class);
         $middleware->alias(['active' => EnsureActiveAccount::class]);

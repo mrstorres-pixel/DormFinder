@@ -87,6 +87,26 @@ class AuthControllerTest extends TestCase
         $this->getJson('/api/v1/me')->assertUnauthorized()->assertJsonPath('code', 'unauthenticated');
     }
 
+    #[TestWith([null])]
+    #[TestWith(['*/*'])]
+    #[TestWith(['text/html'])]
+    #[TestWith(['application/json'])]
+    public function test_guest_api_requests_return_json_401_regardless_of_accept_header(?string $accept): void
+    {
+        $headers = $accept === null ? [] : ['Accept' => $accept];
+        foreach (['me', 'landlord/properties', 'admin/reviews', 'favorites', 'inquiries/1/messages'] as $path) {
+            $response = $this->get('/api/v1/'.$path, $headers);
+            $response->assertUnauthorized()
+                ->assertHeader('Content-Type', 'application/json')
+                ->assertHeaderMissing('Location')
+                ->assertJsonPath('code', 'unauthenticated')
+                ->assertJsonPath('message', 'Please sign in to continue.')
+                ->assertJsonMissingPath('exception')
+                ->assertJsonMissingPath('trace');
+            $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
+        }
+    }
+
     public function test_rejects_suspended_authenticated_accounts(): void
     {
         $this->actingAs(User::factory()->suspended()->create())->getJson('/api/v1/me')->assertForbidden();
