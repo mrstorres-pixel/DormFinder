@@ -1,0 +1,31 @@
+import { test, expect } from '@playwright/test'
+import { readFile } from 'node:fs/promises'
+
+test('existing cloud accounts read their real dashboard counts and next actions', async ({ browser, baseURL }, testInfo) => {
+  test.skip(!baseURL.startsWith('https:'), 'Read-only production acceptance uses existing cloud test accounts.')
+  test.setTimeout(120_000)
+  const read = async path => JSON.parse((await readFile(path, 'utf8')).replace(/^\uFEFF/, ''))
+  const accounts = await read(new URL(`../../.secrets/discovery-browser-cloud-${testInfo.project.name}.json`, import.meta.url))
+  const admin = await read(process.env.E2E_ADMIN_FILE || '../.secrets/phase2-cloud-admin.json')
+  for (const role of ['student', 'landlord', 'admin']) {
+    const context = await browser.newContext({ baseURL })
+    try {
+      const page = await context.newPage()
+      await page.goto('/login')
+      const account = role === 'admin' ? admin : accounts[role]
+      await page.getByLabel('Email').fill(account.email)
+      await page.getByLabel('Password', { exact: true }).fill(account.password)
+      const dashboard = page.waitForResponse(response => response.url().endsWith('/api/v1/dashboard') && response.status() === 200)
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+      const counts = (await (await dashboard).json()).data
+      await expect(page).toHaveURL(role === 'student' ? /\/account$/ : role === 'landlord' ? /\/landlord$/ : /\/admin$/)
+      await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible()
+      const notificationCard = page.locator('.dashboard-counts > div').filter({ has: page.getByRole('link', { name: 'Unread notifications', exact: true }) })
+      await expect(notificationCard.locator('dd')).toHaveText(String(counts.unread_notifications))
+      if (role === 'student') await expect(page.getByRole('link', { name: 'Compare your shortlist' })).toHaveAttribute('href', '/compare')
+      else if (role === 'landlord') await expect(page.getByRole('link', { name: 'Respond to students' })).toHaveAttribute('href', '/inquiries')
+      else await expect(page.getByRole('link', { name: 'Follow up on reports' })).toHaveAttribute('href', '/admin/reports')
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
+    } finally { await context.close() }
+  }
+})
