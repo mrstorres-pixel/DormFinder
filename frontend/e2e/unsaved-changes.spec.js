@@ -1,0 +1,65 @@
+import { test, expect } from '@playwright/test'
+
+test('property and room edits survive cancelled navigation and sign-out', async ({ page }) => {
+  const errors = []
+  let signOuts = 0
+  const property = { id: 987, title: 'Synthetic guard draft', description: '', address: '', city: 'Manila', status: 'draft', revision: 1, amenities: [], house_rules: '', latitude: null, longitude: null, photos: [], room_options: [] }
+  page.on('pageerror', error => errors.push(error.message))
+  await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))
+  await page.route('**/api/v1/**', route => {
+    const path = new URL(route.request().url()).pathname
+    if (path.endsWith('/auth/logout')) { signOuts++; return route.fulfill({ status: 500, json: { message: 'Synthetic sign-out failure' } }) }
+    if (path.endsWith('/me')) return route.fulfill({ json: { data: { id: 987, name: 'Synthetic guard owner', role: 'landlord' } } })
+    if (path.endsWith('/campuses')) return route.fulfill({ json: { data: [] } })
+    if (path.endsWith('/dashboard')) return route.fulfill({ json: { data: { listings: { draft: 1 } } } })
+    if (path.endsWith('/landlord/properties/987') || (path.endsWith('/landlord/properties') && route.request().method() === 'POST')) {
+      if (route.request().method() !== 'GET') Object.assign(property, route.request().postDataJSON(), { revision: property.revision + 1 })
+      return route.fulfill({ json: { data: property } })
+    }
+    if (path.endsWith('/landlord/properties')) return route.fulfill({ json: { data: [], meta: { last_page: 1, current_page: 1 } } })
+    return route.fulfill({ json: { data: [] } })
+  })
+  await page.goto('/landlord')
+  await page.getByRole('link', { name: '+ Add a property' }).click()
+  await page.getByLabel('Property name').fill(property.title)
+  await page.evaluate(() => window.history.back())
+  const dialog = page.getByRole('dialog', { name: 'Keep your changes?' })
+  await expect(dialog).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Stay and edit' })).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(dialog).not.toBeVisible()
+  await expect(page.getByLabel('Property name')).toHaveValue(property.title)
+  await page.getByRole('link', { name: 'Your properties' }).click()
+  await expect(dialog).toBeVisible()
+  await page.getByRole('button', { name: 'Stay and edit' }).click()
+  page.once('dialog', nativeDialog => nativeDialog.dismiss())
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  expect(signOuts).toBe(0)
+  page.once('dialog', nativeDialog => nativeDialog.accept())
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await expect(page.getByRole('alert')).toContainText('Synthetic sign-out failure')
+  expect(signOuts).toBe(1)
+  await page.getByRole('link', { name: 'Your properties' }).click()
+  await expect(dialog).toBeVisible()
+  await page.getByRole('button', { name: 'Stay and edit' }).click()
+  await expect(page.getByLabel('Property name')).toHaveValue(property.title)
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await expect(page).toHaveURL(/\/landlord\/properties\/987$/)
+  await expect(page.getByRole('heading', { name: 'Room options and charges' })).toBeVisible()
+  await expect(dialog).not.toBeVisible()
+  await page.getByLabel('Room option name').fill('Unsaved room')
+  await page.getByLabel('Property name').fill('Saved property, unsaved room')
+  const saved = page.waitForResponse(response => response.url().endsWith('/landlord/properties/987') && response.request().method() === 'PATCH')
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await saved
+  await expect(page.getByRole('status')).toContainText('Your draft has been saved.')
+  await page.getByRole('link', { name: 'Profile', exact: true }).click()
+  await expect(dialog).toBeVisible()
+  await page.getByRole('button', { name: 'Stay and edit' }).click()
+  await expect(page.getByLabel('Room option name')).toHaveValue('Unsaved room')
+  await page.getByRole('link', { name: 'Your properties' }).click()
+  await page.getByRole('button', { name: 'Discard and leave' }).click()
+  await expect(page).toHaveURL(/\/landlord$/)
+  await expect(dialog).not.toBeVisible()
+  expect(errors).toEqual([])
+})

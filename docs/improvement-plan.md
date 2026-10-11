@@ -51,7 +51,7 @@ Local implementation: core map, search, details, comparison, mobile navigation a
 - Show administrators the same public listing information during review, with clear criteria and actions. Retain private inquiry access restrictions.
 - Improve existing dashboards with useful status and next actions; deeper analytics, unread counts and viewing schedules belong in later releases.
 
-Local implementation: amenities/rules, pin picker, photo order, completion checklist, vacancy endpoint/form and review information are implemented. Unsaved-edit protection currently covers link navigation and page unload; browser Back/programmatic navigation needs separate evaluation before claiming complete coverage.
+Local implementation: amenities/rules, pin picker, photo order, completion checklist, vacancy endpoint/form and review information are implemented. Property and room-option edits now share one navigation guard covering links, browser Back, programmatic route changes and document unload. Sign-out checks happen before the API request, failed sign-out keeps protection active, and saving one form does not clear another form. Escape/Stay retain edits; Discard explicitly leaves. Room fee add/remove and cancelling a room edit also mark/check unsaved changes. Switching room options within the same page and unsaved changes in other forms remain separate follow-ups.
 
 ## Part 4: Reliability, security, performance and usability
 

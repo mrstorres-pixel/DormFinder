@@ -1,16 +1,20 @@
-import { useEffect } from 'react'
+import { useCallback, useContext, useEffect, useId } from 'react'
+import { UnsavedChangesContext } from './unsavedChangesContext'
+
+export function useDiscardChanges() {
+  return useContext(UnsavedChangesContext).confirmDiscard
+}
+
+export function useClearUnsavedChanges() {
+  return useContext(UnsavedChangesContext).clearAll
+}
 
 export default function useUnsavedChanges(dirty) {
+  const guard = useContext(UnsavedChangesContext)
+  const id = useId()
   useEffect(() => {
-    if (!dirty) return
-    function unload(event) { event.preventDefault(); event.returnValue = '' }
-    function navigate(event) {
-      const link = event.target.closest('a[href]')
-      if (!link || link.target === '_blank' || link.getAttribute('href').startsWith('#')) return
-      if (!window.confirm('Leave this page? Your unsaved changes will be lost.')) { event.preventDefault(); event.stopPropagation() }
-    }
-    window.addEventListener('beforeunload', unload)
-    document.addEventListener('click', navigate, true)
-    return () => { window.removeEventListener('beforeunload', unload); document.removeEventListener('click', navigate, true) }
-  }, [dirty])
+    guard.setDirty(id, dirty)
+    return () => guard.setDirty(id, false)
+  }, [guard, id, dirty])
+  return useCallback(() => guard.setDirty(id, false), [guard, id])
 }

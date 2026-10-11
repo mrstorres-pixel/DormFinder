@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams, useLocation } from 'react-router-dom'
+import { createBrowserRouter, createRoutesFromElements, RouterProvider, Outlet, Link, Navigate, Route, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, fieldErrors, writeApi } from './lib/api'
 import { useCurrentUser } from './lib/auth'
@@ -10,7 +10,8 @@ import MapPinPicker from './components/MapPinPicker'
 import { useCampuses } from './lib/discovery'
 import { amenities, browseLink } from './lib/housing'
 import { safeReturnTo, clearInquiryDrafts } from './lib/navigation'
-import useUnsavedChanges from './lib/useUnsavedChanges'
+import useUnsavedChanges, { useDiscardChanges, useClearUnsavedChanges } from './lib/useUnsavedChanges'
+import UnsavedChangesProvider from './components/UnsavedChangesProvider'
 import { RoomManager, SubmissionPanel } from './components/RoomOptions'
 import { Listings, ListingDetails, Comparison } from './components/ListingPages'
 import { ReviewQueue, ReviewDetails } from './components/ReviewPages'
@@ -19,13 +20,15 @@ import ComparisonProvider from './components/ComparisonProvider'
 import { DashboardCounts, Notifications, StudentReports, ReportQueue, AccountModeration, AdminListings, AuditHistory, LifecycleControls } from './components/ModerationPages'
 
 function Layout({ children }) {
+  const confirmDiscard = useDiscardChanges()
+  const clearAllUnsaved = useClearUnsavedChanges()
   const [menuOpen, setMenuOpen] = useState(false)
   const { data: user } = useCurrentUser()
   const client = useQueryClient()
   const navigate = useNavigate()
   const logout = useMutation({
     mutationFn: () => writeApi('post', '/auth/logout'),
-    onSuccess: () => { clearInquiryDrafts(); setMenuOpen(false); client.clear(); client.setQueryData(['me'], null); navigate('/') },
+    onSuccess: () => { clearAllUnsaved(); clearInquiryDrafts(); setMenuOpen(false); client.clear(); client.setQueryData(['me'], null); navigate('/') },
   })
   return <>
     <a className="skip-link" href="#main">Skip to content</a>
@@ -41,7 +44,7 @@ function Layout({ children }) {
           {user.role === 'student' && <Link className="nav-link" to="/favorites">Favorites</Link>}
           <Link className="nav-link" to="/notifications">Notifications</Link>
           <Link className="nav-link" to="/profile">Profile</Link>
-          <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => logout.mutate()}>Sign out</button>
+          <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => { if (confirmDiscard()) logout.mutate() }}>Sign out</button>
         </> : <>
           <Link className="nav-link" to="/login">Sign in</Link>
           <Link className="btn btn-primary btn-sm" to="/register">Get started</Link>
@@ -183,13 +186,14 @@ function PropertyEditor() {
 function PropertyForm({ property }) {
   const [coordinates, setCoordinates] = useState({ latitude:property?.latitude ?? '', longitude:property?.longitude ?? '' })
   const [dirty, setDirty] = useState(false)
-  useUnsavedChanges(dirty)
+  const clearUnsaved = useUnsavedChanges(dirty)
   const client = useQueryClient()
   const navigate = useNavigate()
   const editable = !property || ['draft', 'rejected', 'approved'].includes(property.status)
   const mutation = useMutation({
     mutationFn: (values) => writeApi(property ? 'patch' : 'post', '/landlord/properties' + (property ? '/' + property.id : ''), values),
     onSuccess: async (saved) => {
+      clearUnsaved()
       setDirty(false)
       client.setQueryData(['property', String(saved.id)], saved)
       await client.invalidateQueries({ queryKey: ['properties'] })
@@ -268,7 +272,7 @@ function PhotoManager({ property }) {
   return <section className="panel"><h2 className="section-title">Property photos <span className="text-secondary small">({property.photos.length}/8)</span></h2>
     <p className="small text-secondary">JPEG, PNG or WebP. Up to 3MB and 12 megapixels each. Photos remain private while your property is a draft.</p>
     <ErrorNotice error={upload.error || remove.error || order.error} />
-    <div className="photo-grid">{property.photos.map((photo,index) => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{index === 0 ? 'Cover - ' : ''}{photo.caption}</figcaption>{editable && <div className="d-flex gap-1 flex-wrap mb-2"><button className="btn btn-sm btn-outline-primary" disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,0)}>Make cover</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' earlier'} disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index-1)}>Move</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' later'} disabled={index === property.photos.length-1 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index+1)}>Move</button></div>}{editable && <button className="btn btn-sm btn-outline-danger" disabled={remove.isPending || upload.isPending || order.isPending} onClick={() => remove.mutate(photo.id)} aria-label={'Remove ' + photo.caption}>Remove</button>}</figure>)}</div>
+    <div className="photo-grid">{property.photos.map((photo,index) => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{index === 0 ? 'Cover - ' : ''}{photo.caption}</figcaption>{editable && <div className="d-flex gap-1 flex-wrap mb-2"><button className="btn btn-sm btn-outline-primary" disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,0)}>Make cover</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' earlier'} disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index-1)}>Earlier</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' later'} disabled={index === property.photos.length-1 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index+1)}>Move</button></div>}{editable && <button className="btn btn-sm btn-outline-danger" disabled={remove.isPending || upload.isPending || order.isPending} onClick={() => remove.mutate(photo.id)} aria-label={'Remove ' + photo.caption}>Remove</button>}</figure>)}</div>
     {editable && property.photos.length < 8 && <form key={inputKey} onSubmit={submit} className="upload-form">
       <Field label="Choose a photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
       <Field label="Photo description" name="caption" placeholder="e.g. Shared room facing the courtyard" maxLength={160} />
@@ -293,7 +297,7 @@ function Profile() {
       <form onSubmit={(event) => { event.preventDefault(); nameChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}>
         <Field label="Your name" name="name" defaultValue={user?.name} required maxLength={100} />
         {user?.role === 'student' && <><CampusSearch campuses={campuses.data || []} value={selectedCampus ?? String(user?.preferred_campus_id || '')} onChange={setSelectedCampus} name="preferred_campus_id" /><ErrorNotice error={campuses.error} retry={() => campuses.refetch()} /></>}
-        <button className="btn btn-primary" disabled={nameChange.isPending}>Save name</button>
+        <button className="btn btn-primary" disabled={nameChange.isPending}>Save profile</button>
         {nameChange.isSuccess && <span className="ms-3 text-success" role="status">Saved.</span>}
       </form></div>
     <div className="panel mt-4"><h2 className="section-title">Change password</h2><p className="small text-secondary">Changing your password signs you out of all sessions.</p><ErrorNotice error={passwordChange.error} />
@@ -306,8 +310,8 @@ function Profile() {
   </section>
 }
 
-export default function App() {
-  return <BrowserRouter><ComparisonProvider><Layout><Routes>
+const router = createBrowserRouter(createRoutesFromElements(
+  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><Layout><Outlet /></Layout></ComparisonProvider></UnsavedChangesProvider>}>
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />
@@ -331,6 +335,10 @@ export default function App() {
     <Route path="/landlord/properties/new" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="/landlord/properties/:id" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="*" element={<section className="container page-space"><h1>We couldn’t find that page.</h1><Link to="/">Return home</Link></section>} />
-  </Routes></Layout></ComparisonProvider></BrowserRouter>
+  </Route>
+))
+
+export default function App() {
+  return <RouterProvider router={router} />
 }
 

@@ -48,12 +48,12 @@ export function RoomManager({ property }) {
 
 function RoomOptionForm({ property, option, onSaved, onCancel }) {
   const [dirty, setDirty] = useState(false)
-  useUnsavedChanges(dirty)
+  const clearUnsaved = useUnsavedChanges(dirty)
   const [inventory, setInventory] = useState(option?.inventory_type || 'bedspace')
   const [fees, setFees] = useState(() => (option?.fees || []).map(fee => ({ ...fee, key: crypto.randomUUID(), amount: String(fee.amount_centavos / 100) })))
   const mutation = useMutation({
     mutationFn: values => writeApi(option ? 'patch' : 'post', `/landlord/properties/${property.id}/room-options${option ? '/' + option.id : ''}`, values),
-    onSuccess: data => { setDirty(false); onSaved(data) },
+    onSuccess: data => { clearUnsaved(); setDirty(false); onSaved(data) },
   })
   const [amountError, setAmountError] = useState(null)
   const errors = fieldErrors(mutation.error)
@@ -78,9 +78,9 @@ function RoomOptionForm({ property, option, onSaved, onCancel }) {
       <Field label={`Fee ${index + 1} name`} name={'fee-name-' + fee.key} value={fee.name} onChange={event => changeFee(fee.key, 'name', event.target.value)} required maxLength={100} />
       <Field label={`Fee ${index + 1} amount (PHP)`} name={'fee-amount-' + fee.key} type="number" min="0" max="1000000" step="0.01" value={fee.amount} onChange={event => changeFee(fee.key, 'amount', event.target.value)} required />
       <label className="form-label" htmlFor={'fee-frequency-' + fee.key}>Fee {index + 1} frequency</label><select className="form-select mb-2" id={'fee-frequency-' + fee.key} value={fee.frequency} onChange={event => changeFee(fee.key, 'frequency', event.target.value)}><option value="monthly">Monthly</option><option value="one_time">One time</option></select>
-      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => setFees(current => current.filter(item => item.key !== fee.key))}>Remove fee {index + 1}</button>
-    </div>)}{fees.length < 10 && <button className="btn btn-sm btn-outline-secondary mb-3" type="button" onClick={() => setFees(current => [...current, { key: crypto.randomUUID(), name: '', amount: '', frequency: 'monthly' }])}>Add fixed fee</button>}</fieldset>
-    <div className="d-flex gap-2"><button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : option ? 'Save room option' : 'Add room option'}</button>{option && <button type="button" className="btn btn-outline-secondary" onClick={onCancel}>Cancel edit</button>}</div>
+      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => { setDirty(true); setFees(current => current.filter(item => item.key !== fee.key)) }}>Remove fee {index + 1}</button>
+    </div>)}{fees.length < 10 && <button className="btn btn-sm btn-outline-secondary mb-3" type="button" onClick={() => { setDirty(true); setFees(current => [...current, { key: crypto.randomUUID(), name: '', amount: '', frequency: 'monthly' }]) }}>Add fixed fee</button>}</fieldset>
+    <div className="d-flex gap-2"><button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : option ? 'Save room option' : 'Add room option'}</button>{option && <button type="button" className="btn btn-outline-secondary" onClick={() => { if (!dirty || window.confirm('Discard your unsaved room edits?')) { clearUnsaved(); onCancel() } }}>Cancel edit</button>}</div>
   </form>
 }
 

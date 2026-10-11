@@ -104,3 +104,5 @@ a{color:#9c3d15}a:hover{color:#6b290c}
 .pin-picker{height:280px;border-radius:12px;z-index:0}.completion-list{list-style:none;padding:0;display:grid;gap:.5rem}.availability-label{display:inline-block;background:#fff0dc;color:#6b290c;padding:.4rem .7rem;border-radius:20px;font-size:.8rem;font-weight:700}.vacancy-form{border-top:1px solid #e6d8c9;padding-top:1rem}
 
 .price-cluster.is-selected span{outline:3px solid #30261f;outline-offset:3px}
+.unsaved-dialog { border: 1px solid var(--bs-border-color); border-radius: 1rem; padding: 1.5rem; width: min(32rem, calc(100% - 2rem)); }
+.unsaved-dialog::backdrop { background: rgb(0 0 0 / 45%); }
