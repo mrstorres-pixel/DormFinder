@@ -17,7 +17,6 @@ test('university discovery, guest comparison, map search and mobile navigation w
   await expect(markers.first()).toBeVisible()
   await page.locator('.property-card').first().getByRole('button',{name:'Show on map'}).click()
   await expect(page.getByRole('article',{name:'Selected map listing'})).toBeVisible()
-  const heading=page.locator('.property-card').first().getByRole('heading')
   await page.locator('.property-card').first().getByRole('checkbox',{name:/Compare/}).check()
   await page.getByRole('link',{name:'Compare 1 listing',exact:true}).click()
   await expect(page.getByRole('table')).toBeVisible()
@@ -28,7 +27,9 @@ test('university discovery, guest comparison, map search and mobile navigation w
   expect(destination).toMatch(/^\/listings\/\d+\?option=\d+&campus_id=\d+$/)
   await page.goto('/listings')
   await page.getByRole('region',{name:'Listing map'}).locator('.leaflet-control-zoom-out').click()
+  const areaResults = page.waitForResponse(response => response.url().includes('/api/v1/listings-map?south=') && response.status() === 200)
   await page.getByRole('button',{name:'Search this area'}).click()
+  await areaResults
   await expect(page).toHaveURL(/south=/)
   await expect(page.locator('.listing-grid .property-card').first()).toBeVisible()
   for (const width of [360,768,1440]) {
@@ -43,5 +44,4 @@ test('university discovery, guest comparison, map search and mobile navigation w
     }
   }
   expect(errors).toEqual([])
-  void heading
 })

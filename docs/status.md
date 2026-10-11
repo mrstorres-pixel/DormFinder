@@ -80,3 +80,11 @@ Ordered optional backlog: room-type/amenity/radius filters; Blade printable comp
 
 Instructor clarification: Blade grading, external messaging-service requirement, XSL, final rubric and exact submission time.
 
+
+## October 11 improvement increment
+
+The approved improvement plan is split into five delivery parts in [improvement-plan.md](improvement-plan.md). The first core increment is implemented and deployed to the existing free services: seven-campus discovery/preferences, student filtering/recommendations, map/list selection across all result pages, guest comparison, warm responsive navigation, listing facilities/rules, photo ordering, a pin picker and audited vacancy refresh.
+
+Application source is 605085b1063f7d86cbf47531d88e83cb8b3428e2. The backup, migration, campus synchronization, preserved-row checks and original draft/photo readback passed. Local gates pass 99 backend tests/830 assertions and 20 frontend tests, lint/build; all 12 deployed browser scenarios have passing evidence across the full run and targeted reruns. See validation.md for the explicit WebKit cancellation diagnosis and interim failures.
+
+Remaining work is tracked explicitly: verify additional campuses; improve restoration of unsubmitted map movement and unsaved-edit protection for browser Back/programmatic navigation; refine dashboard and publishing usability with user feedback; complete the historic formal rollback/local-fallback rehearsal. The broader marketplace roadmap remains planned, and the approved GitHub billing-lock CI exception is still separate from acceptance evidence.

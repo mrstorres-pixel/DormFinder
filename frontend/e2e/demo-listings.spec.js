@@ -27,7 +27,9 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await page.goto('/login')
     await page.getByLabel('Email address').fill(account.email)
     await page.getByLabel('Password', { exact: true }).fill(account.password)
+    const dashboard = page.waitForResponse(response => response.url().endsWith('/api/v1/dashboard') && response.status() === 200)
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await dashboard
     await expect(page).toHaveURL(role === 'landlord' ? /\/landlord$/ : /\/account$/)
   }
   try {
@@ -55,6 +57,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     for (const query of ['Fully%20Booked', 'Needs%20Confirmation']) {
       await student.goto('/listings?q=' + query + '&available_only=1')
       await expect(student.getByRole('heading', { name: 'No listings match your search.', exact: true })).toBeVisible()
+      await expect(student.getByText('0 matching listings across all pages', { exact: true })).toBeVisible()
     }
     await login(student, fixtures.student, 'student')
     const names = ['[DEMO] Sampaguita Student Dorm', '[DEMO] Study Nook Residence', '[DEMO] Quiet Courtyard House']

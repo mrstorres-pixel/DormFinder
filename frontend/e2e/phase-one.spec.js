@@ -85,7 +85,7 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your properties', exact: true })).toBeVisible()
-  await page.goto('/profile')
+  await page.getByRole('link', { name: 'Profile', exact: true }).click()
   await page.getByLabel('Current password', { exact: true }).fill(password)
   await page.getByLabel('New password', { exact: true }).fill(`${password}-changed`)
   await page.getByLabel('Confirm new password', { exact: true }).fill(`${password}-changed`)

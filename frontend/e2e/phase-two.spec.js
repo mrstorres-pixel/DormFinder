@@ -16,6 +16,7 @@ test('landlord, administrator and student complete the listing and private inqui
   const title = 'Synthetic Phase 2 Residence ' + suffix
   const contexts = []
   const errors = []
+  const cancelledReads = []
   const createdIds = []
   let ownerPage
   async function pageFor() {
@@ -25,6 +26,9 @@ test('landlord, administrator and student complete the listing and private inqui
     page.setDefaultNavigationTimeout(30_000)
     page.setDefaultTimeout(15_000)
     page.on('pageerror', error => errors.push(error.message))
+    page.on('requestfailed', request => {
+      if (request.method() === 'GET' && request.url().includes('/api/v1/') && request.failure()?.errorText === 'Load request cancelled') cancelledReads.push(new URL(request.url()).pathname)
+    })
     page.on('console', message => {
       if (message.type() === 'error' && /Encountered two children|unique.*key|React has detected/.test(message.text())) errors.push(message.text())
     })
@@ -116,7 +120,7 @@ test('landlord, administrator and student complete the listing and private inqui
     await reviewer.getByLabel('Password', { exact: true }).fill(admin.password)
     await reviewer.getByRole('button', { name: 'Sign in', exact: true }).click()
     await expect(reviewer.getByRole('heading', { name: 'Listing review queue', exact: true })).toBeVisible()
-    await reviewer.goto('/admin/reviews/' + propertyId)
+    await reviewer.getByRole('link', { name: 'Review ' + title, exact: true }).click()
     await expect(reviewer.getByRole('heading', { name: 'Review: ' + title })).toBeVisible()
     await reviewer.getByLabel('I have checked the listing against these review criteria.').check()
     await reviewer.getByRole('button', { name: 'Save review decision', exact: true }).click()
@@ -177,7 +181,12 @@ test('landlord, administrator and student complete the listing and private inqui
     await student.getByLabel('Your reply').fill('Thank you. Please update me after the listing is reviewed again.')
     await student.getByRole('button', { name: 'Send reply', exact: true }).click()
     await expect(student.getByText('Thank you. Please update me after the listing is reviewed again.', { exact: true })).toBeVisible()
-    expect(errors).toEqual([])
+    // WebKit can emit a native access-control error when a document replacement
+    // cancels an XHR. Accept only errors correlated with an actual cancelled read;
+    // application exceptions and failed/CORS requests remain failures.
+    const nativeCancellations = errors.filter(message => message.endsWith(' due to access control checks.') && cancelledReads.some(path => message.includes(path + ' ') || message.includes(path + '?')))
+    expect(errors.filter(message => !nativeCancellations.includes(message))).toEqual([])
+    if (nativeCancellations.length) console.log('Correlated WebKit document-navigation cancellations:', nativeCancellations.length)
   } finally {
     try { if (ownerPage && !ownerPage.isClosed()) await withdrawSyntheticListings(ownerPage, createdIds) } finally {
       for (const context of contexts) {

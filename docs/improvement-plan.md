@@ -1,6 +1,6 @@
 # DormFinder improvement plan
 
-Status: execution in progress. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
+Status: first improvement release deployed on October 11, 2026; follow-up refinements and later roadmap remain planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
 
 ## Product direction
 
@@ -66,7 +66,7 @@ Local implementation: amenities/rules, pin picker, photo order, completion check
 - Run PHP tests, frontend tests, lint/build and complete student/landlord/admin browser workflows in Chromium and WebKit.
 - Treat GitHub's existing billing-lock CI failure as an explicit temporary exception. Local checks and release checks do not make the GitHub check green, and do not authorize paid upgrades.
 
-Local verification: the full backend suite passed 98 tests/824 assertions before the last photo-order test was added; frontend unit tests passed 20 tests; lint and production build passed; existing browser workflows passed 8 tests and new campus guest workflows passed 2 tests. Recheck affected paths after final changes before release.
+Verification: the final backend suite passed 99 tests/830 assertions; frontend unit tests passed 20 tests; lint and production build passed. Existing and expanded local browser workflows passed in Chromium and WebKit. Deployed checks include the sample dataset and all three account roles; detailed run outcomes are recorded in validation.md.
 
 ## Part 5: Controlled release and handoff
 
@@ -77,7 +77,7 @@ Local verification: the full backend suite passed 98 tests/824 assertions before
 5. Rehearse guest campus search and all three account roles against the deployed system; verify public listings, private inquiries, storage, maps and responsive navigation.
 6. Record deployed commit/URLs, test evidence, limitations and recovery instructions. Keep the prior deployment available for rollback.
 
-Production status: not released during this implementation pass yet. Do not treat locally completed parts as deployed.
+Production status: application source 605085b1063f7d86cbf47531d88e83cb8b3428e2 is live on the existing free Render and Vercel services. The fresh backup catalog, additive migration, explicit seven-campus synchronization, preserved application-row fingerprints, restricted runtime grants and original private draft/photo readback passed. Local secret files and the existing user certificate were excluded from the release. See validation.md for browser acceptance evidence and known refinements.
 
 ## Order, timebox and release criteria
 

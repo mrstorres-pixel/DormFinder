@@ -1,10 +1,12 @@
 # DormFinder
 
-Housing discovery and inquiries for students near Technological Institute of the Philippines Manila. Laravel owns authentication and business rules; React provides the interface. More campuses are planned.
+Housing discovery and private inquiries for students searching near their college or university. The initial sourced directory includes seven campuses across TIP, PUP, UST, FEU, UE, NU and DLSU. Laravel owns authentication and business rules; React provides the interface.
 
-## Current implementation — October 9, 2026
+## Current implementation — October 11, 2026
 
 **Phases 1–4 are deployed and verified at [DormFinder](https://dormfinder-pink.vercel.app), with the user-approved temporary GitHub CI exception. Later phases remain outstanding.**
+
+The October 11 improvement release adds campus autocomplete and student preferences, radius and amenity filters, recommended matching options, a synchronized map across all result pages, guest comparison, a warm responsive interface, landlord photo ordering and audited vacancy refreshes. Existing accounts, listings, inquiries and private photos are preserved. Delivery parts and remaining refinements are tracked in [the improvement plan](docs/improvement-plan.md).
 
 The live and local databases now include 16 clearly labeled fictional sample listings, each with two room options and two illustrative layout images. [Browse the samples](https://dormfinder-pink.vercel.app/listings?q=DEMO). Prices, addresses and map pins are synthetic. Three additional samples demonstrate draft, pending-review and rejected states and remain private. Student accounts can save favorites, compare options and send inquiries; sample-owner replies are for demonstration only.
 
