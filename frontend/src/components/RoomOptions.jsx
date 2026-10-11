@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { writeApi, fieldErrors } from '../lib/api'
 import { pesos, toCentavos } from '../lib/money'
@@ -27,6 +27,7 @@ export function RoomCharges({ option }) {
 
 export function RoomManager({ property }) {
   const client = useQueryClient()
+  const confirmRoomReplacement = useRef(() => true)
   const [editing, setEditing] = useState(null)
   const [formVersion, setFormVersion] = useState(0)
   const editable = ['draft', 'rejected', 'approved'].includes(property.status)
@@ -41,14 +42,18 @@ export function RoomManager({ property }) {
   return <section className="panel mt-4"><h2 className="section-title">Room options and charges</h2>
     <p className="text-secondary small">Describe separate groups of equivalent beds or whole rooms. Do not count the same inventory twice. Saving an option confirms today’s availability and returns a published listing to draft.</p>
     <ErrorNotice error={remove.error} />
-    {(property.room_options || []).map(option => <article className="room-option mb-4" key={option.id}><h3>{option.name}</h3><RoomCharges option={option} />{property.status === 'approved' && <VacancyForm key={property.revision} property={property} option={option} onSaved={saved} />}{editable && <div className="d-flex gap-2"><button className="btn btn-sm btn-outline-primary" onClick={() => setEditing(option)}>Edit {option.name}</button><button className="btn btn-sm btn-outline-danger" disabled={remove.isPending} onClick={() => { if (window.confirm(`Remove ${option.name}? Existing inquiries will be kept.`)) remove.mutate(option.id) }}>Remove option</button></div>}</article>)}
-    {editable ? <RoomOptionForm key={editing?.id || 'new-' + formVersion} property={property} option={editing} onSaved={saved} onCancel={() => setEditing(null)} /> : <p className="alert alert-info">Room edits are locked while this listing is {property.status.replaceAll('_', ' ')}.</p>}
+    {(property.room_options || []).map(option => <article className="room-option mb-4" key={option.id}><h3>{option.name}</h3><RoomCharges option={option} />{property.status === 'approved' && <VacancyForm confirmSave={() => confirmRoomReplacement.current()} key={property.revision} property={property} option={option} onSaved={saved} />}{editable && <div className="d-flex gap-2"><button className="btn btn-sm btn-outline-primary" onClick={() => { if (editing?.id !== option.id && confirmRoomReplacement.current()) setEditing(option) }}>Edit {option.name}</button><button className="btn btn-sm btn-outline-danger" disabled={remove.isPending} onClick={() => { if (confirmRoomReplacement.current() && window.confirm(`Remove ${option.name}? Existing inquiries will be kept.`)) remove.mutate(option.id) }}>Remove option</button></div>}</article>)}
+    {editable ? <RoomOptionForm confirmReplacementRef={confirmRoomReplacement} key={editing?.id || 'new-' + formVersion} property={property} option={editing} onSaved={saved} onCancel={() => setEditing(null)} /> : <p className="alert alert-info">Room edits are locked while this listing is {property.status.replaceAll('_', ' ')}.</p>}
   </section>
 }
 
-function RoomOptionForm({ property, option, onSaved, onCancel }) {
+function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacementRef }) {
   const [dirty, setDirty] = useState(false)
   const clearUnsaved = useUnsavedChanges(dirty)
+  useEffect(() => {
+    confirmReplacementRef.current = () => !dirty || window.confirm('Discard your unsaved room edits?')
+    return () => { confirmReplacementRef.current = () => true }
+  }, [confirmReplacementRef, dirty])
   const [inventory, setInventory] = useState(option?.inventory_type || 'bedspace')
   const [fees, setFees] = useState(() => (option?.fees || []).map(fee => ({ ...fee, key: crypto.randomUUID(), amount: String(fee.amount_centavos / 100) })))
   const mutation = useMutation({

@@ -117,5 +117,58 @@
     "source_url": "https://mapcarta.com/30414840",
     "official_source_url": "https://old.dlsu.edu.ph/campuses/manila/",
     "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "adamson-manila",
+    "name": "Adamson — Ermita, Manila",
+    "institution_name": "Adamson University",
+    "address": "900 San Marcelino Street, Ermita, Manila",
+    "latitude": 14.58626,
+    "longitude": 120.98571,
+    "aliases": [
+      "Adamson",
+      "AdU",
+      "San Marcelino"
+    ],
+    "city": "Manila",
+    "source_url": "https://mapcarta.com/W32003801",
+    "official_source_url": "https://www.adamson.edu.ph/v1/?page=contact-us",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "up-diliman",
+    "name": "UP — Diliman, Quezon City",
+    "institution_name": "University of the Philippines Diliman",
+    "address": "Diliman, Quezon City 1101",
+    "latitude": 14.65477,
+    "longitude": 121.06428,
+    "aliases": [
+      "UP",
+      "UPD",
+      "Diliman",
+      "University of the Philippines"
+    ],
+    "city": "Quezon City",
+    "source_url": "https://mapcarta.com/W927197175",
+    "official_source_url": "https://upd.edu.ph/about/visit-upd/",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ateneo-loyola-heights",
+    "name": "Ateneo — Loyola Heights, Quezon City",
+    "institution_name": "Ateneo de Manila University",
+    "address": "Katipunan Avenue, Loyola Heights, Quezon City 1108",
+    "latitude": 14.63987,
+    "longitude": 121.07886,
+    "aliases": [
+      "Ateneo",
+      "ADMU",
+      "Loyola Heights",
+      "Katipunan"
+    ],
+    "city": "Quezon City",
+    "source_url": "https://mapcarta.com/W138294127",
+    "official_source_url": "https://global.ateneo.edu/designingtomorrow/contact",
+    "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
   }
 ]

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { ErrorNotice, Field, Loading } from './Feedback'
+import DashboardActions from './DashboardActions'
 
 const labels = { pending_reviews: 'Pending reviews', open_reports: 'Open reports', published_listings: 'Published listings', active_students: 'Active students', active_landlords: 'Active landlords', suspended_accounts: 'Suspended accounts', unread_notifications: 'Unread notifications', inquiries: 'Your inquiries', favorites: 'Saved listings' }
 
@@ -12,8 +13,9 @@ export function DashboardCounts() {
   const query = useQuery({ queryKey: ['dashboard', user?.id], queryFn: async () => (await api.get('/dashboard')).data.data, enabled: !!user })
   if (query.isPending) return <Loading>Loading your counts…</Loading>
   if (query.error) return <ErrorNotice error={query.error} retry={() => query.refetch()} />
-  const values = Object.entries(query.data).flatMap(([key, value]) => key === 'listings' ? Object.entries(value).map(([status, total]) => [status.replaceAll('_', ' ') + ' listings', total]) : [[labels[key] || key, value]])
-  return <dl className="dashboard-counts">{values.map(([label, value]) => <div className="panel" key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+  const destinations = { unread_notifications: '/notifications', inquiries: '/inquiries', favorites: '/favorites', open_reports: user.role === 'admin' ? '/admin/reports' : '/reports', pending_reviews: '/admin', published_listings: '/listings', active_students: '/admin/users', active_landlords: '/admin/users', suspended_accounts: '/admin/users' }
+  const values = Object.entries(query.data).flatMap(([key, value]) => key === 'listings' ? Object.entries(value).map(([status, total]) => [status.replaceAll('_', ' ') + ' listings', total, '/landlord']) : [[labels[key] || key, value, destinations[key]]])
+  return <><dl className="dashboard-counts">{values.map(([label, value, to]) => <div className="panel" key={label}><dt>{to ? <Link to={to}>{label}</Link> : label}</dt><dd>{value}</dd></div>)}</dl><DashboardActions user={user} counts={query.data} /></>
 }
 
 export function AdminNavigation() {

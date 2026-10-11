@@ -20,7 +20,7 @@ Use a warm visual identity: ivory backgrounds, white surfaces, dark brown text a
 - Show a useful empty state for campuses without supply. Never silently broaden a student's radius or filters.
 - Start with sourced Metro Manila campuses and expand deliberately. Candidate institutions include TIP, PUP, UST, FEU, UE, NU, CEU, DLSU, UP, Adamson and Ateneo; this is a verification backlog, not a claim that every campus is already supported.
 
-Local implementation: additive schema, campus command, search, preferences, radius and ranking are implemented. Initial directory contains seven campus entries for TIP, PUP, UST, FEU, UE, NU and DLSU. Coordinates are approximate map reference points; retain sources in database/campus-directory.json. Remaining institutions and campus branches need verification before addition.
+Local implementation: additive schema, campus command, search, preferences, radius and ranking are implemented. The sourced directory now contains ten campus entries for TIP, PUP, UST, FEU, UE, NU, DLSU, Adamson, UP Diliman and Ateneo Loyola Heights. Coordinates are approximate map reference points; retain sources in database/campus-directory.json. Remaining institutions and campus branches need verification before addition.
 
 ## Part 2: Student search, maps, details and comparison
 
@@ -49,9 +49,9 @@ Local implementation: core map, search, details, comparison, mobile navigation a
 - Continue sending material edits, including photo ordering, through the established review workflow.
 - Keep historical inquiry snapshots intact after subsequent edits or moderation.
 - Show administrators the same public listing information during review, with clear criteria and actions. Retain private inquiry access restrictions.
-- Improve existing dashboards with useful status and next actions; deeper analytics, unread counts and viewing schedules belong in later releases.
+- Improve existing dashboards with useful status and next actions; deeper analytics and viewing schedules belong in later releases. Implemented: role-specific next actions, linked counts, saved-campus student browsing and listing status guidance. Existing unread notification counts link to updates.
 
-Local implementation: amenities/rules, pin picker, photo order, completion checklist, vacancy endpoint/form and review information are implemented. Property and room-option edits now share one navigation guard covering links, browser Back, programmatic route changes and document unload. Sign-out checks happen before the API request, failed sign-out keeps protection active, and saving one form does not clear another form. Escape/Stay retain edits; Discard explicitly leaves. Room fee add/remove and cancelling a room edit also mark/check unsaved changes. Switching room options within the same page and unsaved changes in other forms remain separate follow-ups.
+Local implementation: amenities/rules, pin picker, photo order, completion checklist, vacancy endpoint/form and review information are implemented. Property and room-option edits now share one navigation guard covering links, browser Back, programmatic route changes and document unload. Sign-out checks happen before the API request, failed sign-out keeps protection active, and saving one form does not clear another form. Escape/Stay retain edits; Discard explicitly leaves. Room fee add/remove and cancelling a room edit also mark/check unsaved changes. Switching room options and removal/availability actions that replace the room editor now check for unsaved room edits before proceeding. Other forms remain separate follow-ups.
 
 ## Part 4: Reliability, security, performance and usability
 
