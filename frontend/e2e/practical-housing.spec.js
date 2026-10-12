@@ -59,6 +59,7 @@ test('campus finder, private shortlist and viewing negotiation form a complete p
     await student.getByRole('button',{name:'Create shortlist',exact:true}).click()
     createdList = (await (await newList).json()).data.id
     await student.goto('/listings/' + demo.id + '?option=' + option.id)
+    await student.getByText('Save to a shortlist', { exact: true }).click()
     await student.getByLabel('Save this room option to').selectOption(String(createdList))
     await student.getByRole('button',{name:'Save room to shortlist'}).click()
     await expect(student.getByRole('status')).toContainText('Room saved')

@@ -3,6 +3,7 @@ import { applyLocalFallbackPolicy } from './local-fallback-policy'
 import { readFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
+import { openFilters } from './discovery-flow'
 
 const check = expect.configure({ timeout: 20_000 })
 
@@ -47,11 +48,13 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
       expect((await student.request.get('/api/v1/listings/' + id)).status()).toBe(404)
     }
     await student.goto('/listings?q=Mixed%20Availability')
+    await openFilters(student)
     await student.getByLabel('Price basis', { exact: true }).selectOption('per_person')
     await student.getByLabel('Maximum monthly rent (PHP)').fill('5000')
     await student.getByLabel('Available units confirmed within 14 days').check()
     await student.getByRole('button', { name: 'Search', exact: true }).click()
     await expect(student.getByRole('heading', { name: 'No listings match your search.', exact: true })).toBeVisible()
+    await openFilters(student)
     await student.getByLabel('Maximum monthly rent (PHP)').fill('9000')
     await student.getByRole('button', { name: 'Search', exact: true }).click()
     await expect(student.getByRole('heading', { name: '[DEMO] Mixed Availability Dorm', exact: true })).toBeVisible()
@@ -105,6 +108,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await student.goto('/listings/' + manifest.ids[0])
     const question = 'Synthetic sample inquiry ' + randomUUID() + ': do these demo rooms have quiet hours?'
     const reply = 'Sample owner response ' + randomUUID() + ': these fictional rooms illustrate quiet hours after 10 PM.'
+    await student.getByText('Ask the owner', { exact: true }).click()
     await student.getByLabel('Your question').fill(question)
     await student.getByRole('button', { name: 'Send private inquiry', exact: true }).click()
     await expect(student).toHaveURL(/\/inquiries\/\d+$/)

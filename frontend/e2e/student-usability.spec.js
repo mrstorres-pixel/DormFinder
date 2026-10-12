@@ -11,7 +11,7 @@ test('students keep campus, budget and room context through mobile search and co
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
   await page.setViewportSize({ width: 360, height: 900 })
   await page.goto('/')
-  const university = page.locator('.home-campus-form').getByRole('combobox')
+  const university = page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' })
   await university.fill('CEU Manila')
   await university.press('Enter')
   await page.getByRole('button', { name: 'Find housing near my campus' }).click()
@@ -46,6 +46,7 @@ test('students keep campus, budget and room context through mobile search and co
   await expect(summary).toContainText('Known monthly charges')
   await summary.getByRole('link', { name: 'See room costs and ask the owner' }).click()
   await expect(page).toHaveURL(/#rooms-and-costs$/)
+  await page.getByText('Detailed charges and room terms', { exact: true }).click()
   await expect(page.getByText('Known monthly charges', { exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Sign in to ask the owner' })).toHaveAttribute('href', /returnTo=/)
   for (const width of [360, 768, 1440]) {
@@ -54,8 +55,8 @@ test('students keep campus, budget and room context through mobile search and co
     await page.screenshot({ path: '../.local/student-usability-' + test.info().project.name + '-' + width + '.png', fullPage: true })
   }
   await page.getByRole('link', { name: 'DormFinder home' }).click()
-  await page.locator('.home-campus-form').getByRole('combobox').fill('CEU Malolos')
-  await page.locator('.home-campus-form').getByRole('combobox').press('Enter')
+  await page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' }).fill('CEU Malolos')
+  await page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' }).press('Enter')
   await page.getByRole('button', { name: 'Find housing near my campus' }).click()
   await expect(page.getByRole('heading', { name: 'No listings match your search.' })).toBeVisible()
   expect(new URL(page.url()).searchParams.get('radius_km')).toBe('2')

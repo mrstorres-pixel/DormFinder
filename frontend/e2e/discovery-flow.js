@@ -1,6 +1,14 @@
 import { expect } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 
+export async function openFilters(page) {
+  const form = page.locator('#housing-filters')
+  await expect(form).toBeAttached()
+  const toggle = page.getByRole('button', { name: 'Filter and sort', exact: true })
+  if (await toggle.isVisible()) await toggle.click()
+  await expect(form).toBeVisible()
+}
+
 async function reloadStudent(page) {
   const session = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/me' && response.status() === 200)
   await page.reload()
@@ -64,6 +72,7 @@ export async function verifyDiscovery({ landlord, reviewer, student, originalId,
       await expect(reviewer).toHaveURL(/\/admin$/)
     }
     await student.goto('/listings?q=' + encodeURIComponent(group))
+    await openFilters(student)
     await student.getByLabel('Price basis', { exact: true }).selectOption('per_person')
     await student.getByLabel('Maximum monthly rent (PHP)').fill('5000')
     await student.getByLabel('Available units confirmed within 14 days').check()

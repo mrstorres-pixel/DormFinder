@@ -77,6 +77,8 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   expect(denied.status()).toBe(401)
   await outsider.close()
 
+  if (!await page.locator('.account-menu').getAttribute('open').then(value => value !== null)) await page.locator('.account-menu > summary').click()
+
   await page.getByRole('button', { name: 'Sign out', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeVisible()
   expect((await context.request.get('/api/v1/me', { headers: { Accept: 'application/json' } })).status()).toBe(401)
@@ -85,6 +87,7 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   await page.getByLabel('Password', { exact: true }).fill(password)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your properties', exact: true })).toBeVisible()
+  if (!await page.locator('.account-menu').getAttribute('open').then(value => value !== null)) await page.locator('.account-menu > summary').click()
   await page.getByRole('link', { name: 'Profile', exact: true }).click()
   await page.getByLabel('Current password', { exact: true }).fill(password)
   await page.getByLabel('New password', { exact: true }).fill(`${password}-changed`)

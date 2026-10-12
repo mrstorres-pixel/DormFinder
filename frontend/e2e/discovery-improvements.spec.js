@@ -43,7 +43,7 @@ test('university discovery, guest comparison, map search and mobile navigation w
     if(width===360) {
       await page.getByRole('button',{name:'Menu',exact:true}).click()
       await expect(page.getByRole('link',{name:'Sign in',exact:true})).toBeVisible()
-      await expect(page.getByRole('combobox')).toBeVisible()
+      await expect(page.getByRole('combobox', { name: 'College or university' })).toBeVisible()
       await page.screenshot({path:'test-results/campus-mobile-'+test.info().project.name+'.png',fullPage:true})
     }
   }

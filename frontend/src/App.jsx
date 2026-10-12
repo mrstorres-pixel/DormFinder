@@ -5,6 +5,9 @@ import { api, fieldErrors, writeApi } from './lib/api'
 import { useCurrentUser } from './lib/auth'
 import { ErrorNotice, Field, Loading } from './components/Feedback'
 import Brand from './components/Brand'
+import SiteNavigation from './components/SiteNavigation'
+import HousingSearchForm from './components/HousingSearchForm'
+import HomeScene from './components/HomeScene'
 import CampusSearch from './components/CampusSearch'
 import MapPinPicker from './components/MapPinPicker'
 import { useCampuses } from './lib/discovery'
@@ -43,21 +46,7 @@ function Layout({ children }) {
     <header className="site-header"><div className="container d-flex align-items-center justify-content-between gap-3">
       <Link className="brand-link" to="/" aria-label="DormFinder home"><Brand /></Link>
       <button type="button" className="btn btn-outline-primary menu-toggle" aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(value => !value)}>Menu</button>
-      <nav id="main-navigation" aria-label="Main navigation" className={'main-navigation ' + (menuOpen ? 'is-open' : '')} onClick={event => { if (event.target.closest('a')) setMenuOpen(false) }}>
-        <Link className="nav-link" to={user?.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Browse</Link>
-
-        {user ? <>
-          <Link className="nav-link" to={user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account'}>{user.role === 'admin' ? 'Reviews' : 'My space'}</Link>
-          {['student', 'landlord'].includes(user.role) && <><Link className="nav-link" to="/inquiries">Inquiries</Link><Link className="nav-link" to="/viewings">Viewings</Link></>}
-          {user.role === 'student' && <><Link className="nav-link" to="/favorites">Favorites</Link><Link className="nav-link" to="/shortlists">Shortlists</Link></>}
-          <Link className="nav-link" to="/notifications">Notifications</Link>
-          <Link className="nav-link" to="/profile">Profile</Link>
-          <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => { if (confirmDiscard()) logout.mutate() }}>Sign out</button>
-        </> : <>
-          <Link className="nav-link" to="/login">Sign in</Link>
-          <Link className="btn btn-primary btn-sm" to="/register">Get started</Link>
-        </>}
-      </nav>
+      <SiteNavigation user={user} menuOpen={menuOpen} closeMenu={() => setMenuOpen(false)} signingOut={logout.isPending} onSignOut={() => { if (confirmDiscard()) logout.mutate() }} />
     </div></header>
     <main id="main" tabIndex="-1">
       {logout.error && <div className="container mt-3"><ErrorNotice error={logout.error} /></div>}
@@ -71,33 +60,12 @@ function Layout({ children }) {
 }
 
 function Home() {
-  const navigate = useNavigate()
-  const campuses = useCampuses()
-  const { data: user } = useCurrentUser()
-  const [selection, setSelection] = useState(null)
-  const [error, setError] = useState('')
-  const campusId = selection ?? String(user?.preferred_campus_id || '')
-  function search(event) {
-    event.preventDefault()
-    if (!campusId) { setError('Choose a specific campus to find nearby housing.'); return }
-    navigate(browseLink(campusId))
-  }
   return <>
     <section className="hero campus-hero"><div className="container"><div className="row align-items-center g-5">
-      <div className="col-lg-7"><span className="eyebrow">YOUR CAMPUS. YOUR NEXT CHAPTER.</span><h1>Find your place.<br /><span>Feel closer to campus.</span></h1>
-        <p className="hero-copy">From your first class to your first home away from home. Explore rooms near your college, understand the costs, and ask owners directly.</p>
-        <form className="home-campus-form panel" onSubmit={search}>
-          {campuses.isPending ? <Loading>Loading campus directory…</Loading> : campuses.error ? <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} /> : <CampusSearch campuses={campuses.data} value={campusId} onChange={value => { setSelection(value); setError('') }} />}
-          {error && <p role="alert" className="text-danger">{error}</p>}
-          <button className="btn btn-primary btn-lg w-100" disabled={campuses.isPending || !!campuses.error}>Find housing near my campus</button>
-        </form>
-        <div className="d-flex gap-3 flex-wrap mt-3"><Link className="btn btn-outline-primary" to="/find">Build my campus housing search</Link><Link to="/listings">Explore all listings</Link><Link to="/register?role=landlord">List your property</Link></div>
-      </div>
-      <div className="col-lg-5"><aside className="campus-story panel"><span className="eyebrow">A LITTLE MORE CLARITY</span><div className="story-house" aria-hidden="true">⌂</div><h2>A good fit starts with the details.</h2><ul><li>Your specific campus, in the picture.</li><li>Rent, fixed charges, and move-in costs together.</li><li>Availability dates you can actually check.</li><li>Private questions, directly to the owner.</li></ul><p className="small text-secondary">Our directory is growing across Metro Manila. Housing supply varies by campus.</p></aside></div>
+      <div className="col-lg-7"><span className="eyebrow">YOUR CAMPUS. YOUR NEXT CHAPTER.</span><h1>Find your place.<br /><span>Feel closer to campus.</span></h1><p className="hero-copy">A room that fits your budget. A neighborhood close to class. A little more room for student life.</p><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div>
+      <div className="col-lg-5"><HomeScene /></div>
     </div></div></section>
-    <section className="container values-section"><div className="row g-4">
-      {[['01','Start with your university','Select the right campus, then narrow by distance, budget, room type, and facilities.'],['02','See your options together','Connect prices on the map with listing details and compare up to three places.'],['03','Decide with clear information','Understand known costs and confirmation dates. Ask the owner about anything missing.']].map(([number,title,description]) => <div className="col-md-4" key={number}><article className="value-card"><span>{number}</span><h2>{title}</h2><p>{description}</p></article></div>)}
-    </div></section>
+    <section className="container values-section" id="how-it-works"><div className="values-heading"><span className="eyebrow">FROM SEARCH TO YOUR FIRST VISIT</span><h2>Find a place with a little more clarity.</h2></div><div className="row g-4">{[['01','Explore near your campus','Keep your university, budget and room preferences together as you browse the map.'],['02','Find the room that fits','See the costs and availability, save your favorites and compare your options.'],['03','Talk, then take a look','Ask the owner privately or request a viewing. Follow their response in your account.']].map(([number,title,description]) => <div className="col-md-4" key={number}><article className="value-card"><span>{number}</span><h3>{title}</h3><p>{description}</p></article></div>)}</div></section>
   </>
 }
 

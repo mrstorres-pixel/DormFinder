@@ -1,12 +1,77 @@
 # DormFinder improvement plan
 
-Status: core improvement releases and the practical-feature batch are deployed and verified October 11–12, 2026. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. The remaining roadmap stays planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
+Status: core improvement releases and the practical-feature batch are deployed and verified October 11–12, 2026. The next focus is a cohesive visual and interaction redesign, requested by the user after finding the recent interface clunky and fragmented. The functional priorities below remain in the backlog. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
 
 ## Product direction
 
 Make finding student housing near a specific college or university the main experience. Support multiple institutions and distinct campuses, rather than only TIP. Use SuzyRent's side-by-side rental results and map as inspiration, with clearer student costs, campus context, useful comparisons and honest availability. Aim for measurable usability and reliability rather than claiming to be better in every way without evidence.
 
 Use a warm visual identity: ivory backgrounds, white surfaces, dark brown text and burnt orange actions. Carry consistent controls, navigation, feedback and accessibility across student, landlord and administrator screens.
+
+## Next phase: a connected visual and interaction redesign
+
+User direction, October 12: the recent interface feels clunky, overly dominated by controls, and unintuitive between steps. The whole system should feel connected. Prioritize the experience and visual hierarchy before adding more functional modules. The direction was initially recorded without interface changes; the first implementation increment is described below. Remaining screen-specific redesign stages stay planned.
+
+### Findings from the current screens
+
+- The authenticated header presents Browse, My space/Reviews, Inquiries, Viewings, Favorites, Shortlists, Notifications, Profile and Sign out with little hierarchy. Users have to infer which destination serves their current task.
+- The homepage campus form and separate campus finder are competing starting points. A single housing-search entry should reveal optional refinements naturally and carry its choices into results.
+- Listing details place room costs, comparison, an inquiry form, shortlist controls and a viewing form in the same column. These actions need distinct purpose, priority and progressive disclosure.
+- Dashboards repeat linked counts and multiple next-action cards, then add further browse links. Important decisions and continuing work need stronger priority than the number of available tools.
+- Shortlists, conversations and viewings largely present independent forms/lists. They need consistent property/room summaries, clear return paths and context explaining how they relate to the student's housing decision.
+
+### Experience model
+
+The main student journey is: choose a campus and needs → explore results and map → understand a selected room and its costs → optionally save/compare → ask the owner or arrange a viewing → follow responses and agreed visits. Saving, comparison and inquiry are optional branches, not mandatory steps or locked wizard stages. Experienced users can browse directly and revisit any stage.
+
+Use persistent campus/search context in discovery, selected property/room context in details and comparison, and the existing private historical snapshots in conversations and viewings. Return navigation must recover the search and room wherever that context is available. Do not invent a relationship between an unrelated inquiry and viewing, automatically send a request, or silently replace a draft when the user changes context.
+
+### Shared visual foundation and navigation
+
+- Keep the warm housing identity, with restrained orange accents, legible dark text, calmer neutral surfaces and consistent spacing. Use photography and useful content to establish hierarchy.
+- Define shared page headings, property/room summaries, cost summaries, status treatments, empty states, feedback and action placement. Use borders and cards for meaningful groups; avoid wrapping every paragraph or action in another panel.
+- Give each screen one clear primary action appropriate to its state. Keep secondary actions visible but quieter; destructive actions belong away from the primary task.
+- Organize student navigation around Find housing, Saved places, Conversations and Viewings. Group favorites and named shortlists within Saved places, and place profile/settings and notification access in a consistent account area. Preserve the existing routes and access rules while simplifying how they are presented.
+- Give landlords a coherent workspace for listings, student conversations and viewings. Give administrators a coherent workspace for review, reports, accounts and history. Keep a shared brand/header vocabulary while making the role's current area obvious.
+- Use active navigation, meaningful breadcrumbs and contextual return links. Keep mobile navigation concise and touch-friendly, with the same destinations and current-page cues as desktop.
+
+### Screen-by-screen direction
+
+1. **Home and campus search:** one obvious campus-led starting point. Show budget/room/distance refinements in a compact, understandable group. Let students adjust preferences without starting again. Avoid a long introductory explanation before useful search controls.
+2. **Results and map:** put campus and result context at the top, then compact search/filter controls, useful listing cards and the connected map. Keep price basis and availability readable. The selected card, room, map marker and preview must agree. On mobile, List/Map should feel like two views of the same search.
+3. **Listing details:** prioritize photos, identity/location and the selected room's meaningful costs. Give room selection a stable place. Follow with the information needed to decide. Use a focused action area for saving/comparing and contacting/visiting; open a relevant form when that action is chosen. Preserve all unsent drafts, conflict handling and guards when switching or closing forms.
+4. **Saved places and comparison:** distinguish quick favorites from named room shortlists using plain explanations. Present saved rooms with the same summaries as discovery. Make comparing a chosen set an obvious continuation, and provide contextual ways to return to the selected listing or arrange a viewing. Keep notes private and historical unavailable listings understandable.
+5. **Conversations and viewings:** lead with the property, room, relevant person and next decision. Use readable statuses, grouped date/time information and consistent response controls. Keep previous/current proposed times clear. Show success states that explain where to continue; avoid displaying unrelated forms at once.
+6. **Student home:** lead with decisions awaiting the student, upcoming agreed viewings and a clear way to resume housing exploration. Supporting counts should be compact rather than dominate the page. Use existing data; do not imply saved searches exist until that later feature is implemented.
+7. **Landlord workspace:** use a consistent listing → readiness/review → availability → student response structure. Prioritize requests needing decisions and listings needing updates. Make editing, publication state and next action clear without losing guards or historical records.
+8. **Administrator workspace:** prioritize the review/report queues and their next action. Use consistent inspection layouts and readable status/history. Keep sensitive/private access restrictions and separate account moderation from normal listing review.
+
+### Implementation order and acceptance
+
+- First establish the shared visual language and navigation, then redesign home/search → results/map → listing details as one complete student journey.
+- Next connect saved places/comparison → conversations/viewings → student home using the same summaries and action hierarchy.
+- Then apply the shared language to landlord and administrator workspaces, preserving their distinct operational tasks.
+- Review representative desktop and mobile screens together before release so that individual page improvements do not create another disconnected style.
+- Verify keyboard access, focus after opening/closing forms, readable contrast, 360/768/1440px layouts, mobile navigation, loading/empty/error states, room/price synchronization, search return context, authentication return paths and draft protection.
+- Rehearse complete guest, student, landlord and administrator flows in Chromium and WebKit. Preserve the existing backend/privacy/revision protections, completed features, data and free providers. Release only tested changes; no unrelated new feature or dependency is required for this redesign.
+
+## Retained functional priorities after the visual phase
+
+1. **Accurate listings and availability:** clearer room differences, complete photos/costs, and dependable availability freshness.
+2. **Full-budget matching:** total known monthly and move-in cost filters, with unknown charges stated clearly.
+3. **Better campus recommendations:** clear selected-room reasons based on campus, distance, budget and requirements.
+4. **A smoother decision process:** further connect saving, comparing, private questions and arranging viewings. The visual phase begins improving this experience using existing capabilities.
+5. **Faster landlord responses:** clearer inquiry/viewing queues and practical availability updates.
+
+Saved campus searches and a viewing calendar remain subsequent practical improvements. Email verification/password recovery remain deferred at the user's request. Privacy, data preservation and regression checks remain requirements throughout.
+
+### First visual increment: shared navigation and the discovery journey
+
+Implemented: a calmer shared visual foundation, grouped Saved places and Account menus, current-area indicators, keyboard/Escape/outside-click menu handling, one reusable campus/room/budget/preferences form on home and the campus finder, an original decorative room illustration, compact result cards, initially collapsed filters with visible applied chips, and progressive result explanations. Home keeps unrestricted room browsing until a room type is selected; a budget requires a clear per-person/per-room basis.
+
+Listing details now use a stable room/cost decision area, with known monthly and move-in totals visible before expanding the detailed charge breakdown. Inquiry, shortlist and viewing forms open when selected. They remain mounted when collapsed, preserving private inquiry text, viewing drafts, retry identity and conflict guards. Historical inquiry/room selection behavior and card/map/comparison synchronization remain intact. On small screens the decision area follows the gallery; on desktop it stays beside the property information. Shared navigation and calmer count surfaces apply to all existing roles.
+
+The next visual increments remain saved places/comparison, conversations/viewings and student home as a connected decision workspace, then the deeper landlord/admin screen layouts. The retained functional priorities above remain deferred during this visual work. No new backend endpoints, migration, dependency or provider configuration is required for this first increment. Detailed verification and release state are recorded in validation.md.
 
 ## Part 1: Foundation and university discovery
 
