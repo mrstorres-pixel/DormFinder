@@ -14,7 +14,7 @@ test('built homepage defers page bundles until navigation', async ({ page, baseU
   const listingCode = page.waitForResponse(response => /\/assets\/ListingPages-.*\.js/.test(response.url()) && response.status() === 200)
   await page.getByRole('link', { name: 'Browse', exact: true }).click()
   await listingCode
-  await expect(page.getByRole('heading', { name: 'Find your place', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Places for your student life', exact: true })).toBeVisible()
   expect(chunks.some(url => /ListingPages-/.test(url))).toBe(true)
   expect(chunks.some(url => /ReviewPages-|InquiryPages-/.test(url))).toBe(false)
 })
