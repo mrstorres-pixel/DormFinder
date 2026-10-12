@@ -22,6 +22,20 @@ test('existing cloud accounts read their real dashboard counts and next actions'
       await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible()
       const notificationCard = page.locator('.dashboard-counts > div').filter({ has: page.getByRole('link', { name: 'Unread notifications', exact: true }) })
       await expect(notificationCard.locator('dd')).toHaveText(String(counts.unread_notifications))
+      const practicalCounts = role === 'admin'
+        ? { older_reviews: ['Reviews waiting over two days', '/admin'] }
+        : {
+            upcoming_viewings: ['Upcoming viewings', '/viewings?status=accepted'],
+            pending_viewings: ['Viewing decisions waiting', role === 'student' ? '/viewings?status=proposed' : '/viewings?status=requested'],
+            awaiting_reply: ['Awaiting your reply', '/inquiries'],
+            ...(role === 'student' ? { shortlists: ['Private shortlists', '/shortlists'] } : { stale_listings: ['Availability needs updating', '/landlord'] }),
+          }
+      for (const [key, [label, destination]] of Object.entries(practicalCounts)) {
+        expect(Number.isInteger(counts[key])).toBe(true)
+        const card = page.locator('.dashboard-counts > div').filter({ has: page.getByRole('link', { name: label, exact: true }) })
+        await expect(card.locator('dd')).toHaveText(String(counts[key]))
+        await expect(card.getByRole('link', { name: label, exact: true })).toHaveAttribute('href', destination)
+      }
       if (role === 'student') await expect(page.getByRole('link', { name: 'Compare your shortlist' })).toHaveAttribute('href', '/compare')
       else if (role === 'landlord') await expect(page.getByRole('link', { name: 'Respond to students' })).toHaveAttribute('href', '/inquiries')
       else await expect(page.getByRole('link', { name: 'Follow up on reports' })).toHaveAttribute('href', '/admin/reports')

@@ -1,6 +1,6 @@
 # DormFinder improvement plan
 
-Status: core improvement releases deployed October 11–12, 2026. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. The subsequent practical-feature batch is implemented and verified locally; its production migration and deployment remain pending. The remaining roadmap stays planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
+Status: core improvement releases and the practical-feature batch are deployed and verified October 11–12, 2026. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. The remaining roadmap stays planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
 
 ## Product direction
 
@@ -90,7 +90,7 @@ If time becomes constrained, defer dashboard polish, advanced photo controls and
 - Verify and expand campuses, branches and geographic coverage.
 - Improve saved searches, alerts and recommendations using real usage evidence.
 - Email verification and account recovery are deferred in favor of practical features at the user's request; assess notification workflows separately.
-- Viewing appointments and landlord response tools are implemented locally in the practical-feature batch below; production release remains pending.
+- Viewing appointments and landlord response tools are deployed and verified in the practical-feature batch below.
 - Plan applications, reservations, cancellation rules and document privacy separately.
 - Plan payments, refunds, disputes and trustworthy reviews separately, with explicit operational requirements.
 - Improve search quality, accessibility, performance and dashboards through user testing.
@@ -106,7 +106,7 @@ These are future planning items, not completed functionality or permission to in
 
 Final release tagging and email recovery planning remain subsequent steps. The historical GitHub billing-lock exception remains separate from local/browser acceptance.
 
-## October 12 practical-feature batch: local verification complete
+## October 12 practical-feature batch: released and verified
 
 The agreed batch adds a guided campus/budget/room/amenity search, selected-room match explanations, comparable-cost highlights, private named shortlists with room choices and notes, student viewing requests with landlord counterproposals and student confirmation, and useful role dashboard counts. Viewing requests use Philippine time, participant-only access, revision checks, retry identity and overlapping-appointment protection. Notifications stay in the existing application.
 
@@ -114,4 +114,4 @@ The interruption follow-up preserves this completed work. A room chosen on the l
 
 Final local evidence: 104 backend tests / 918 assertions, Pint, 44 frontend tests, ESLint and the Vercel production build pass. Six focused Chromium/WebKit scenarios pass for the complete role workflow, practical-feature flow and room synchronization. The strengthened room-sync check additionally verifies displayed base rent and known monthly charges across preview and comparison; both browsers pass. See validation.md for run details.
 
-The additive practical-feature migration is applied locally only. Production backup/migration, runtime permission verification, publication/deployment and live acceptance for this batch remain pending. The existing production releases and user-provided certificate are preserved. Live Render rollback and the historical GitHub CI billing restriction remain separately deferred.
+The additive practical-feature migration is applied in production after a fresh verified backup, with thirteen existing application-table fingerprints preserved and restricted permissions checked. Application source 5d48f44 is now live on both existing free providers, superseding the production references above. Six live Chromium/WebKit scenarios pass for campus search, shortlists, viewing negotiation, room/price synchronization and all three role dashboards. Public asset credential scanning, fifteen-campus reads and real map tiles pass. Existing data and the user-provided certificate are preserved. Live Render rollback stays deferred; the historical GitHub CI exception remains unverified. See validation.md and deployment.md for current evidence and recovery references.

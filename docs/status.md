@@ -120,3 +120,11 @@ The approved campus finder, truthful selected-room match explanations, compariso
 Passing evidence: 104 backend tests / 918 assertions, Pint, 44 frontend tests, ESLint, the Vercel build, and six focused Chromium/WebKit scenarios including the complete three-role workflow. Two strengthened room-price synchronization cases also pass. No known local regression failures remain in this scope. Detailed evidence is in validation.md.
 
 This batch remains uncommitted and undeployed. Its production backup/migration, permissions checks, deployment and live acceptance are pending; frontend ce04614 and backend 5b76e53 remain the live sources. Live Render rollback stays deferred by the user. The historical GitHub CI billing restriction is a separate exception.
+
+## Practical features — released and verified, October 12
+
+The pending backed-up migration and controlled deployment steps are complete. Application source 5d48f44 is live on both existing free services: Render dep-db674a0473hc73dcs7lg and Vercel dpl_CzQKZupB69QJfip2BkLDiKBuMogp. The production alias remains https://dormfinder-pink.vercel.app. Eleven migrations are applied; thirteen existing application-table row fingerprints are unchanged, and restricted grants remain enforced. Supabase security advisors report no findings.
+
+All six real deployed Chromium/WebKit scenarios pass in 1.5 minutes: three-role dashboard counts/destinations, room and displayed-price synchronization, and the campus finder/private shortlist/viewing negotiation-confirmation flow. Test shortlists are removed and synthetic viewing requests cancelled with history retained. Public startup assets pass credential scanning, the entry marker matches the tested build, all fifteen campuses remain available, and twelve real map tile requests pass with zero failures. The post-deploy Render application error query returned no error logs.
+
+The agreed practical-feature batch is complete. Live Render rollback remains deferred by the user; GitHub CI's historical billing-lock exception was not reverified. Informational database performance findings remain recorded separately in validation.md. No new paid resources or further roadmap features were introduced.
