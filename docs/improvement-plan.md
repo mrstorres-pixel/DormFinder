@@ -1,6 +1,6 @@
 # DormFinder improvement plan
 
-Status: core releases, the practical-feature batch and the first appearance/flow increment are deployed and verified October 11–12, 2026. The current focus is the connected visual redesign, with deeper saved-places/conversation/viewing and role-workspace layouts still planned. The functional priorities below remain in the backlog. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
+Status: core releases, the practical-feature batch and two appearance/flow increments are deployed and verified October 11–12, 2026. The connected visual redesign now covers discovery, selected-room details, private shortlists, conversations, viewings and student-home priorities. Further comparison and deeper landlord/admin workspace layouts remain planned, alongside the retained functional priorities below. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
 
 ## Product direction
 
@@ -83,6 +83,8 @@ Listing details now place the gallery beside the room decision panel, with photo
 
 Inquiry and viewing screens share property/room context, preserve historical snapshots and offer appropriate current-listing/owner-management links. Owner viewing proposals open only when needed; previous owner notes are retained in the editor. Student home prioritizes outstanding viewing decisions and replies, with activity counts underneath. These changes use existing APIs and access rules. Deeper landlord publishing/admin queue redesigns and the retained functional priorities remain planned. Local checks and release evidence are recorded in validation.md.
 
+Release verified: frontend source 6c2da4e is READY in existing Vercel deployment dpl_H92dnpEHJbxQK7dSY4vADJFyaLDL at https://dormfinder-pink.vercel.app. All eighteen live Chromium/WebKit cases pass in one 2.9-minute run. Fifty frontend tests, lint/build, eighteen full affected local browser cases and ten final focused cases pass. The production entry matches index-V9l_CNZo.js; campus, real map tile and public-asset credential checks pass. Backend remains 5d48f44, with no schema, dependency or provider configuration changes.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.
@@ -152,7 +154,7 @@ Verification: the final backend suite passed 99 tests/830 assertions; the curren
 5. Rehearse guest campus search and all three account roles against the deployed system; verify public listings, private inquiries, storage, maps and responsive navigation.
 6. Record deployed commit/URLs, test evidence, limitations and recovery instructions. Keep the prior deployment available for rollback. Rehearsed October 12: Vercel production rollback-and-return, actual private schema restore into an isolated local database, cold local restart with data/photo preservation and local role/sample workflows with external browser requests blocked. Render rollback and complete S3 bucket restore remain separate coverage.
 
-Production status: frontend source 3db30dc is live on the existing free Vercel project, and backend source 5d48f44 remains live on the existing free Render service. Fifteen sourced campuses, private inquiries/shortlists/viewings, moderation, map continuity, form protection and the new visual discovery journey remain available. The preceding backed-up migration preserved application records and restricted grants; this frontend-only visual release required no database changes. Secrets and the user certificate were excluded. See validation.md for acceptance evidence and deployment.md for current recovery references.
+Production status: frontend source 6c2da4e is live on the existing free Vercel project, and backend source 5d48f44 remains live on the existing free Render service. Fifteen sourced campuses, private inquiries/shortlists/viewings, moderation, map continuity, form protection and the connected discovery/decision journey remain available. The preceding backed-up migration preserved application records and restricted grants; these frontend-only visual releases required no database changes. Secrets and the user certificate were excluded. See validation.md for acceptance evidence and deployment.md for current recovery references.
 
 ## Order, timebox and release criteria
 
