@@ -19,6 +19,21 @@ describe('discovery controls', () => {
     expect(onSearch).toHaveBeenLastCalledWith({ max_rent_centavos: '350029', price_basis: 'per_person', available_only: '1', sort: 'newest' })
   })
 
+  it('keeps entered mobile filters when collapsed and reopened', async () => {
+    const originalWidth = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 360 })
+    const user = userEvent.setup()
+    render(<SearchFilters params={new URLSearchParams()} onSearch={vi.fn()} />)
+    await user.click(screen.getByRole('button', { name: 'Filter and sort' }))
+    await user.type(screen.getByLabelText('Maximum monthly rent (PHP)'), '6500')
+    await user.selectOptions(screen.getByLabelText('Price basis'), 'per_person')
+    await user.click(screen.getByRole('button', { name: 'Hide filters' }))
+    await user.click(screen.getByRole('button', { name: 'Filter and sort' }))
+    expect(screen.getByLabelText('Maximum monthly rent (PHP)')).toHaveValue('6500')
+    expect(screen.getByLabelText('Price basis')).toHaveValue('per_person')
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth })
+  })
+
   it('rejects malformed amounts without sending a request', async () => {
     const onSearch = vi.fn()
     const user = userEvent.setup()

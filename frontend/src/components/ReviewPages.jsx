@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
-import useUnsavedChanges from '../lib/useUnsavedChanges'
+import { useFormChanges } from '../lib/useUnsavedChanges'
 import { ErrorNotice, Field, Loading } from './Feedback'
 import { RoomCharges } from './RoomOptions'
 import ListingInformation from './ListingInformation'
@@ -22,7 +22,7 @@ export function ReviewDetails() {
   const client = useQueryClient()
   const navigate = useNavigate()
   const [dirty, setDirty] = useState(false)
-  const clearUnsaved = useUnsavedChanges(dirty)
+  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const [confirmed, setConfirmed] = useState(false)
   const query = useQuery({ queryKey: ['review', id], queryFn: async () => (await api.get('/admin/reviews/' + id)).data.data })
   const mutation = useMutation({ mutationFn: values => writeApi('post', `/admin/reviews/${id}/decision`, values), onSuccess: async () => { clearUnsaved(); setDirty(false); await client.invalidateQueries({ queryKey: ['reviews'] }); await client.invalidateQueries({ queryKey: ['listings'] }); navigate('/admin') } })
@@ -31,6 +31,7 @@ export function ReviewDetails() {
   const property = query.data
   function decide(event) {
     event.preventDefault()
+    if (!canReplaceOthers()) return
     const values = Object.fromEntries(new FormData(event.currentTarget))
     mutation.mutate({ ...values, revision: property.revision, review_confirmed: confirmed })
   }

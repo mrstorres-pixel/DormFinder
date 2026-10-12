@@ -170,5 +170,97 @@
     "source_url": "https://mapcarta.com/W138294127",
     "official_source_url": "https://global.ateneo.edu/designingtomorrow/contact",
     "reference_note": "Approximate campus reference point from cited map, checked October 11, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ceu-manila-mendiola",
+    "name": "CEU — Manila, Mendiola",
+    "institution_name": "Centro Escolar University",
+    "address": "9 Mendiola St., San Miguel, Manila",
+    "latitude": 14.599033,
+    "longitude": 120.99198,
+    "aliases": [
+      "CEU",
+      "Centro Escolar",
+      "Mendiola",
+      "San Miguel"
+    ],
+    "city": "Manila",
+    "source_url": "https://en.wikipedia.org/wiki/Centro_Escolar_University",
+    "official_source_url": "https://admission2.ceu.edu.ph/static/contact-us.html",
+    "reference_note": "Approximate campus reference point from cited source, checked October 12, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ceu-makati-gil-puyat",
+    "name": "CEU — Makati, Gil Puyat",
+    "institution_name": "Centro Escolar University",
+    "address": "259 Senator Gil Puyat Ave., Makati City",
+    "latitude": 14.5608136,
+    "longitude": 121.0126981,
+    "aliases": [
+      "CEU",
+      "Centro Escolar",
+      "Buendia",
+      "Gil Puyat"
+    ],
+    "city": "Makati",
+    "source_url": "https://www.openstreetmap.org/way/703157276",
+    "official_source_url": "https://admission2.ceu.edu.ph/static/contact-us.html",
+    "reference_note": "Approximate campus reference point from cited source, checked October 12, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ceu-makati-legazpi",
+    "name": "CEU — Makati, Legazpi Village",
+    "institution_name": "Centro Escolar University",
+    "address": "103 Esteban St., Legazpi Village, Makati City",
+    "latitude": 14.55761,
+    "longitude": 121.01685,
+    "aliases": [
+      "CEU",
+      "Centro Escolar",
+      "Legazpi",
+      "Legaspi",
+      "Esteban"
+    ],
+    "city": "Makati",
+    "source_url": "https://mapcarta.com/W36784672",
+    "official_source_url": "https://admission2.ceu.edu.ph/static/contact-us.html",
+    "reference_note": "Approximate campus reference point from cited source, checked October 12, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "ceu-malolos",
+    "name": "CEU — Malolos",
+    "institution_name": "Centro Escolar University",
+    "address": "Km 44 MacArthur Highway, Malolos City, Bulacan",
+    "latitude": 14.87078,
+    "longitude": 120.80193,
+    "aliases": [
+      "CEU",
+      "Centro Escolar",
+      "Bulacan",
+      "Malolos"
+    ],
+    "city": "Malolos",
+    "source_url": "https://mapcarta.com/W79344692",
+    "official_source_url": "https://admission2.ceu.edu.ph/static/contact-us.html",
+    "reference_note": "Approximate campus reference point from cited source, checked October 12, 2026. Not an entrance or walking route."
+  },
+  {
+    "slug": "tip-quezon-city",
+    "name": "TIP — Quezon City, Aurora",
+    "institution_name": "Technological Institute of the Philippines",
+    "address": "938 Aurora Boulevard, Cubao, Quezon City",
+    "latitude": 14.62565,
+    "longitude": 121.06199,
+    "aliases": [
+      "TIP",
+      "T.I.P.",
+      "TIP QC",
+      "Cubao",
+      "Aurora"
+    ],
+    "city": "Quezon City",
+    "source_url": "https://mapcarta.com/W46649011",
+    "official_source_url": "https://dru.tip.edu.ph/assets/generic-pages/downloadables/TIP-Institutional-Flyer-August-2022.pdf",
+    "reference_note": "Approximate campus reference point from cited source, checked October 12, 2026. Not an entrance or walking route."
   }
 ]

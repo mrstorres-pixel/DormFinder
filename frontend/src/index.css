@@ -106,3 +106,5 @@ a{color:#9c3d15}a:hover{color:#6b290c}
 .price-cluster.is-selected span{outline:3px solid #30261f;outline-offset:3px}
 .unsaved-dialog { border: 1px solid var(--bs-border-color); border-radius: 1rem; padding: 1.5rem; width: min(32rem, calc(100% - 2rem)); }
 .unsaved-dialog::backdrop { background: rgb(0 0 0 / 45%); }
+
+.listing-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:1rem;align-items:center}#rooms-and-costs{scroll-margin-top:1rem}

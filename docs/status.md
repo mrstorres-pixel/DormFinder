@@ -102,3 +102,11 @@ The current frontend was temporarily rolled back to its immediately previous com
 Cold local application/database restart preserved 20 application tables (session rows excluded), 141 private files and both existing environment files. Sample and full three-role workflows pass in Chromium/WebKit with browser external requests blocked. The repeatable command is npm.cmd --prefix frontend run test:fallback. Startup/shutdown scripts now preserve setup files and report occupied ports or failed process lifecycle operations truthfully.
 
 This completes the rehearsed frontend rollback and local fallback coverage. Render rollback controls, full S3 bucket restoration, final release tagging, the remaining marketplace roadmap and the historical GitHub billing-lock CI exception remain separate. Live application code is unchanged by this operations-only increment; current sources remain backend 5b76e53 and frontend cc807b4. See deployment.md and validation.md for exact scope.
+
+## October 12 approved steps 1–4 follow-up
+
+Private photo backup and isolated local/S3 restore are verified for all 96 objects, with unchanged original inventory and all temporary cloud copies removed. The isolated database's 96 ready-photo references have checksum-verified, decoded restored bytes. Live Render rollback is deliberately pending at the user's request.
+
+The campus directory now has 15 distinct locations, including four CEU locations and TIP Quezon City. A fresh private schema backup preceded cloud synchronization. The sync ran twice and preserved original campus values and application-row fingerprints; ten migrations and restricted runtime grants remain unchanged.
+
+The remaining photo, moderation and lifecycle form guards are implemented, including failed-save retention, guarded report filtering, submission protection and stable photo retry identity. Student refinements preserve mobile filter input and comparison campus/room context, and surface room costs near the top of listing details. Final release evidence is recorded in validation.md. This increment does not complete the broader marketplace roadmap or resolve the historical GitHub CI restriction.

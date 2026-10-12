@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import { createBrowserRouter, createRoutesFromElements, RouterProvider, Outlet, Link, Navigate, Route, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, fieldErrors, writeApi } from './lib/api'
@@ -10,7 +10,7 @@ import MapPinPicker from './components/MapPinPicker'
 import { useCampuses } from './lib/discovery'
 import { amenities, browseLink } from './lib/housing'
 import { safeReturnTo, clearInquiryDrafts } from './lib/navigation'
-import useUnsavedChanges, { useDiscardChanges, useClearUnsavedChanges } from './lib/useUnsavedChanges'
+import useUnsavedChanges, { useDiscardChanges, useClearUnsavedChanges, useFormChanges } from './lib/useUnsavedChanges'
 import UnsavedChangesProvider from './components/UnsavedChangesProvider'
 import { RoomManager, SubmissionPanel } from './components/RoomOptions'
 import ComparisonProvider from './components/ComparisonProvider'
@@ -191,7 +191,7 @@ function PropertyEditor() {
 function PropertyForm({ property }) {
   const [coordinates, setCoordinates] = useState({ latitude:property?.latitude ?? '', longitude:property?.longitude ?? '' })
   const [dirty, setDirty] = useState(false)
-  const clearUnsaved = useUnsavedChanges(dirty)
+  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const client = useQueryClient()
   const navigate = useNavigate()
   const editable = !property || ['draft', 'rejected', 'approved'].includes(property.status)
@@ -207,6 +207,7 @@ function PropertyForm({ property }) {
   })
   function submit(event) {
     event.preventDefault()
+    if (property?.status === 'approved' && !canReplaceOthers()) return
     const form = new FormData(event.currentTarget)
     const values = Object.fromEntries(form)
     values.amenities = form.getAll('amenities')
@@ -222,7 +223,7 @@ function PropertyForm({ property }) {
     <div className="row g-4"><div className="col-lg-7"><section className="panel"><h2 className="section-title">The essentials</h2>
       <ErrorNotice error={mutation.error} />
       {mutation.isSuccess && <p className="alert alert-success" role="status">Your draft has been saved.</p>}
-      <form onSubmit={submit} onChange={() => setDirty(true)}><fieldset disabled={!editable}>
+      <form onSubmit={submit} onChange={() => setDirty(true)}><fieldset disabled={!editable || mutation.isPending}>
         <Field label="Property name" name="title" defaultValue={property?.title} required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
         <div className="mb-3"><label className="form-label" htmlFor="property_type">Property type</label><select className="form-select" id="property_type" name="property_type" defaultValue={property?.property_type || 'dormitory'}>
           <option value="dormitory">Dormitory</option><option value="apartment">Apartment</option><option value="boarding_house">Boarding house</option><option value="rental_room">Rental room</option>
@@ -247,6 +248,9 @@ function PropertyForm({ property }) {
 function PhotoManager({ property }) {
   const client = useQueryClient()
   const [inputKey, setInputKey] = useState(0)
+  const uploadIdentity = useRef({ file: null, caption: '', id: '' })
+  const [dirty, setDirty] = useState(false)
+  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const editable = ['draft', 'rejected', 'approved'].includes(property.status)
   async function refresh() {
     await Promise.all([
@@ -256,11 +260,12 @@ function PhotoManager({ property }) {
   }
   const upload = useMutation({
     mutationFn: (data) => writeApi('post', '/landlord/properties/' + property.id + '/photos', data),
-    onSuccess: async () => { setInputKey((key) => key + 1); await refresh() },
+    onSuccess: async () => { clearUnsaved(); setDirty(false); uploadIdentity.current = { file: null, caption: '', id: '' }; setInputKey((key) => key + 1); await refresh() },
     onError: refresh,
   })
   const order = useMutation({ mutationFn: ids => writeApi('put', '/landlord/properties/' + property.id + '/photos/order', { revision:property.revision, photo_ids:ids }), onSettled:refresh })
   function reorder(index, target) {
+    if (property.status === 'approved' && !canReplaceOthers()) return
     const ids = property.photos.map(photo => photo.id); const [id] = ids.splice(index,1); ids.splice(target,0,id); order.mutate(ids)
   }
   const remove = useMutation({
@@ -269,20 +274,26 @@ function PhotoManager({ property }) {
   })
   function submit(event) {
     event.preventDefault()
+    if (property?.status === 'approved' && !canReplaceOthers()) return
     const form = new FormData(event.currentTarget)
-    form.set('upload_id', crypto.randomUUID())
+    const file = event.currentTarget.elements.photo.files[0]
+    const caption = form.get('caption') || ''
+    if (uploadIdentity.current.file !== file || uploadIdentity.current.caption !== caption) {
+      uploadIdentity.current = { file, caption, id: crypto.randomUUID() }
+    }
+    form.set('upload_id', uploadIdentity.current.id)
     form.set('revision', String(property.revision))
     upload.mutate(form)
   }
   return <section className="panel"><h2 className="section-title">Property photos <span className="text-secondary small">({property.photos.length}/8)</span></h2>
     <p className="small text-secondary">JPEG, PNG or WebP. Up to 3MB and 12 megapixels each. Photos remain private while your property is a draft.</p>
     <ErrorNotice error={upload.error || remove.error || order.error} />
-    <div className="photo-grid">{property.photos.map((photo,index) => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{index === 0 ? 'Cover - ' : ''}{photo.caption}</figcaption>{editable && <div className="d-flex gap-1 flex-wrap mb-2"><button className="btn btn-sm btn-outline-primary" disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,0)}>Make cover</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' earlier'} disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index-1)}>Earlier</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' later'} disabled={index === property.photos.length-1 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index+1)}>Move</button></div>}{editable && <button className="btn btn-sm btn-outline-danger" disabled={remove.isPending || upload.isPending || order.isPending} onClick={() => remove.mutate(photo.id)} aria-label={'Remove ' + photo.caption}>Remove</button>}</figure>)}</div>
-    {editable && property.photos.length < 8 && <form key={inputKey} onSubmit={submit} className="upload-form">
+    <div className="photo-grid">{property.photos.map((photo,index) => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{index === 0 ? 'Cover - ' : ''}{photo.caption}</figcaption>{editable && <div className="d-flex gap-1 flex-wrap mb-2"><button className="btn btn-sm btn-outline-primary" disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,0)}>Make cover</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' earlier'} disabled={index === 0 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index-1)}>Earlier</button><button className="btn btn-sm btn-outline-secondary" aria-label={'Move photo ' + (index+1) + ' later'} disabled={index === property.photos.length-1 || order.isPending || upload.isPending || remove.isPending} onClick={() => reorder(index,index+1)}>Later</button></div>}{editable && <button className="btn btn-sm btn-outline-danger" disabled={remove.isPending || upload.isPending || order.isPending} onClick={() => { if (property.status !== 'approved' || canReplaceOthers()) remove.mutate(photo.id) }} aria-label={'Remove ' + photo.caption}>Remove</button>}</figure>)}</div>
+    {editable && property.photos.length < 8 && <form key={inputKey} onSubmit={submit} onChange={() => setDirty(true)} className="upload-form"><fieldset disabled={upload.isPending || remove.isPending || order.isPending}>
       <Field label="Choose a photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
       <Field label="Photo description" name="caption" placeholder="e.g. Shared room facing the courtyard" maxLength={160} />
       <button className="btn btn-outline-primary w-100" disabled={upload.isPending || remove.isPending || order.isPending}>{upload.isPending ? 'Uploading…' : 'Upload photo'}</button>
-    </form>}
+    </fieldset></form>}
   </section>
 }
 

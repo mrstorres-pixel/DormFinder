@@ -132,5 +132,10 @@ class StudentDiscoveryTest extends TestCase
         $this->assertDatabaseCount('campuses', $count);
         $this->assertSame($before, $campus->fresh()->latitude);
         $this->getJson('/api/v1/campuses')->assertOk()->assertJsonFragment(['institution_name' => 'University of Santo Tomas']);
+        $ceu = Campus::query()->where('institution_name', 'Centro Escolar University')->get();
+        $this->assertCount(4, $ceu);
+        $this->assertCount(4, $ceu->pluck('slug')->unique());
+        $this->assertCount(4, $ceu->map(fn (Campus $row): string => $row->latitude.','.$row->longitude)->unique());
+        $this->assertDatabaseHas('campuses', ['slug' => 'tip-quezon-city', 'city' => 'Quezon City']);
     }
 }

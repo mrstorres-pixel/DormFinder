@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import UnsavedChangesProvider from './UnsavedChangesProvider'
 import { createMemoryRouter, RouterProvider, Outlet, Link } from 'react-router-dom'
 import { beforeEach, describe, it, expect, vi } from 'vitest'
-import { ReportForm, LifecycleControls, Notifications, ReportQueue } from './ModerationPages'
+import { ReportForm, LifecycleControls, Notifications, ReportQueue, AccountModeration } from './ModerationPages'
 import { api, writeApi } from '../lib/api'
 import { Field } from './Feedback'
 
@@ -85,5 +85,47 @@ describe('moderation controls', () => {
     await user.selectOptions(screen.getByLabelText('Report outcome'), 'dismissed')
     await user.click(screen.getByRole('button', { name: 'Close report #8' }))
     await waitFor(() => expect(writeApi).toHaveBeenCalledWith('post', '/admin/reports/8/resolve', { status: 'dismissed', reason: 'Synthetic reviewed and dismissed concern.', revision: 3 }))
+  })
+})
+
+
+describe('remaining moderation edit guards', () => {
+  it('keeps lifecycle notes on failure and clears only after success', async () => {
+    const user = userEvent.setup()
+    writeApi.mockRejectedValueOnce(new Error('Synthetic failure')).mockResolvedValueOnce({ id: 5, status: 'archived', revision: 2 })
+    show(<LifecycleControls property={{ id: 5, status: 'draft', revision: 1 }} />)
+    await user.type(screen.getByLabelText('Reason for listing action'), 'Synthetic listing action notes.')
+    await user.click(screen.getByLabelText('I understand how this listing action affects publication and replies.'))
+    await user.click(screen.getByRole('button', { name: 'Apply listing action' }))
+    await screen.findByRole('alert')
+    await user.click(screen.getByRole('link', { name: 'Leave test form' }))
+    expect(await screen.findByRole('dialog')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Stay and edit' }))
+    expect(screen.getByLabelText('Reason for listing action')).toHaveValue('Synthetic listing action notes.')
+    await user.click(screen.getByRole('button', { name: 'Apply listing action' }))
+    await waitFor(() => expect(screen.getByLabelText('Reason for listing action')).toHaveValue(''))
+    await user.click(screen.getByRole('link', { name: 'Leave test form' }))
+    expect(await screen.findByRole('heading', { name: 'Away page' })).toBeVisible()
+  })
+
+  it('protects account moderation notes during account searches and failed saves', async () => {
+    const user = userEvent.setup()
+    api.get.mockResolvedValue({ data: { data: [{ id: 91, name: 'Synthetic account', email: 'sample@example.invalid', role: 'landlord', status: 'active', moderation_revision: 3 }], meta: { last_page: 1 } } })
+    writeApi.mockRejectedValueOnce(new Error('Synthetic failure')).mockResolvedValueOnce({ id: 91 })
+    const { router } = show(<AccountModeration />)
+    await user.type(await screen.findByLabelText('Reason for account action #91'), 'Synthetic account review notes.')
+    await user.type(screen.getByLabelText('Search account name or email'), 'other')
+    await user.click(screen.getByRole('button', { name: 'Find accounts' }))
+    expect(await screen.findByRole('dialog')).toBeVisible()
+    expect(router.state.location.search).toBe('')
+    await user.click(screen.getByRole('button', { name: 'Stay and edit' }))
+    await user.click(screen.getByLabelText('Confirm suspend account #91'))
+    await user.click(screen.getByRole('button', { name: 'Suspend account #91' }))
+    await screen.findByRole('alert')
+    expect(screen.getByLabelText('Reason for account action #91')).toHaveValue('Synthetic account review notes.')
+    await user.click(screen.getByRole('button', { name: 'Suspend account #91' }))
+    await waitFor(() => expect(screen.getByLabelText('Reason for account action #91')).toHaveValue(''))
+    await user.click(screen.getByRole('link', { name: 'Leave test form' }))
+    expect(await screen.findByRole('heading', { name: 'Away page' })).toBeVisible()
   })
 })

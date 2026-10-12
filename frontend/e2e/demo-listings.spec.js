@@ -67,7 +67,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
       await student.goto('/listings/' + manifest.ids[index])
       await expect(student.getByRole('heading', { name, exact: true })).toBeVisible()
       await expect(student.getByText('Synthetic demo listing', { exact: true })).toBeVisible()
-      if (index === 1) await expect(student.locator('.room-price')).toContainText('₱3,500.29')
+      if (index === 1) await expect(student.locator('#rooms-and-costs .room-price')).toContainText('₱3,500.29')
       const gallery = student.getByRole('region', { name: 'Property photo gallery' })
       await expect(gallery.locator('figure img')).toBeVisible()
       await expect.poll(() => gallery.locator('figure img').evaluate(image => image.complete && image.naturalWidth === 1200)).toBe(true)

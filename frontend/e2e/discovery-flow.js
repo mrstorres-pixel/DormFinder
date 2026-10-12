@@ -1,6 +1,14 @@
 import { expect } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 
+async function reloadStudent(page) {
+  const session = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/me' && response.status() === 200)
+  await page.reload()
+  const response = await session
+  expect(await response.finished()).toBeNull()
+  expect((await response.json()).data.role).toBe('student')
+}
+
 export async function apiWrite(page, path, data, method = 'POST') {
   return page.evaluate(async ({ path, data, method }) => {
     await fetch('/sanctum/csrf-cookie', { headers: { Accept: 'application/json' }, credentials: 'include', signal: AbortSignal.timeout(15000) })
@@ -64,7 +72,7 @@ export async function verifyDiscovery({ landlord, reviewer, student, originalId,
     await expect(student.getByRole('heading', { name: group + ' Matching residence', exact: true })).toBeVisible()
     await expect(student.getByRole('heading', { name: group + ' Cheap sold out residence', exact: true })).toHaveCount(0)
     await expect(student).toHaveURL(/max_rent_centavos=500000/)
-    await student.reload()
+    await reloadStudent(student)
     await expect(student.getByLabel('Maximum monthly rent (PHP)')).toHaveValue('5000.00')
     await student.getByRole('button', { name: 'Save favorite ' + group + ' Matching residence', exact: true }).click()
     await expect(student.getByRole('button', { name: 'Remove favorite ' + group + ' Matching residence', exact: true })).toBeVisible()
@@ -96,10 +104,10 @@ export async function verifyDiscovery({ landlord, reviewer, student, originalId,
     await student.setViewportSize({ width: 1280, height: 900 })
     await student.goto('/favorites')
     await expect(student.getByRole('heading', { name: group + ' Matching residence', exact: true })).toBeVisible()
-    await student.reload()
+    await reloadStudent(student)
     await expect(student.getByRole('heading', { name: group + ' Matching residence', exact: true })).toBeVisible()
     await withdrawSyntheticListings(landlord, ids)
-    await student.reload()
+    await reloadStudent(student)
     await expect(student.getByText(/saved listing\(s\) are currently unpublished/)).toBeVisible()
     await expect(student.getByRole('heading', { name: group + ' Matching residence', exact: true })).toHaveCount(0)
     await student.getByRole('button', { name: 'Remove favorite unpublished listing ' + ids[0], exact: true }).click()

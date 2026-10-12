@@ -69,7 +69,7 @@ export function SearchFilters({ params, onSearch, campuses = [] }) {
   }
   return <div className="filters-workspace">
     <button className="btn btn-outline-primary filter-toggle" aria-expanded={expanded} aria-controls="housing-filters" onClick={() => setExpanded(value => !value)}>{expanded ? 'Hide filters' : 'Filter and sort'}</button>
-    {expanded && <form id="housing-filters" className="panel search-filters" onSubmit={submit}>
+    {<form hidden={!expanded} id="housing-filters" className="panel search-filters" onSubmit={submit}>
       <CampusSearch campuses={campuses} value={campusId} onChange={setCampusId} />
       <div className="filter-grid">
         <label>Search property or city<input className="form-control" name="q" defaultValue={params.get('q') || ''} placeholder="Property, address or city" maxLength={100} /></label>

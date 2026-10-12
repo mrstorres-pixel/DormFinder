@@ -96,3 +96,12 @@ If time becomes constrained, defer dashboard polish, advanced photo controls and
 - Improve search quality, accessibility, performance and dashboards through user testing.
 
 These are future planning items, not completed functionality or permission to incur costs.
+
+## October 12 follow-up: approved steps 1–4
+
+- Recovery: all 96 private S3 objects (2,018,327 bytes) were backed up and restored to isolated local storage and a fresh private S3 prefix. Every checksum matched; the 96 temporary cloud copies were removed, and the original bucket inventory stayed unchanged. All 96 ready S3 photo references in the isolated database restore resolve to decoded, checksum-verified local image bytes. Live Render rollback is pending at the user's explicit request.
+- Form protection: photo file/caption edits, account moderation and listing lifecycle notes now use the shared navigation guard. Report filter/page changes go through guarded URLs. Successful saves clear their own form; failures preserve edits. Submission and actions that would close another dirty form require those edits to be saved or cleared first. Photo retries preserve the upload identity. Availability edits survive unrelated revision refreshes; in-flight editable fields are disabled.
+- Campus expansion: five sourced additions bring the directory to 15: CEU Manila/Mendiola, Makati/Gil Puyat, Makati/Legazpi Village, Malolos, and TIP Quezon City/Aurora. CEU's distinct addresses are verified against its [official directory](https://admission2.ceu.edu.ph/static/contact-us.html); TIP QC against the [official institutional flyer](https://dru.tip.edu.ph/assets/generic-pages/downloadables/TIP-Institutional-Flyer-August-2022.pdf). Coordinate sources and dated approximation notes are stored in campus-directory.json. This does not cover every university or every CEU-related institution.
+- Student usability: mobile filter collapse preserves entered values; comparison title links preserve the selected campus and room. Listing details show selected-room costs and availability near the top, with a shortcut to full room terms and the inquiry area. Private question drafts remain scoped to the account/property/room in the current tab, and editing is disabled while sending. Actual guest walkthroughs check keyboard campus selection, budgets, comparison, room context, empty-campus results and 360/768/1440px layouts.
+
+Final release tagging and email recovery planning remain subsequent steps. The historical GitHub billing-lock exception remains separate from local/browser acceptance.

@@ -10,6 +10,13 @@ export default function UnsavedChangesProvider({ children }) {
       if (dirty) dirtyForms.current.add(id)
       else dirtyForms.current.delete(id)
     },
+    requireSaved(except) {
+      if ([...dirtyForms.current].some(id => id !== except)) {
+        window.alert('Save or clear your other unsaved edits before this action. Your changes have been kept.')
+        return false
+      }
+      return true
+    },
     clearAll() { dirtyForms.current.clear() },
     confirmDiscard() {
       if (dirtyForms.current.size && !window.confirm('Discard your unsaved changes and sign out?')) return false
