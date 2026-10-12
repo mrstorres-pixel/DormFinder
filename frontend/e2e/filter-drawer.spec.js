@@ -68,6 +68,7 @@ test('filter drawer preserves layout and drafts, then applies refinements withou
   await expect(drawer.getByLabel('Maximum monthly rent (PHP)')).toHaveValue('')
   await drawer.getByRole('button', { name: 'Apply filters' }).click()
   await expect(page).toHaveURL(/\/listings\?sort=newest$/)
+  await expect(trigger).toHaveText('Filters')
 
   await page.setViewportSize({ width: 360, height: 800 })
   await trigger.click()
