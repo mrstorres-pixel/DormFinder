@@ -77,7 +77,7 @@ Verification: the final backend suite passed 99 tests/830 assertions; the curren
 5. Rehearse guest campus search and all three account roles against the deployed system; verify public listings, private inquiries, storage, maps and responsive navigation.
 6. Record deployed commit/URLs, test evidence, limitations and recovery instructions. Keep the prior deployment available for rollback.
 
-Production status: source 5b76e53d0be76d093a6ca4c692d6c49b793d7528 is live on the existing free Render and Vercel services, with ten sourced campuses, dashboard next actions, map continuity and property/room navigation protection. The fresh backup catalog, additive migration, explicit campus synchronization, preserved application-row fingerprints, restricted runtime grants and original private draft/photo readback passed. Local secret files and the existing user certificate were excluded from the release. See validation.md for browser acceptance evidence and known refinements.
+Production status: backend source 5b76e53d0be76d093a6ca4c692d6c49b793d7528 remains live on the existing free Render service, and frontend source cc807b4de341e38ec03b5aabaa31d191555bf649 is live on the existing free Vercel project, with ten sourced campuses, dashboard next actions, map continuity and property/room navigation protection. The fresh backup catalog, additive migration, explicit campus synchronization, preserved application-row fingerprints, restricted runtime grants and original private draft/photo readback passed. Local secret files and the existing user certificate were excluded from the release. See validation.md for browser acceptance evidence and known refinements.
 
 ## Order, timebox and release criteria
 
