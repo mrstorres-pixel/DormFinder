@@ -44,10 +44,10 @@ test('students keep campus, budget and room context through mobile search and co
   const summary = page.getByRole('region', { name: 'Selected room summary' })
   await expect(summary).toBeVisible()
   await expect(summary).toContainText('Known monthly charges')
-  await summary.getByRole('link', { name: 'See room costs and ask the owner' }).click()
+  await page.getByRole('link', { name: 'Choose a room →' }).click()
   await expect(page).toHaveURL(/#rooms-and-costs$/)
   await page.getByText('Detailed charges and room terms', { exact: true }).click()
-  await expect(page.getByText('Known monthly charges', { exact: true })).toBeVisible()
+  await expect(page.locator('#rooms-and-costs .room-charges').getByText('Known monthly charges', { exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Sign in to ask the owner' })).toHaveAttribute('href', /returnTo=/)
   for (const width of [360, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 })

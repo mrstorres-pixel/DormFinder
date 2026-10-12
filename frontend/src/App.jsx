@@ -7,7 +7,7 @@ import { ErrorNotice, Field, Loading } from './components/Feedback'
 import Brand from './components/Brand'
 import SiteNavigation from './components/SiteNavigation'
 import HousingSearchForm from './components/HousingSearchForm'
-import HomeScene from './components/HomeScene'
+import FeaturedHomes from './components/FeaturedHomes'
 import CampusSearch from './components/CampusSearch'
 import MapPinPicker from './components/MapPinPicker'
 import { useCampuses } from './lib/discovery'
@@ -61,11 +61,9 @@ function Layout({ children }) {
 
 function Home() {
   return <>
-    <section className="hero campus-hero"><div className="container"><div className="row align-items-center g-5">
-      <div className="col-lg-7"><span className="eyebrow">YOUR CAMPUS. YOUR NEXT CHAPTER.</span><h1>Find your place.<br /><span>Feel closer to campus.</span></h1><p className="hero-copy">A room that fits your budget. A neighborhood close to class. A little more room for student life.</p><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div>
-      <div className="col-lg-5"><HomeScene /></div>
-    </div></div></section>
-    <section className="container values-section" id="how-it-works"><div className="values-heading"><span className="eyebrow">FROM SEARCH TO YOUR FIRST VISIT</span><h2>Find a place with a little more clarity.</h2></div><div className="row g-4">{[['01','Explore near your campus','Keep your university, budget and room preferences together as you browse the map.'],['02','Find the room that fits','See the costs and availability, save your favorites and compare your options.'],['03','Talk, then take a look','Ask the owner privately or request a viewing. Follow their response in your account.']].map(([number,title,description]) => <div className="col-md-4" key={number}><article className="value-card"><span>{number}</span><h3>{title}</h3><p>{description}</p></article></div>)}</div></section>
+    <section className="hero campus-hero home-discovery-hero"><div className="container"><div className="home-introduction"><span className="eyebrow">STUDENT HOUSING, CLOSE TO CAMPUS</span><h1>Your next place, <span>closer to campus.</span></h1><p>Choose where you study. Find a room that fits. Talk to the owner when you're ready.</p></div><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div></section>
+    <FeaturedHomes />
+    <section className="container home-journey" id="how-it-works" aria-label="How to find your place"><div><span>01</span><p><strong>Explore</strong>Find rooms near your college.</p></div><div><span>02</span><p><strong>Compare</strong>Keep costs and choices together.</p></div><div><span>03</span><p><strong>Visit</strong>Ask questions and arrange a viewing.</p></div></section>
   </>
 }
 
@@ -123,7 +121,7 @@ function Account() {
   const { data: user } = useCurrentUser()
   if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
   if (user?.role === 'admin') return <Navigate to="/admin" replace />
-  return <section className="container page-space"><span className="eyebrow">MY SPACE</span><h1>Welcome, {user?.name}.</h1><DashboardCounts /><Link to="/reports">Your reports</Link><div className="panel empty-state mt-4"><span className="empty-icon" aria-hidden="true">⌂</span><h2>Find a place that fits your student life.</h2><p>Browse reviewed listings, compare selected room options, and keep your questions in private conversations.</p><div className="d-flex justify-content-center gap-3 flex-wrap"><Link className="btn btn-primary" to={user?.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Browse listings</Link><Link className="btn btn-outline-primary" to="/inquiries">Your inquiries</Link></div></div></section>
+  return <section className="container page-space student-home"><div className="page-heading"><div><span className="eyebrow">YOUR HOUSING JOURNEY</span><h1>Welcome, {user?.name}.</h1><p>Your saved rooms, conversations and viewing requests, in one place.</p></div><Link className="btn btn-primary" to={user?.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Browse listings<span aria-hidden="true"> →</span></Link></div><DashboardCounts actionsFirst /><div className="student-home-footer"><Link to="/reports">Your reports</Link><Link to="/notifications">Your updates</Link></div></section>
 }
 
 function Landlord() {

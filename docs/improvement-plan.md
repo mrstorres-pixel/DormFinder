@@ -75,6 +75,14 @@ The next visual increments remain saved places/comparison, conversations/viewing
 
 Release verified: frontend source 3db30dc is READY on the existing Vercel production alias; backend remains 5d48f44. All eighteen live Chromium/WebKit checks pass, alongside forty-six frontend tests, lint/build and passing evidence for twenty-six affected local browser scenarios across the main run and corrected rerun. The existing fifteen-campus directory, private records and provider plans are preserved. The first visual increment is complete; the remaining visual stages above are separate follow-ups.
 
+### Second visual increment: content first and connected decisions
+
+Following the user's further feedback, the second pass simplifies home to one campus-search entry with optional budget/preferences and actual approved, freshly available listing previews. It uses existing listing media and keeps fictional samples visibly labeled. Saved-campus previews keep the explicit 2 km scope and offer an honest empty state. Photo failures use a fallback without hiding the listing. Invalid preferences are opened and focused for correction.
+
+Listing details now place the gallery beside the room decision panel, with photos → room decisions → supporting details on mobile. The repeated full-width cost banner is removed; the selected-room summary remains accessible on the decision panel, and all detailed charges and guards remain available. Shortlists use a list sidebar, compact room cards, private note previews/editors and explicit continuation links. The selected room survives a trip to create/manage a shortlist; returning does not automatically save or send anything.
+
+Inquiry and viewing screens share property/room context, preserve historical snapshots and offer appropriate current-listing/owner-management links. Owner viewing proposals open only when needed; previous owner notes are retained in the editor. Student home prioritizes outstanding viewing decisions and replies, with activity counts underneath. These changes use existing APIs and access rules. Deeper landlord publishing/admin queue redesigns and the retained functional priorities remain planned. Local checks and release evidence are recorded in validation.md.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.

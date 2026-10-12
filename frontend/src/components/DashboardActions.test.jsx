@@ -4,6 +4,12 @@ import { describe, expect, it } from 'vitest'
 import DashboardActions from './DashboardActions'
 function show(user, counts) { render(<MemoryRouter><DashboardActions user={user} counts={counts} /></MemoryRouter>) }
 describe('dashboard next actions', () => {
+  it('puts an outstanding viewing decision first and opens the proposed-time queue', () => {
+    show({ role: 'student' }, { pending_viewings: 2, awaiting_reply: 1 })
+    expect(screen.getAllByRole('heading', { level: 3 })[0]).toHaveTextContent('Track property viewings')
+    expect(screen.getByRole('link', { name: 'Track property viewings' })).toHaveAttribute('href', '/viewings?status=proposed')
+    expect(screen.getByText('1 conversation awaits your response.')).toBeVisible()
+  })
   it('uses the saved campus with an explicit radius and recommendation sort', () => {
     show({ role: 'student', preferred_campus_id: 23 })
     expect(screen.getByRole('link', { name: 'Find housing near your campus' })).toHaveAttribute('href', '/listings?campus_id=23&radius_km=2&sort=recommended')
