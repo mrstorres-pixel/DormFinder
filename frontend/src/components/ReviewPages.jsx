@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
+import useUnsavedChanges from '../lib/useUnsavedChanges'
 import { ErrorNotice, Field, Loading } from './Feedback'
 import { RoomCharges } from './RoomOptions'
 import ListingInformation from './ListingInformation'
@@ -20,9 +21,11 @@ export function ReviewDetails() {
   const { id } = useParams()
   const client = useQueryClient()
   const navigate = useNavigate()
+  const [dirty, setDirty] = useState(false)
+  const clearUnsaved = useUnsavedChanges(dirty)
   const [confirmed, setConfirmed] = useState(false)
   const query = useQuery({ queryKey: ['review', id], queryFn: async () => (await api.get('/admin/reviews/' + id)).data.data })
-  const mutation = useMutation({ mutationFn: values => writeApi('post', `/admin/reviews/${id}/decision`, values), onSuccess: async () => { await client.invalidateQueries({ queryKey: ['reviews'] }); await client.invalidateQueries({ queryKey: ['listings'] }); navigate('/admin') } })
+  const mutation = useMutation({ mutationFn: values => writeApi('post', `/admin/reviews/${id}/decision`, values), onSuccess: async () => { clearUnsaved(); setDirty(false); await client.invalidateQueries({ queryKey: ['reviews'] }); await client.invalidateQueries({ queryKey: ['listings'] }); navigate('/admin') } })
   if (query.isPending) return <div className="container page-space"><Loading /></div>
   if (query.error) return <div className="container page-space"><ErrorNotice error={query.error} retry={() => query.refetch()} /></div>
   const property = query.data
@@ -35,7 +38,7 @@ export function ReviewDetails() {
     <ListingInformation property={property} /><div className="public-photos mb-4">{property.photos.map(photo => <figure key={photo.id}><img src={photo.url} alt={photo.caption} /><figcaption>{photo.caption}</figcaption></figure>)}</div>
     <div className="row g-4">{property.room_options.map(option => <div className="col-lg-6" key={option.id}><article className="panel"><h2>{option.name}</h2><RoomCharges option={option} /></article></div>)}</div>
     <section className="panel mt-4 narrow-page"><h2>Review decision</h2><ul><li>Information, room inventory and charge terms are complete and understandable.</li><li>The address and coordinates are plausible and photos match the listing.</li><li>Check for misleading or prohibited content and obvious duplicate listings.</li><li>Approval is a content review, not a safety inspection or ownership certification.</li></ul>
-      <ErrorNotice error={mutation.error} />{property.status === 'pending_review' ? <form onSubmit={decide}><label className="d-flex gap-2 mb-3"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} /><span>I have checked the listing against these review criteria.</span></label><label className="form-label" htmlFor="review-decision">Decision</label><select className="form-select mb-3" id="review-decision" name="decision"><option value="approved">Approve for publication</option><option value="rejected">Return with feedback</option></select><Field label="Feedback for the owner" name="reason" as="textarea" maxLength={2000} hint="Required when returning a listing. Explain what the owner should correct." rows={3} /><button className="btn btn-primary" disabled={!confirmed || mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save review decision'}</button></form> : <p>This listing is now {property.status.replaceAll('_', ' ')}. Return to the queue for current submissions.</p>}
+      <ErrorNotice error={mutation.error} />{property.status === 'pending_review' ? <form onChange={() => setDirty(true)} onSubmit={decide}><fieldset disabled={mutation.isPending}><label className="d-flex gap-2 mb-3"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} /><span>I have checked the listing against these review criteria.</span></label><label className="form-label" htmlFor="review-decision">Decision</label><select className="form-select mb-3" id="review-decision" name="decision"><option value="approved">Approve for publication</option><option value="rejected">Return with feedback</option></select><Field label="Feedback for the owner" name="reason" as="textarea" maxLength={2000} hint="Required when returning a listing. Explain what the owner should correct." rows={3} /><button className="btn btn-primary" disabled={!confirmed || mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save review decision'}</button></fieldset></form> : <p>This listing is now {property.status.replaceAll('_', ' ')}. Return to the queue for current submissions.</p>}
     </section><LifecycleControls property={property} admin />
   </section>
 }

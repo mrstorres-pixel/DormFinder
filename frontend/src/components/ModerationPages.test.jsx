@@ -1,7 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter } from 'react-router-dom'
+import UnsavedChangesProvider from './UnsavedChangesProvider'
+import { createMemoryRouter, RouterProvider, Outlet, Link } from 'react-router-dom'
 import { beforeEach, describe, it, expect, vi } from 'vitest'
 import { ReportForm, LifecycleControls, Notifications, ReportQueue } from './ModerationPages'
 import { api, writeApi } from '../lib/api'
@@ -10,11 +11,31 @@ import { Field } from './Feedback'
 vi.mock('../lib/api', async original => ({ ...await original(), api: { get: vi.fn() }, writeApi: vi.fn() }))
 vi.mock('../lib/auth', () => ({ useCurrentUser: () => ({ data: { id: 7, role: 'student' } }) }))
 function show(component) {
-  return render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}><MemoryRouter>{component}</MemoryRouter></QueryClientProvider>)
+  const router = createMemoryRouter([{ element: <UnsavedChangesProvider><Outlet /></UnsavedChangesProvider>, children: [{ path: '/edit', element: <>{component}<Link to="/away">Leave test form</Link></> }, { path: '/away', element: <h1>Away page</h1> }] }], { initialEntries: ['/edit'] })
+  return { ...render(<QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })}><RouterProvider router={router} /></QueryClientProvider>), router }
 }
 beforeEach(() => vi.clearAllMocks())
 
 describe('moderation controls', () => {
+  it('retains a report after failed save and stops blocking only after success', async () => {
+    const user = userEvent.setup()
+    writeApi.mockRejectedValueOnce(new Error('Synthetic failure')).mockResolvedValueOnce({ id: 9 })
+    const { router } = show(<ReportForm property={{ id: 5 }} />)
+    await user.click(screen.getByText('Report this listing'))
+    await user.type(screen.getByLabelText('Report details'), 'Synthetic report that must remain available.')
+    await user.click(screen.getByRole('button', { name: 'Send listing report' }))
+    await screen.findByRole('alert')
+    await user.click(screen.getByRole('link', { name: 'Leave test form' }))
+    expect(await screen.findByRole('dialog')).toBeVisible()
+    expect(router.state.location.pathname).toBe('/edit')
+    await user.click(screen.getByRole('button', { name: 'Stay and edit' }))
+    expect(screen.getByLabelText('Report details')).toHaveValue('Synthetic report that must remain available.')
+    await user.click(screen.getByRole('button', { name: 'Send listing report' }))
+    await screen.findByRole('status')
+    await user.click(screen.getByRole('link', { name: 'Leave test form' }))
+    expect(await screen.findByRole('heading', { name: 'Away page' })).toBeVisible()
+  })
+
   it('reuses a report identifier after a failed request and shows success accessibly', async () => {
     const user = userEvent.setup()
     writeApi.mockRejectedValueOnce(new Error('Synthetic unavailable request')).mockResolvedValueOnce({ id: 9 })

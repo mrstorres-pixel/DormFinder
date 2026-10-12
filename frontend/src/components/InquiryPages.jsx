@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
+import useUnsavedChanges from '../lib/useUnsavedChanges'
 import { ErrorNotice, Field, Loading } from './Feedback'
 
 export function InquiryList() {
@@ -20,11 +21,12 @@ export function InquiryThread() {
   const { data: user } = useCurrentUser()
   const [page, setPage] = useState(1)
   const [body, setBody] = useState('')
+  const clearUnsaved = useUnsavedChanges(body.length > 0)
   const [identity, setIdentity] = useState({ body: '', id: '' })
   const thread = useQuery({ queryKey: ['inquiry', id], queryFn: async () => (await api.get('/inquiries/' + id)).data.data, refetchInterval: 10_000 })
   const messages = useQuery({ queryKey: ['inquiry-messages', id, page], queryFn: async () => (await api.get(`/inquiries/${id}/messages`, { params: { page } })).data, enabled: !!thread.data, refetchInterval: 10_000 })
   const mutation = useMutation({ mutationFn: data => writeApi('post', `/inquiries/${id}/messages`, data), onSuccess: async () => {
-    setBody(''); setIdentity({ body: '', id: '' })
+    clearUnsaved(); setBody(''); setIdentity({ body: '', id: '' })
     await client.invalidateQueries({ queryKey: ['inquiry-messages', id] })
     const current = await api.get(`/inquiries/${id}/messages`, { params: { page: 1 } })
     setPage(current.data.meta.last_page)
@@ -40,7 +42,7 @@ export function InquiryThread() {
   return <section className="container page-space narrow-page"><Link to="/inquiries">← Your inquiries</Link><h1 className="mt-4">{thread.data.listing_snapshot.title}</h1><p>Conversation with {thread.data.participant_name}</p><p className="small text-secondary">Original inquiry: {thread.data.listing_snapshot.room_option?.name || 'Property information'}. Listing is now {thread.data.property_status.replaceAll('_', ' ')}. Your original inquiry details remain saved when the listing changes.</p>
     <div className="panel"><h2 className="section-title">Messages</h2>{messages.isPending ? <Loading /> : messages.error ? <ErrorNotice error={messages.error} retry={() => messages.refetch()} /> : <div className="conversation" role="log" aria-label="Conversation messages">{messages.data.data.map(message => <article key={message.id} className={'message ' + (message.sender_id === user?.id ? 'message-own' : '')}><p className="small mb-1"><strong>{message.sender_name}</strong> · {new Date(message.created_at).toLocaleString('en-PH')}</p><p className="preserve-lines mb-0">{message.body}</p></article>)}</div>}
       {messages.data?.meta.last_page > 1 && <nav className="d-flex align-items-center gap-3 my-3" aria-label="Message pages"><button className="btn btn-sm btn-outline-primary" disabled={page <= 1} onClick={() => setPage(page - 1)}>Earlier messages</button><span>Page {page} of {messages.data.meta.last_page}</span><button className="btn btn-sm btn-outline-primary" disabled={page >= messages.data.meta.last_page} onClick={() => setPage(page + 1)}>Later messages</button></nav>}
-      <ErrorNotice error={mutation.error} />{thread.data.can_reply ? <form onSubmit={send} className="mt-4"><Field name="reply-body" label="Your reply" as="textarea" rows={3} required maxLength={3000} value={body} onChange={event => setBody(event.target.value)} /><button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Sending…' : 'Send reply'}</button><p className="small text-secondary mt-3">Keep identity documents, passwords and payment details out of this conversation.</p></form> : <p className="alert alert-warning mt-3">Replies are paused because the listing or a participant is suspended. Earlier messages remain available to participants.</p>}
+      <ErrorNotice error={mutation.error} />{thread.data.can_reply ? <form onSubmit={send} className="mt-4"><Field name="reply-body" label="Your reply" as="textarea" rows={3} required maxLength={3000} disabled={mutation.isPending} value={body} onChange={event => setBody(event.target.value)} /><button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Sending…' : 'Send reply'}</button><p className="small text-secondary mt-3">Keep identity documents, passwords and payment details out of this conversation.</p></form> : <p className="alert alert-warning mt-3">Replies are paused because the listing or a participant is suspended. Earlier messages remain available to participants.</p>}
     </div>
   </section>
 }

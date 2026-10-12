@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { createBrowserRouter, createRoutesFromElements, RouterProvider, Outlet, Link, Navigate, Route, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, fieldErrors, writeApi } from './lib/api'
@@ -13,11 +13,16 @@ import { safeReturnTo, clearInquiryDrafts } from './lib/navigation'
 import useUnsavedChanges, { useDiscardChanges, useClearUnsavedChanges } from './lib/useUnsavedChanges'
 import UnsavedChangesProvider from './components/UnsavedChangesProvider'
 import { RoomManager, SubmissionPanel } from './components/RoomOptions'
-import { Listings, ListingDetails, Comparison } from './components/ListingPages'
-import { ReviewQueue, ReviewDetails } from './components/ReviewPages'
-import { InquiryList, InquiryThread } from './components/InquiryPages'
 import ComparisonProvider from './components/ComparisonProvider'
 import { DashboardCounts, Notifications, StudentReports, ReportQueue, AccountModeration, AdminListings, AuditHistory, LifecycleControls } from './components/ModerationPages'
+
+const Listings = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Listings })))
+const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
+const Comparison = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Comparison })))
+const ReviewQueue = lazy(() => import('./components/ReviewPages').then(module => ({ default: module.ReviewQueue })))
+const ReviewDetails = lazy(() => import('./components/ReviewPages').then(module => ({ default: module.ReviewDetails })))
+const InquiryList = lazy(() => import('./components/InquiryPages').then(module => ({ default: module.InquiryList })))
+const InquiryThread = lazy(() => import('./components/InquiryPages').then(module => ({ default: module.InquiryThread })))
 
 function Layout({ children }) {
   const confirmDiscard = useDiscardChanges()
@@ -282,36 +287,41 @@ function PhotoManager({ property }) {
 }
 
 function Profile() {
+  const [profileDirty, setProfileDirty] = useState(false)
+  const [passwordDirty, setPasswordDirty] = useState(false)
+  const clearProfile = useUnsavedChanges(profileDirty)
+  useUnsavedChanges(passwordDirty)
+  const clearAllUnsaved = useClearUnsavedChanges()
   const campuses = useCampuses()
   const [selectedCampus, setSelectedCampus] = useState(null)
   const { data: user } = useCurrentUser()
   const client = useQueryClient()
   const navigate = useNavigate()
-  const nameChange = useMutation({ mutationFn: (data) => writeApi('patch', '/me', data), onSuccess: (data) => client.setQueryData(['me'], data) })
+  const nameChange = useMutation({ mutationFn: (data) => writeApi('patch', '/me', data), onSuccess: (data) => { clearProfile(); setProfileDirty(false); client.setQueryData(['me'], data) } })
   const passwordChange = useMutation({
     mutationFn: (data) => writeApi('patch', '/me/password', data),
-    onSuccess: () => { client.clear(); client.setQueryData(['me'], null); navigate('/login') },
+    onSuccess: () => { clearAllUnsaved(); setProfileDirty(false); setPasswordDirty(false); client.clear(); client.setQueryData(['me'], null); navigate('/login') },
   })
   return <section className="container page-space narrow-page"><span className="eyebrow">ACCOUNT SETTINGS</span><h1>Your profile</h1>
     <div className="panel mt-4"><h2 className="section-title">About you</h2><p className="text-secondary">{user?.email} · {user?.role}</p><ErrorNotice error={nameChange.error} />
-      <form onSubmit={(event) => { event.preventDefault(); nameChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}>
+      <form onChange={() => setProfileDirty(true)} onSubmit={(event) => { event.preventDefault(); nameChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}><fieldset disabled={nameChange.isPending || passwordChange.isPending}>
         <Field label="Your name" name="name" defaultValue={user?.name} required maxLength={100} />
-        {user?.role === 'student' && <><CampusSearch campuses={campuses.data || []} value={selectedCampus ?? String(user?.preferred_campus_id || '')} onChange={setSelectedCampus} name="preferred_campus_id" /><ErrorNotice error={campuses.error} retry={() => campuses.refetch()} /></>}
+        {user?.role === 'student' && <><CampusSearch campuses={campuses.data || []} value={selectedCampus ?? String(user?.preferred_campus_id || '')} onChange={value => { setSelectedCampus(value); setProfileDirty(true) }} name="preferred_campus_id" /><ErrorNotice error={campuses.error} retry={() => campuses.refetch()} /></>}
         <button className="btn btn-primary" disabled={nameChange.isPending}>Save profile</button>
         {nameChange.isSuccess && <span className="ms-3 text-success" role="status">Saved.</span>}
-      </form></div>
+      </fieldset></form></div>
     <div className="panel mt-4"><h2 className="section-title">Change password</h2><p className="small text-secondary">Changing your password signs you out of all sessions.</p><ErrorNotice error={passwordChange.error} />
-      <form onSubmit={(event) => { event.preventDefault(); passwordChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}>
+      <form onChange={event => setPasswordDirty([...new FormData(event.currentTarget).values()].some(value => String(value).length > 0))} onSubmit={(event) => { event.preventDefault(); if (profileDirty && !window.confirm('Changing your password signs you out. Discard your unsaved profile changes?')) return; passwordChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}><fieldset disabled={passwordChange.isPending || nameChange.isPending}>
         <Field label="Current password" name="current_password" type="password" autoComplete="current-password" required />
         <Field label="New password" name="password" type="password" autoComplete="new-password" required minLength={12} hint="At least 12 characters, including letters and numbers." />
         <Field label="Confirm new password" name="password_confirmation" type="password" autoComplete="new-password" required />
         <button className="btn btn-outline-primary" disabled={passwordChange.isPending}>Change password</button>
-      </form></div>
+      </fieldset></form></div>
   </section>
 }
 
 const router = createBrowserRouter(createRoutesFromElements(
-  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><Layout><Outlet /></Layout></ComparisonProvider></UnsavedChangesProvider>}>
+  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><Layout><Suspense fallback={<div className="container page-space"><Loading>Loading page...</Loading></div>}><Outlet /></Suspense></Layout></ComparisonProvider></UnsavedChangesProvider>}>
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />

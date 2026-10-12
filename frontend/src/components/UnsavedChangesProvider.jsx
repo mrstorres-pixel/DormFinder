@@ -35,7 +35,7 @@ export default function UnsavedChangesProvider({ children }) {
     {children}
     <dialog ref={dialog} className="unsaved-dialog" aria-labelledby="unsaved-title" aria-describedby="unsaved-description" onCancel={event => { event.preventDefault(); blocker.reset?.() }}>
       <h2 id="unsaved-title">Keep your changes?</h2>
-      <p id="unsaved-description">You have unsaved property or room edits. Stay to save them, or leave and discard them.</p>
+      <p id="unsaved-description">You have unsaved changes. Stay to save them, or leave and discard them.</p>
       <div className="d-flex gap-2 flex-wrap">
         <button type="button" className="btn btn-primary" autoFocus onClick={() => blocker.reset?.()}>Stay and edit</button>
         <button type="button" className="btn btn-outline-danger" onClick={() => { dirtyForms.current.clear(); blocker.proceed?.() }}>Discard and leave</button>

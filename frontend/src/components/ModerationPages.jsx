@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { ErrorNotice, Field, Loading } from './Feedback'
+import useUnsavedChanges from '../lib/useUnsavedChanges'
 import DashboardActions from './DashboardActions'
 
 const labels = { pending_reviews: 'Pending reviews', open_reports: 'Open reports', published_listings: 'Published listings', active_students: 'Active students', active_landlords: 'Active landlords', suspended_accounts: 'Suspended accounts', unread_notifications: 'Unread notifications', inquiries: 'Your inquiries', favorites: 'Saved listings' }
@@ -29,9 +30,11 @@ function Pages({ data, page, setPage }) {
 }
 
 export function ReportForm({ property }) {
+  const [dirty, setDirty] = useState(false)
+  const clearUnsaved = useUnsavedChanges(dirty)
   const [identity, setIdentity] = useState({ signature: '', id: '' })
   const client = useQueryClient()
-  const mutation = useMutation({ mutationFn: data => writeApi('post', '/listings/' + property.id + '/reports', data), onSuccess: () => { client.invalidateQueries({ queryKey: ['reports'] }); client.invalidateQueries({ queryKey: ['dashboard'] }) } })
+  const mutation = useMutation({ mutationFn: data => writeApi('post', '/listings/' + property.id + '/reports', data), onSuccess: () => { clearUnsaved(); setDirty(false); client.invalidateQueries({ queryKey: ['reports'] }); client.invalidateQueries({ queryKey: ['dashboard'] }) } })
   function submit(event) {
     event.preventDefault()
     const values = Object.fromEntries(new FormData(event.currentTarget))
@@ -41,7 +44,7 @@ export function ReportForm({ property }) {
     setIdentity({ signature, id })
     mutation.mutate({ ...values, client_id: id })
   }
-  return <details className="panel mt-4"><summary>Report this listing</summary><p className="small mt-3">Tell administrators about misleading content or another concern. Your report is private. Do not include passwords or private inquiry messages.</p><ErrorNotice error={mutation.error} />{mutation.isSuccess ? <p role="status">Your report has been received. <Link to="/reports">View your reports</Link></p> : <form onSubmit={submit}><label className="form-label" htmlFor="report-category">Concern</label><select className="form-select mb-3" id="report-category" name="category"><option value="misleading">Misleading information</option><option value="inappropriate">Inappropriate content</option><option value="duplicate">Duplicate listing</option><option value="unavailable">No longer available</option><option value="other">Other concern</option></select><Field label="Report details" name="body" as="textarea" required minLength={10} maxLength={2000} rows={3} /><button className="btn btn-outline-danger" disabled={mutation.isPending}>Send listing report</button></form>}</details>
+  return <details className="panel mt-4"><summary>Report this listing</summary><p className="small mt-3">Tell administrators about misleading content or another concern. Your report is private. Do not include passwords or private inquiry messages.</p><ErrorNotice error={mutation.error} />{mutation.isSuccess ? <p role="status">Your report has been received. <Link to="/reports">View your reports</Link></p> : <form onChange={() => setDirty(true)} onSubmit={submit}><fieldset disabled={mutation.isPending}><label className="form-label" htmlFor="report-category">Concern</label><select className="form-select mb-3" id="report-category" name="category"><option value="misleading">Misleading information</option><option value="inappropriate">Inappropriate content</option><option value="duplicate">Duplicate listing</option><option value="unavailable">No longer available</option><option value="other">Other concern</option></select><Field label="Report details" name="body" as="textarea" required minLength={10} maxLength={2000} rows={3} /><button className="btn btn-outline-danger" disabled={mutation.isPending}>Send listing report</button></fieldset></form>}</details>
 }
 
 export function StudentReports() {
@@ -51,9 +54,11 @@ export function StudentReports() {
 }
 
 function ResolutionForm({ report }) {
+  const [dirty, setDirty] = useState(false)
+  const clearUnsaved = useUnsavedChanges(dirty)
   const client = useQueryClient()
-  const mutation = useMutation({ mutationFn: values => writeApi('post', '/admin/reports/' + report.id + '/resolve', { status: values.status, reason: values['reason-' + report.id], revision: report.revision }), onSuccess: () => { client.invalidateQueries({ queryKey: ['admin-reports'] }); client.invalidateQueries({ queryKey: ['audit'] }); client.invalidateQueries({ queryKey: ['dashboard'] }) } })
-  return <form onSubmit={event => { event.preventDefault(); mutation.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}><ErrorNotice error={mutation.error} /><label className="form-label" htmlFor={'resolution-' + report.id}>Report outcome</label><select id={'resolution-' + report.id} name="status" className="form-select mb-3"><option value="resolved">Resolved after handling the concern</option><option value="dismissed">Dismissed after review</option></select><Field label="Private resolution notes" name={'reason-' + report.id} as="textarea" required minLength={10} maxLength={2000} /><p className="small">Closing a report records the outcome. Use listing or account controls separately when a restriction is needed.</p><button className="btn btn-primary" disabled={mutation.isPending}>Close report #{report.id}</button></form>
+  const mutation = useMutation({ mutationFn: values => writeApi('post', '/admin/reports/' + report.id + '/resolve', { status: values.status, reason: values['reason-' + report.id], revision: report.revision }), onSuccess: () => { clearUnsaved(); setDirty(false); client.invalidateQueries({ queryKey: ['admin-reports'] }); client.invalidateQueries({ queryKey: ['audit'] }); client.invalidateQueries({ queryKey: ['dashboard'] }) } })
+  return <form onChange={() => setDirty(true)} onSubmit={event => { event.preventDefault(); mutation.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}><fieldset disabled={mutation.isPending}><ErrorNotice error={mutation.error} /><label className="form-label" htmlFor={'resolution-' + report.id}>Report outcome</label><select id={'resolution-' + report.id} name="status" className="form-select mb-3"><option value="resolved">Resolved after handling the concern</option><option value="dismissed">Dismissed after review</option></select><Field label="Private resolution notes" name={'reason-' + report.id} as="textarea" required minLength={10} maxLength={2000} /><p className="small">Closing a report records the outcome. Use listing or account controls separately when a restriction is needed.</p><button className="btn btn-primary" disabled={mutation.isPending}>Close report #{report.id}</button></fieldset></form>
 }
 
 export function ReportQueue() {
