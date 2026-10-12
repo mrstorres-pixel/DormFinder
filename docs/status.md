@@ -128,3 +128,11 @@ The pending backed-up migration and controlled deployment steps are complete. Ap
 All six real deployed Chromium/WebKit scenarios pass in 1.5 minutes: three-role dashboard counts/destinations, room and displayed-price synchronization, and the campus finder/private shortlist/viewing negotiation-confirmation flow. Test shortlists are removed and synthetic viewing requests cancelled with history retained. Public startup assets pass credential scanning, the entry marker matches the tested build, all fifteen campuses remain available, and twelve real map tile requests pass with zero failures. The post-deploy Render application error query returned no error logs.
 
 The agreed practical-feature batch is complete. Live Render rollback remains deferred by the user; GitHub CI's historical billing-lock exception was not reverified. Informational database performance findings remain recorded separately in validation.md. No new paid resources or further roadmap features were introduced.
+
+## First appearance/flow increment — released October 12
+
+Frontend source 3db30dc is READY in dpl_FcvdkSKzN1NaMFgyBdXpFT9UWxyY at https://dormfinder-pink.vercel.app. It establishes calmer shared styling, grouped saved/account navigation with active states and keyboard dismissal, a reusable home/campus search, content-first results with optional filters, and a focused room/cost decision area with expandable terms and private actions. Drafts remain mounted when collapsed, restored questions reopen, and viewing drafts retain room-change protection. Shared styling/navigation apply to existing roles.
+
+Passing checks: 46 frontend tests, lint/build, all 26 affected local Chromium/WebKit scenarios across the recorded main run/rerun, and all 18 live scenarios in one 2.5-minute run. Live asset scanning, the build marker, all fifteen campuses, real map tiles and the bounded Render error query passed. Backend remains 5d48f44; no backend code, schema, dependency or provider configuration changed.
+
+This completes the shared-navigation and home/search/results/details visual increment. Saved places/comparison, conversations/viewings/student home and deeper landlord/admin layouts remain the next visual stages. The five functional priorities remain saved and deferred during visual work. Live Render rollback and the unverified historical CI exception remain separate.
