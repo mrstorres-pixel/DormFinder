@@ -1,6 +1,6 @@
 # DormFinder improvement plan
 
-Status: first improvement release deployed on October 11, 2026; follow-up refinements and later roadmap remain planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
+Status: core improvement releases deployed October 11–12, 2026. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. The later roadmap remains planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
 
 ## Product direction
 
@@ -77,7 +77,7 @@ Verification: the final backend suite passed 99 tests/830 assertions; the curren
 5. Rehearse guest campus search and all three account roles against the deployed system; verify public listings, private inquiries, storage, maps and responsive navigation.
 6. Record deployed commit/URLs, test evidence, limitations and recovery instructions. Keep the prior deployment available for rollback. Rehearsed October 12: Vercel production rollback-and-return, actual private schema restore into an isolated local database, cold local restart with data/photo preservation and local role/sample workflows with external browser requests blocked. Render rollback and complete S3 bucket restore remain separate coverage.
 
-Production status: backend source 5b76e53d0be76d093a6ca4c692d6c49b793d7528 remains live on the existing free Render service, and frontend source cc807b4de341e38ec03b5aabaa31d191555bf649 is live on the existing free Vercel project, with ten sourced campuses, dashboard next actions, map continuity and property/room navigation protection. The fresh backup catalog, additive migration, explicit campus synchronization, preserved application-row fingerprints, restricted runtime grants and original private draft/photo readback passed. Local secret files and the existing user certificate were excluded from the release. See validation.md for browser acceptance evidence and known refinements.
+Production status: backend source 5b76e53d0be76d093a6ca4c692d6c49b793d7528 remains live on the existing free Render service, and frontend source ce04614 is live on the existing free Vercel project, with fifteen sourced campuses, dashboard next actions, map continuity, expanded form protection and the student listing-cost summary. The fresh backup catalog, additive migration, explicit campus synchronization, preserved application-row fingerprints, restricted runtime grants and original private draft/photo readback passed. Local secret files and the existing user certificate were excluded from the release. See validation.md for browser acceptance evidence and known refinements.
 
 ## Order, timebox and release criteria
 
