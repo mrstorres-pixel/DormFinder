@@ -5,10 +5,9 @@ import { writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { useFavorites, distanceLabel } from '../lib/discovery'
 import { useComparison, comparisonItems } from '../lib/comparison'
-import { pesos, toCentavos } from '../lib/money'
+import { pesos } from '../lib/money'
 import { ErrorNotice } from './Feedback'
-import CampusSearch from './CampusSearch'
-import { amenities, preferredOption } from '../lib/housing'
+import { preferredOption } from '../lib/housing'
 import { detailedMatches } from '../lib/practical'
 import { signInLink } from '../lib/navigation'
 import 'leaflet/dist/leaflet.css'
@@ -32,65 +31,7 @@ export function ComparisonTray() {
   return <div className="comparison-tray" role="region" aria-label="Your comparison selection"><span>{selections.length} of 3 selected</span><Link className="btn btn-primary" to={'/compare?items=' + comparisonItems(selections) + (params.get('campus_id') ? '&campus_id=' + encodeURIComponent(params.get('campus_id')) : '')}>Compare {selections.length} {selections.length === 1 ? 'listing' : 'listings'}</Link><button className="btn btn-link" onClick={clear}>Clear selection</button></div>
 }
 
-export function SearchFilters({ params, onSearch, campuses = [] }) {
-  const [error, setError] = useState('')
-  const [campusId, setCampusId] = useState(params.get('campus_id') || '')
-  const [expanded, setExpanded] = useState(false)
-  function submit(event) {
-    event.preventDefault()
-    const form = new FormData(event.currentTarget)
-    const values = Object.fromEntries(form)
-    const next = {}
-    for (const key of ['q', 'property_type', 'price_basis', 'sort', 'campus_id', 'available_only', 'inventory_type', 'radius_km']) if (values[key]) next[key] = values[key]
-    if (next.radius_km && !next.campus_id) { setError('Choose a campus before filtering by distance.'); return }
-    for (const name of ['min', 'max']) {
-      if (values[name + '_rent']?.trim()) {
-        let amount
-        try { amount = toCentavos(values[name + '_rent']) } catch { setError('Enter rent as a nonnegative PHP amount with at most two decimal places.'); return }
-        next[name + '_rent_centavos'] = String(amount)
-      }
-    }
-    if ((next.min_rent_centavos || next.max_rent_centavos || next.sort?.startsWith('rent_')) && !next.price_basis) { setError('Choose a price basis before filtering or sorting rent.'); return }
-    if (next.min_rent_centavos && next.max_rent_centavos && Number(next.min_rent_centavos) > Number(next.max_rent_centavos)) { setError('Maximum rent must be at least the minimum rent.'); return }
-    setError('')
-    const facilities = form.getAll('amenities[]')
-    if (facilities.length) {
-      const result = new URLSearchParams(next); facilities.forEach(value => result.append('amenities[]', value)); onSearch(result)
-    } else onSearch(next)
-    setExpanded(false)
-  }
-  function clear() { setError(''); setCampusId(''); onSearch({}) }
-  function remove(key, value) {
-    const next = new URLSearchParams(params)
-    if (key === 'amenities[]') { const keep = next.getAll(key).filter(item => item !== value); next.delete(key); keep.forEach(item => next.append(key, item)) }
-    else next.delete(key)
-    if (key === 'campus_id') { next.delete('radius_km'); setCampusId('') }
-    if (key === 'price_basis') { next.delete('min_rent_centavos'); next.delete('max_rent_centavos'); if (next.get('sort')?.startsWith('rent_')) next.delete('sort') }
-    next.delete('page'); onSearch(next)
-  }
-  return <div className="filters-workspace">
-    <button className="btn btn-outline-primary filter-toggle" aria-expanded={expanded} aria-controls="housing-filters" onClick={() => setExpanded(value => !value)}>{expanded ? 'Hide filters' : 'Filter and sort'}</button>
-    {<form hidden={!expanded} id="housing-filters" className="panel search-filters" onSubmit={submit}>
-      <CampusSearch campuses={campuses} value={campusId} onChange={setCampusId} />
-      <div className="filter-grid">
-        <label>Search property or city<input className="form-control" name="q" defaultValue={params.get('q') || ''} placeholder="Property, address or city" maxLength={100} /></label>
-        <label>Property type<select aria-label="Property type" className="form-select" name="property_type" defaultValue={params.get('property_type') || ''}><option value="">All property types</option>{['dormitory', 'apartment', 'boarding_house', 'rental_room'].map(type => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}</select></label>
-        <label>Room type<select className="form-select" name="inventory_type" defaultValue={params.get('inventory_type') || ''}><option value="">All room types</option><option value="bedspace">Bedspace</option><option value="whole_room">Whole room</option></select></label>
-        <label>Price basis<select aria-label="Price basis" className="form-select" name="price_basis" defaultValue={params.get('price_basis') || ''}><option value="">All price bases</option><option value="per_person">Per person</option><option value="per_room">Per room</option></select></label>
-        <label>Minimum monthly rent (PHP)<input className="form-control" name="min_rent" inputMode="decimal" defaultValue={params.has('min_rent_centavos') ? (Number(params.get('min_rent_centavos')) / 100).toFixed(2) : ''} /></label>
-        <label>Maximum monthly rent (PHP)<input className="form-control" name="max_rent" inputMode="decimal" defaultValue={params.has('max_rent_centavos') ? (Number(params.get('max_rent_centavos')) / 100).toFixed(2) : ''} /></label>
-        <label>Sort listings<select aria-label="Sort listings" className="form-select" name="sort" defaultValue={params.get('sort') || 'newest'}><option value="recommended">Recommended near campus</option><option value="newest">Recently approved</option><option value="rent_asc">Monthly rent: low to high</option><option value="rent_desc">Monthly rent: high to low</option><option value="distance">Nearest campus first</option></select></label>
-        <label>Distance from campus<select className="form-select" name="radius_km" defaultValue={params.get('radius_km') || ''}><option value="">No distance limit</option>{[0.5,1,2,5].map(radius => <option key={radius} value={radius}>Within {radius} km</option>)}</select></label>
-      </div>
-      <fieldset className="mt-3"><legend className="h3">Shared amenities</legend><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input name="amenities[]" type="checkbox" value={value} defaultChecked={params.getAll('amenities[]').includes(value)} /> {label}</label>)}</div></fieldset>
-      <label className="d-flex gap-2 my-3"><input name="available_only" type="checkbox" value="1" defaultChecked={params.get('available_only') === '1'} />Available units confirmed within 14 days</label>
-      <p className="small text-secondary">Rent filters use monthly base rent. Fixed fees and variable utilities are shown separately. Price and availability must match the same room option; only matching options appear in results.</p>
-      {error && <p role="alert" className="text-danger">{error}</p>}
-      <div className="d-flex gap-3 flex-wrap"><button className="btn btn-primary">Search</button><button className="btn btn-outline-secondary" type="button" onClick={clear}>Reset filters</button></div>
-    </form>}
-    {!!params.size && <div className="active-filters" aria-label="Active search filters">{[...params.entries()].filter(([key]) => !['page','sort','south','north','east','west'].includes(key)).map(([key,value]) => <button type="button" className="filter-chip" key={key+value} onClick={() => remove(key,value)} aria-label={'Remove filter ' + key + ' ' + value}>{key === 'campus_id' ? campuses.find(c => String(c.id) === value)?.name || 'Campus' : key === 'amenities[]' ? amenities[value] : key === 'available_only' ? 'Recently confirmed vacancies' : key === 'radius_km' ? 'Within ' + value + ' km' : key.includes('rent_centavos') ? key.startsWith('min') ? 'From ' + pesos(Number(value)) : 'Up to ' + pesos(Number(value)) : value.replaceAll('_',' ')} <span aria-hidden="true">×</span></button>)}<button className="btn btn-link btn-sm" onClick={clear}>Clear all</button></div>}
-  </div>
-}
+export { default as SearchFilters } from './SearchFilters'
 
 export function ListingCard({ property, campus, chosenOptionId, selectedId, onSelect, onOptionChange }) {
   const [params] = useSearchParams()

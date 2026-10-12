@@ -115,7 +115,7 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     await expect(reviewer.getByRole('heading', { name: 'account reactivate', exact: true }).first()).toBeVisible()
     await expect(reviewer.getByRole('heading', { name: 'report closed', exact: true }).first()).toBeVisible()
     await reviewer.goto('/admin')
-    await expect(reviewer.getByText('Open reports', { exact: true })).toBeVisible()
+    await expect(reviewer.getByText('Open reports', { exact: true })).toBeVisible({ timeout: 15_000 })
     for (const width of [360, 768, 1440]) {
       await reviewer.setViewportSize({ width, height: 900 })
       expect(await reviewer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

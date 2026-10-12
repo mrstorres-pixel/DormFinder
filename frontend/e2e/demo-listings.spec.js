@@ -52,11 +52,11 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await student.getByLabel('Price basis', { exact: true }).selectOption('per_person')
     await student.getByLabel('Maximum monthly rent (PHP)').fill('5000')
     await student.getByLabel('Available units confirmed within 14 days').check()
-    await student.getByRole('button', { name: 'Search', exact: true }).click()
+    await student.getByRole('button', { name: 'Apply filters', exact: true }).click()
     await expect(student.getByRole('heading', { name: 'No listings match your search.', exact: true })).toBeVisible()
     await openFilters(student)
     await student.getByLabel('Maximum monthly rent (PHP)').fill('9000')
-    await student.getByRole('button', { name: 'Search', exact: true }).click()
+    await student.getByRole('button', { name: 'Apply filters', exact: true }).click()
     await expect(student.getByRole('heading', { name: '[DEMO] Mixed Availability Dorm', exact: true })).toBeVisible()
     await expect(student.locator('.room-price')).toContainText('₱8,200.00')
     for (const query of ['Fully%20Booked', 'Needs%20Confirmation']) {

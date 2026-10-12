@@ -10,7 +10,7 @@ export default function CampusSearch({ campuses = [], value = '', onChange, name
   const results = campusResults(campuses, query)
   function choose(campus) { onChange(String(campus.id)); setQuery(''); setOpen(false); setActive(0) }
   function keyDown(event) {
-    if (event.key === 'Escape') { setOpen(false); return }
+    if (event.key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); setOpen(false); return }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault(); setOpen(true)
       setActive(current => Math.max(0, Math.min(results.length - 1, current + (event.key === 'ArrowDown' ? 1 : -1))))

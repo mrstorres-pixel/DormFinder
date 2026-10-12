@@ -4,8 +4,8 @@ import { randomUUID } from 'node:crypto'
 export async function openFilters(page) {
   const form = page.locator('#housing-filters')
   await expect(form).toBeAttached()
-  const toggle = page.getByRole('button', { name: 'Filter and sort', exact: true })
-  if (await toggle.isVisible()) await toggle.click()
+  const toggle = page.getByRole('button', { name: /^Filters/ })
+  if (!await form.isVisible()) await toggle.click()
   await expect(form).toBeVisible()
 }
 
@@ -76,11 +76,12 @@ export async function verifyDiscovery({ landlord, reviewer, student, originalId,
     await student.getByLabel('Price basis', { exact: true }).selectOption('per_person')
     await student.getByLabel('Maximum monthly rent (PHP)').fill('5000')
     await student.getByLabel('Available units confirmed within 14 days').check()
-    await student.getByLabel('Sort listings').selectOption('rent_asc')
-    await student.getByRole('button', { name: 'Search', exact: true }).click()
+    await student.getByRole('button', { name: 'Apply filters', exact: true }).click()
     await expect(student.getByRole('heading', { name: group + ' Matching residence', exact: true })).toBeVisible()
     await expect(student.getByRole('heading', { name: group + ' Cheap sold out residence', exact: true })).toHaveCount(0)
     await expect(student).toHaveURL(/max_rent_centavos=500000/)
+    await student.getByLabel('Sort listings').selectOption('rent_asc')
+    await expect(student).toHaveURL(/sort=rent_asc/)
     await reloadStudent(student)
     await expect(student.getByLabel('Maximum monthly rent (PHP)')).toHaveValue('5000.00')
     await student.getByRole('button', { name: 'Save favorite ' + group + ' Matching residence', exact: true }).click()

@@ -93,6 +93,12 @@ Map label grouping now accounts for overlapping label footprints rather than arb
 
 Released source 1dc03d4 is READY at the existing production alias in dpl_A1ca9LxXCVnmHZ87npvp3374sWn3. Fifty-three frontend tests, lint/build, sixteen affected local browser scenarios and all sixteen live scenarios have passing evidence. Two live page-loading cases required a test-only heading update and passed their focused rerun; the other fourteen passed the main run. No application failure remains in the scoped checks.
 
+### Filter drawer refinement — October 12, 2026
+
+The approved filters redesign replaces the inline expanding box with a left-side desktop drawer and a nearly full-screen mobile sheet. Opening it leaves the listings and map in place. Campus/location, budget, room preferences and amenities/availability have distinct sections; the heading, close control and Apply filters/Clear all footer remain visible while the contents scroll. Closing retains unapplied changes; Clear all inside the drawer edits the draft until Apply. Active filters remain visible with a count on the Filters button. Sort sits beside the result count, with rent sorting available after selecting a price basis.
+
+The modal supports outside-click dismissal, Escape, keyboard focus containment and focus return, and prevents background scrolling. Campus suggestions consume Escape before the drawer closes. Refining the same campus/radius preserves the map viewport and intentional area bounds; changing the campus/radius resets the relevant map context. Room choices and List/Map mode remain available. This is a frontend-only refinement using the existing API and free providers. Verification and release evidence are recorded in validation.md.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.

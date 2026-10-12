@@ -17,15 +17,15 @@ test('students keep campus, budget and room context through mobile search and co
   await page.getByRole('button', { name: 'Find housing near my campus' }).click()
   const campusId = ceu.find(campus => campus.slug === 'ceu-manila-mendiola').id
   await expect(page).toHaveURL(new RegExp('campus_id=' + campusId + '&radius_km=2&sort=recommended'))
-  await page.getByRole('button', { name: 'Filter and sort', exact: true }).click()
+  await page.getByRole('button', { name: /^Filters/ }).click()
   await page.getByLabel('Maximum monthly rent (PHP)').fill('7000')
   await page.getByLabel('Price basis', { exact: true }).selectOption('per_person')
-  await page.getByRole('button', { name: 'Hide filters', exact: true }).click()
-  await page.getByRole('button', { name: 'Filter and sort', exact: true }).click()
+  await page.getByRole('button', { name: 'Close filters', exact: true }).click()
+  await page.getByRole('button', { name: /^Filters/ }).click()
   await expect(page.getByLabel('Maximum monthly rent (PHP)')).toHaveValue('7000')
   await expect(page.getByLabel('Price basis', { exact: true })).toHaveValue('per_person')
   const filtered = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/listings' && new URL(response.url()).searchParams.get('max_rent_centavos') === '700000' && response.status() === 200)
-  await page.getByRole('button', { name: 'Search', exact: true }).click()
+  await page.getByRole('button', { name: 'Apply filters', exact: true }).click()
   const result = await filtered
   const listing = (await result.json()).data[0]
   expect(listing).toBeTruthy()

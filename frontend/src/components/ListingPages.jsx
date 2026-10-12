@@ -18,6 +18,7 @@ import { comparisonHighlights, detailedMatches } from '../lib/practical'
 import { AddToShortlist } from './Shortlists'
 import { RequestViewing } from './Viewings'
 import { browseKey, readBrowseState, saveBrowseState } from '../lib/browseState'
+import { ListingSort } from './SearchFilters'
 
 export function Listings({ favorites = false }) {
   const [params] = useSearchParams()
@@ -50,6 +51,13 @@ function ListingResults({ favorites, searchKey }) {
   const previewOption = preview?.room_options.find(o => o.id === choices[preview.id]) || preferredOption(preview?.room_options)
   const bounds = params.has('south') ? [[Number(params.get('south')), Number(params.get('west'))], [Number(params.get('north')), Number(params.get('east'))]] : undefined
   function turnPage(next) { setParams(current => { const result = new URLSearchParams(current); result.set('page', String(next)); return result }) }
+  function changeSearch(values) {
+    const next = new URLSearchParams(values)
+    const sameCampus = next.get('campus_id') === params.get('campus_id')
+    const sameRadius = next.get('radius_km') === params.get('radius_km')
+    saveBrowseState(browseKey(next), { ...browse, selectedId: sameCampus ? selectedId : null, viewport: sameCampus && sameRadius ? viewport : null })
+    setParams(next)
+  }
   function searchArea(area) {
     setParams(current => { const next = new URLSearchParams(current); next.delete('page'); for (const [key,value] of Object.entries(area)) next.set(key, String(value)); return next })
   }
@@ -61,10 +69,10 @@ function ListingResults({ favorites, searchKey }) {
     <div className={'discovery-layout ' + (showMap && !favorites ? 'with-map' : 'list-only')}>
     <div className="discovery-controls"><div className="page-heading"><div><span className="eyebrow">{params.has('campus_id') ? campus?.name || 'YOUR CAMPUS' : 'FIND YOUR CAMPUS. FIND YOUR PLACE.'}</span><h1>{favorites ? 'Your favorites' : 'Places for your student life'}</h1><p>{favorites ? 'Your saved listings. Confirm availability and terms with the owner.' : 'Explore rooms, compare costs, and see what’s nearby.'}</p></div>{favorites && <Link to="/listings" className="btn btn-outline-primary">Browse listings</Link>}</div>
     <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} />
-    {!favorites && <SearchFilters key={params.toString()} params={params} onSearch={setParams} campuses={campuses.data} />}
+    {!favorites && <SearchFilters key={params.toString()} params={params} onSearch={changeSearch} campuses={campuses.data} />}
     <ComparisonTray />
     {favorites && query.data?.meta.unavailable_ids?.length > 0 && <div className="alert alert-info"><p role="status">{query.data.meta.unavailable_ids.length} saved listing(s) are currently unpublished. They remain saved and will return here if approved again.</p><div className="d-flex gap-2 flex-wrap">{query.data.meta.unavailable_ids.map(id => <FavoriteButton key={id} propertyId={id} title={'unpublished listing ' + id} />)}</div></div>}
-    {!favorites && <div className="discovery-toolbar"><p className="small mb-0" role="status">{query.data ? query.data.meta.total + ' listings found · Page ' + page + ' of ' + query.data.meta.last_page : 'Searching housing…'}</p><button className="btn btn-outline-primary btn-sm" aria-pressed={showMap} onClick={() => setShowMap(value => !value)}>{showMap ? 'List only' : 'Show map'}</button></div>}
+    {!favorites && <div className="discovery-toolbar"><p className="small mb-0" role="status">{query.data ? query.data.meta.total + ' listings found · Page ' + page + ' of ' + query.data.meta.last_page : 'Searching housing…'}</p><ListingSort params={params} onSearch={changeSearch} /><button className="btn btn-outline-primary btn-sm" aria-pressed={showMap} onClick={() => setShowMap(value => !value)}>{showMap ? 'List only' : 'Show map'}</button></div>}
     </div>
       <div className="discovery-results">
         {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="listing-grid">{rows.map(property => <ListingCard key={property.id} property={property} campus={campus} chosenOptionId={choices[property.id]} selectedId={selectedId} onSelect={favorites ? undefined : select} onOptionChange={(id,optionId) => setChoices(current => ({ ...current, [id]: optionId }))} />)}</div> : <div className="panel empty-state"><h2>{favorites ? 'No published favorites to show.' : 'No listings match your search.'}</h2><p>{favorites ? 'Save a reviewed listing to find it here later.' : 'This campus may not have nearby listings yet, or your filters may be too narrow.'}</p>{!favorites && <div className="d-flex gap-2 flex-wrap justify-content-center"><button className="btn btn-outline-primary" onClick={() => setParams(current => { const next = new URLSearchParams(current); for (const key of ['radius_km','south','north','west','east','page']) next.delete(key); return next })}>Remove distance limits</button><button className="btn btn-link" onClick={() => setParams({})}>Clear all filters</button></div>}</div>}
