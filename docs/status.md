@@ -112,3 +112,11 @@ The campus directory now has 15 distinct locations, including four CEU locations
 The remaining photo, moderation and lifecycle form guards are implemented, including failed-save retention, guarded report filtering, submission protection and stable photo retry identity. Student refinements preserve mobile filter input and comparison campus/room context, and surface room costs near the top of listing details. Final release evidence is recorded in validation.md. This increment does not complete the broader marketplace roadmap or resolve the historical GitHub CI restriction.
 
 Release ce04614 is live on the existing Vercel production alias; all 12 focused deployed Chromium/WebKit scenarios passed in one run (50.9s). API readiness, all 15 campuses, the public build marker, startup-asset credential scan and real map tiles passed. Backend PHP remains 5b76e53; campus data was explicitly synchronized after backup. See validation.md for precise local/live coverage and deferred Render rollback.
+
+## Practical features — local checks complete, October 12
+
+The approved campus finder, truthful selected-room match explanations, comparison highlights, private named shortlists/notes, viewing requests/counterproposals and useful dashboard counts are implemented locally. Interrupted work was preserved. Card and map-preview room changes synchronize selections, prices and comparison; inquiry/viewing forms and the room editor have distinct React keys.
+
+Passing evidence: 104 backend tests / 918 assertions, Pint, 44 frontend tests, ESLint, the Vercel build, and six focused Chromium/WebKit scenarios including the complete three-role workflow. Two strengthened room-price synchronization cases also pass. No known local regression failures remain in this scope. Detailed evidence is in validation.md.
+
+This batch remains uncommitted and undeployed. Its production backup/migration, permissions checks, deployment and live acceptance are pending; frontend ce04614 and backend 5b76e53 remain the live sources. Live Render rollback stays deferred by the user. The historical GitHub CI billing restriction is a separate exception.

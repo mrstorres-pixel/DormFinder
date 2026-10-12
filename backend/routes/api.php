@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\RoomOptionController;
+use App\Http\Controllers\Api\ShortlistController;
+use App\Http\Controllers\Api\ViewingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -60,6 +62,16 @@ Route::prefix('v1')->group(function (): void {
         Route::get('favorites/ids', [FavoriteController::class, 'ids']);
         Route::put('favorites/{property}', [FavoriteController::class, 'store'])->whereNumber('property');
         Route::delete('favorites/{property}', [FavoriteController::class, 'destroy'])->whereNumber('property');
+        Route::get('viewings', [ViewingController::class, 'index']);
+        Route::post('listings/{property}/viewings', [ViewingController::class, 'store'])->whereNumber('property')->middleware('throttle:messages');
+        Route::patch('viewings/{viewing}', [ViewingController::class, 'update'])->whereNumber('viewing');
+        Route::get('shortlists', [ShortlistController::class, 'index']);
+        Route::post('shortlists', [ShortlistController::class, 'store']);
+        Route::get('shortlists/{shortlist}', [ShortlistController::class, 'show'])->whereNumber('shortlist');
+        Route::delete('shortlists/{shortlist}', [ShortlistController::class, 'destroy'])->whereNumber('shortlist');
+        Route::post('shortlists/{shortlist}/items', [ShortlistController::class, 'add'])->whereNumber('shortlist');
+        Route::patch('shortlists/{shortlist}/items/{item}', [ShortlistController::class, 'updateItem'])->whereNumber('shortlist')->whereNumber('item');
+        Route::delete('shortlists/{shortlist}/items/{item}', [ShortlistController::class, 'removeItem'])->whereNumber('shortlist')->whereNumber('item');
         Route::get('inquiries', [InquiryController::class, 'index']);
         Route::post('listings/{property}/inquiries', [InquiryController::class, 'store'])->middleware('throttle:messages');
         Route::get('inquiries/{inquiry}', [InquiryController::class, 'show']);

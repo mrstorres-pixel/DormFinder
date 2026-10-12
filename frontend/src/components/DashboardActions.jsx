@@ -5,10 +5,14 @@ export default function DashboardActions({ user, counts = {} }) {
   if (!user) return null
   const actions = user.role === 'student' ? [
     user.preferred_campus_id ? { title: 'Find housing near your campus', text: 'Start with matching options within 2 km of your saved campus.', to: browseLink(user.preferred_campus_id) } : { title: 'Choose your college or university', text: 'Save a campus to start your search with nearby recommendations.', to: '/profile' },
+    { title: 'Organize private shortlists', text: 'Group saved room options and keep your personal notes.', to: '/shortlists' },
+    { title: 'Track property viewings', text: (counts.pending_viewings || 0) + ' proposed times await your decision.', to: '/viewings' },
     { title: 'Compare your shortlist', text: 'Check the monthly rent, move-in costs and price basis side by side.', to: '/compare' },
     { title: 'Continue your conversations', text: 'Read owner replies and ask about the room option you need.', to: '/inquiries' },
   ] : user.role === 'landlord' ? [
     { title: 'Prepare your listings', text: `${Number(counts.listings?.draft || 0) + Number(counts.listings?.rejected || 0)} drafts or returned listings need preparation before review.`, to: '/landlord' },
+    { title: 'Manage property viewings', text: (counts.pending_viewings || 0) + ' requests await your decision.', to: '/viewings' },
+    { title: 'Refresh availability', text: (counts.stale_listings || 0) + ' public listings have availability needing confirmation.', to: '/landlord' },
     { title: 'Respond to students', text: 'Use private inquiries to answer questions about costs and availability.', to: '/inquiries' },
     { title: 'Check your updates', text: 'Read review decisions and reminders, then open the affected listing.', to: '/notifications' },
   ] : [

@@ -14,7 +14,7 @@ class InquiryResource extends JsonResource
             'listing_snapshot' => $this->listing_snapshot,
             'property_status' => $this->property->status,
             'participant_name' => $request->user()->id === $this->student_id ? $this->landlord->name : $this->student->name,
-            'can_reply' => $this->canReply(), 'last_message_at' => $this->last_message_at,
+            'can_reply' => $this->canReply(), 'awaiting_reply' => isset($this->last_sender_id) && (int) $this->last_sender_id !== $request->user()->id && $this->canReply(), 'last_message_at' => $this->last_message_at,
         ];
     }
 }

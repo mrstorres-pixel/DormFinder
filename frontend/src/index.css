@@ -108,3 +108,5 @@ a{color:#9c3d15}a:hover{color:#6b290c}
 .unsaved-dialog::backdrop { background: rgb(0 0 0 / 45%); }
 
 .listing-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:1rem;align-items:center}#rooms-and-costs{scroll-margin-top:1rem}
+
+.comparison-insights{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:1rem}.comparison-insights article{border:1px solid #cbbeb2;border-radius:12px;padding:1rem}.shortlist-photo{width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-bottom:1rem}

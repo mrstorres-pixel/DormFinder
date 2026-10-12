@@ -19,6 +19,9 @@ import { DashboardCounts, Notifications, StudentReports, ReportQueue, AccountMod
 const Listings = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Listings })))
 const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
 const Comparison = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Comparison })))
+const CampusFinder = lazy(() => import('./components/CampusFinder'))
+const Shortlists = lazy(() => import('./components/Shortlists'))
+const Viewings = lazy(() => import('./components/Viewings'))
 const ReviewQueue = lazy(() => import('./components/ReviewPages').then(module => ({ default: module.ReviewQueue })))
 const ReviewDetails = lazy(() => import('./components/ReviewPages').then(module => ({ default: module.ReviewDetails })))
 const InquiryList = lazy(() => import('./components/InquiryPages').then(module => ({ default: module.InquiryList })))
@@ -45,8 +48,8 @@ function Layout({ children }) {
 
         {user ? <>
           <Link className="nav-link" to={user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account'}>{user.role === 'admin' ? 'Reviews' : 'My space'}</Link>
-          {['student', 'landlord'].includes(user.role) && <Link className="nav-link" to="/inquiries">Inquiries</Link>}
-          {user.role === 'student' && <Link className="nav-link" to="/favorites">Favorites</Link>}
+          {['student', 'landlord'].includes(user.role) && <><Link className="nav-link" to="/inquiries">Inquiries</Link><Link className="nav-link" to="/viewings">Viewings</Link></>}
+          {user.role === 'student' && <><Link className="nav-link" to="/favorites">Favorites</Link><Link className="nav-link" to="/shortlists">Shortlists</Link></>}
           <Link className="nav-link" to="/notifications">Notifications</Link>
           <Link className="nav-link" to="/profile">Profile</Link>
           <button className="btn btn-outline-secondary btn-sm" disabled={logout.isPending} onClick={() => { if (confirmDiscard()) logout.mutate() }}>Sign out</button>
@@ -88,7 +91,7 @@ function Home() {
           {error && <p role="alert" className="text-danger">{error}</p>}
           <button className="btn btn-primary btn-lg w-100" disabled={campuses.isPending || !!campuses.error}>Find housing near my campus</button>
         </form>
-        <div className="d-flex gap-3 flex-wrap mt-3"><Link to="/listings">Explore all listings</Link><Link to="/register?role=landlord">List your property</Link></div>
+        <div className="d-flex gap-3 flex-wrap mt-3"><Link className="btn btn-outline-primary" to="/find">Build my campus housing search</Link><Link to="/listings">Explore all listings</Link><Link to="/register?role=landlord">List your property</Link></div>
       </div>
       <div className="col-lg-5"><aside className="campus-story panel"><span className="eyebrow">A LITTLE MORE CLARITY</span><div className="story-house" aria-hidden="true">⌂</div><h2>A good fit starts with the details.</h2><ul><li>Your specific campus, in the picture.</li><li>Rent, fixed charges, and move-in costs together.</li><li>Availability dates you can actually check.</li><li>Private questions, directly to the owner.</li></ul><p className="small text-secondary">Our directory is growing across Metro Manila. Housing supply varies by campus.</p></aside></div>
     </div></div></section>
@@ -336,6 +339,9 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />
+    <Route path="/find" element={<CampusFinder />} />
+    <Route path="/shortlists" element={<Protected role="student"><Shortlists /></Protected>} />
+    <Route path="/viewings" element={<Protected role={['student', 'landlord']}><Viewings /></Protected>} />
     <Route path="/listings" element={<Listings />} />
     <Route path="/listings/:id" element={<ListingDetails />} />
     <Route path="/compare" element={<Comparison />} />

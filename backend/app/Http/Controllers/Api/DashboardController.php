@@ -33,6 +33,21 @@ class DashboardController extends Controller
             $counts['open_reports'] = DB::table('listing_reports')->where('student_id', $user->id)->where('status', 'open')->count();
         }
 
+        if (in_array($user->role, ['student', 'landlord'], true)) {
+            $column = $user->role === 'student' ? 'student_id' : 'landlord_id';
+            $views = DB::table('viewing_requests')->where($column, $user->id)->where('starts_at', '>', now());
+            $counts['upcoming_viewings'] = (clone $views)->where('status', 'accepted')->count();
+            $counts['pending_viewings'] = (clone $views)->where('status', $user->role === 'student' ? 'proposed' : 'requested')->count();
+            $counts['awaiting_reply'] = Inquiry::query()->where($column, $user->id)->whereHas('property', fn ($query) => $query->where('status', '!=', 'suspended'))->whereHas('student', fn ($query) => $query->where('status', 'active'))->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->whereRaw('(select sender_id from inquiry_messages where inquiry_id = inquiries.id order by id desc limit 1) <> ?', [$user->id])->count();
+            if ($user->role === 'student') {
+                $counts['shortlists'] = DB::table('shortlists')->where('student_id', $user->id)->count();
+            } else {
+                $counts['stale_listings'] = $user->properties()->where('status', 'approved')->whereHas('roomOptions', fn ($query) => $query->where('availability_confirmed_at', '<', now()->subDays(14)))->count();
+            }
+        } else {
+            $counts['older_reviews'] = Property::query()->where('status', 'pending_review')->where('submitted_at', '<', now()->subDays(2))->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->count();
+        }
+
         return response()->json(['data' => $counts]);
     }
 }

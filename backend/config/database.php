@@ -96,6 +96,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => env('DB_SCHEMA', 'dormfinder'),
+            'timezone' => 'UTC',
             'sslmode' => env('DB_SSLMODE', 'verify-full'),
             'sslrootcert' => env('DB_SSLROOTCERT'),
             'options' => [PDO::ATTR_PERSISTENT => false],

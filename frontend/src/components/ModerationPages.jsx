@@ -7,14 +7,14 @@ import { ErrorNotice, Field, Loading } from './Feedback'
 import useUnsavedChanges, { useFormChanges } from '../lib/useUnsavedChanges'
 import DashboardActions from './DashboardActions'
 
-const labels = { pending_reviews: 'Pending reviews', open_reports: 'Open reports', published_listings: 'Published listings', active_students: 'Active students', active_landlords: 'Active landlords', suspended_accounts: 'Suspended accounts', unread_notifications: 'Unread notifications', inquiries: 'Your inquiries', favorites: 'Saved listings' }
+const labels = { upcoming_viewings: 'Upcoming viewings', pending_viewings: 'Viewing decisions waiting', awaiting_reply: 'Awaiting your reply', shortlists: 'Private shortlists', stale_listings: 'Availability needs updating', older_reviews: 'Reviews waiting over two days', pending_reviews: 'Pending reviews', open_reports: 'Open reports', published_listings: 'Published listings', active_students: 'Active students', active_landlords: 'Active landlords', suspended_accounts: 'Suspended accounts', unread_notifications: 'Unread notifications', inquiries: 'Your inquiries', favorites: 'Saved listings' }
 
 export function DashboardCounts() {
   const { data: user } = useCurrentUser()
   const query = useQuery({ queryKey: ['dashboard', user?.id], queryFn: async () => (await api.get('/dashboard')).data.data, enabled: !!user })
   if (query.isPending) return <Loading>Loading your counts…</Loading>
   if (query.error) return <ErrorNotice error={query.error} retry={() => query.refetch()} />
-  const destinations = { unread_notifications: '/notifications', inquiries: '/inquiries', favorites: '/favorites', open_reports: user.role === 'admin' ? '/admin/reports' : '/reports', pending_reviews: '/admin', published_listings: '/listings', active_students: '/admin/users', active_landlords: '/admin/users', suspended_accounts: '/admin/users' }
+  const destinations = { upcoming_viewings: '/viewings?status=accepted', pending_viewings: user.role === 'student' ? '/viewings?status=proposed' : '/viewings?status=requested', awaiting_reply: '/inquiries', shortlists: '/shortlists', stale_listings: '/landlord', older_reviews: '/admin', unread_notifications: '/notifications', inquiries: '/inquiries', favorites: '/favorites', open_reports: user.role === 'admin' ? '/admin/reports' : '/reports', pending_reviews: '/admin', published_listings: '/listings', active_students: '/admin/users', active_landlords: '/admin/users', suspended_accounts: '/admin/users' }
   const values = Object.entries(query.data).flatMap(([key, value]) => key === 'listings' ? Object.entries(value).map(([status, total]) => [status.replaceAll('_', ' ') + ' listings', total, '/landlord']) : [[labels[key] || key, value, destinations[key]]])
   return <><dl className="dashboard-counts">{values.map(([label, value, to]) => <div className="panel" key={label}><dt>{to ? <Link to={to}>{label}</Link> : label}</dt><dd>{value}</dd></div>)}</dl><DashboardActions user={user} counts={query.data} /></>
 }

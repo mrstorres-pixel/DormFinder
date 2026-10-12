@@ -1,6 +1,6 @@
 # DormFinder improvement plan
 
-Status: core improvement releases deployed October 11–12, 2026. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. The later roadmap remains planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
+Status: core improvement releases deployed October 11–12, 2026. The approved follow-up steps 1–4 are verified, except live Render rollback, which the user explicitly deferred. The subsequent practical-feature batch is implemented and verified locally; its production migration and deployment remain pending. The remaining roadmap stays planned. This document is the delivery plan and continuing backlog. Preserve completed work and existing data; build on the current React frontend, Laravel API, Supabase database/storage, Render backend and Vercel frontend. Keep all provider accounts and services free. Never reset production data or expose credentials.
 
 ## Product direction
 
@@ -89,8 +89,8 @@ If time becomes constrained, defer dashboard polish, advanced photo controls and
 
 - Verify and expand campuses, branches and geographic coverage.
 - Improve saved searches, alerts and recommendations using real usage evidence.
-- Add secure email verification and account recovery; assess notification/unread workflows.
-- Add viewing appointments and landlord response tools.
+- Email verification and account recovery are deferred in favor of practical features at the user's request; assess notification workflows separately.
+- Viewing appointments and landlord response tools are implemented locally in the practical-feature batch below; production release remains pending.
 - Plan applications, reservations, cancellation rules and document privacy separately.
 - Plan payments, refunds, disputes and trustworthy reviews separately, with explicit operational requirements.
 - Improve search quality, accessibility, performance and dashboards through user testing.
@@ -105,3 +105,13 @@ These are future planning items, not completed functionality or permission to in
 - Student usability: mobile filter collapse preserves entered values; comparison title links preserve the selected campus and room. Listing details show selected-room costs and availability near the top, with a shortcut to full room terms and the inquiry area. Private question drafts remain scoped to the account/property/room in the current tab, and editing is disabled while sending. Actual guest walkthroughs check keyboard campus selection, budgets, comparison, room context, empty-campus results and 360/768/1440px layouts.
 
 Final release tagging and email recovery planning remain subsequent steps. The historical GitHub billing-lock exception remains separate from local/browser acceptance.
+
+## October 12 practical-feature batch: local verification complete
+
+The agreed batch adds a guided campus/budget/room/amenity search, selected-room match explanations, comparable-cost highlights, private named shortlists with room choices and notes, student viewing requests with landlord counterproposals and student confirmation, and useful role dashboard counts. Viewing requests use Philippine time, participant-only access, revision checks, retry identity and overlapping-appointment protection. Notifications stay in the existing application.
+
+The interruption follow-up preserves this completed work. A room chosen on the listing card or map preview now drives the card selection, map price marker, preview charges and comparison selection. Inquiry and viewing forms use distinct React key namespaces; the room editor also has separate edit/new keys. The existing full role workflow checks console errors without suppressing duplicate-key warnings.
+
+Final local evidence: 104 backend tests / 918 assertions, Pint, 44 frontend tests, ESLint and the Vercel production build pass. Six focused Chromium/WebKit scenarios pass for the complete role workflow, practical-feature flow and room synchronization. The strengthened room-sync check additionally verifies displayed base rent and known monthly charges across preview and comparison; both browsers pass. See validation.md for run details.
+
+The additive practical-feature migration is applied locally only. Production backup/migration, runtime permission verification, publication/deployment and live acceptance for this batch remain pending. The existing production releases and user-provided certificate are preserved. Live Render rollback and the historical GitHub CI billing restriction remain separately deferred.

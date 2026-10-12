@@ -22,7 +22,7 @@ class InquiryController extends Controller
         abort_unless(in_array($request->user()->role, ['student', 'landlord'], true), 403);
         $column = $request->user()->role === 'student' ? 'student_id' : 'landlord_id';
 
-        return InquiryResource::collection(Inquiry::query()->where($column, $request->user()->id)->with(['property', 'student', 'landlord'])->latest('last_message_at')->paginate(12));
+        return InquiryResource::collection(Inquiry::query()->where($column, $request->user()->id)->select('inquiries.*')->selectSub(DB::table('inquiry_messages')->select('sender_id')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_sender_id')->with(['property', 'student', 'landlord'])->latest('last_message_at')->paginate(12));
     }
 
     private function authorizeParticipant(Request $request, Inquiry $inquiry): void
@@ -34,6 +34,8 @@ class InquiryController extends Controller
     public function show(Request $request, Inquiry $inquiry): InquiryResource
     {
         $this->authorizeParticipant($request, $inquiry);
+
+        $inquiry->last_sender_id = $inquiry->messages()->reorder()->latest('id')->value('sender_id');
 
         return new InquiryResource($inquiry->load(['property', 'student', 'landlord']));
     }
