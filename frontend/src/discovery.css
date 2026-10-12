@@ -1,0 +1,70 @@
+/* The results and map share one workspace; only the results grow with the page. */
+.map-discovery-page { max-width: none; padding: 1.1rem 1.5rem 2rem; }
+.discovery-layout { column-gap: 1.5rem; row-gap: 0; }
+.discovery-controls, .discovery-results { grid-column: 1; min-width: 0; }
+.discovery-controls .page-heading { margin-bottom: 1rem; gap: .7rem; }
+.map-discovery-page .page-heading h1 { font-size: clamp(1.65rem, 2.3vw, 2.1rem); margin-bottom: .35rem; }
+.discovery-controls .eyebrow { font-size: .65rem; margin-bottom: .4rem; }
+.discovery-controls .page-heading p { font-size: .82rem; }
+.discovery-controls .filter-toggle { margin-bottom: 0; }
+.discovery-controls .filters-workspace { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; }
+.discovery-controls .filters-workspace > .active-filters { margin-top: 0; flex: 1; }
+.discovery-controls .filters-workspace > .search-filters { flex-basis: 100%; order: 2; }
+.discovery-controls .search-filters { margin-top: .75rem; }
+.discovery-controls .search-filters .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.discovery-controls .discovery-toolbar { margin: 1rem 0; padding-bottom: .85rem; border-bottom: 1px solid var(--line); }
+.discovery-toolbar .btn { background: #fffdf9; }
+.discovery-results .discovery-information { margin-top: 1.5rem; border-top: 1px solid var(--line); }
+.discovery-map-column { grid-column: 2; grid-row: 1 / span 2; align-self: start; top: 1rem; height: calc(100dvh - 2rem); display: flex; flex-direction: column; min-height: 0; }
+.map-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .2rem .75rem; padding: 0 .15rem .65rem; }
+.map-heading > span { font-weight: 650; font-size: .85rem; }
+.map-heading p { font-size: .72rem; margin: 0; color: var(--muted); }
+.discovery-map-column > .map-workspace { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.map-canvas { position: relative; flex: 1; min-height: 0; }
+.map-canvas .campus-map { height: 100%; min-height: 0; border-radius: 14px; background: #eee9df; }
+.map-workspace .map-note { font-size: .67rem; line-height: 1.5; padding: .6rem .15rem 0; margin: 0; }
+.map-canvas .map-tools { top: 14px; }
+.map-tools .btn { border-radius: 25px; border: 1px solid #ded3c5; padding: .6rem .9rem; font-size: .78rem; }
+.map-tools .btn-primary { border-color: var(--accent); }
+.map-canvas .map-failure { position: absolute; top: 68px; left: 12px; right: 12px; z-index: 500; font-size: .78rem; border-radius: 8px; }
+.map-canvas .map-preview { position: absolute; z-index: 600; left: 1rem; right: 1rem; bottom: 1.75rem; margin: 0; max-height: 44%; overflow-y: auto; overscroll-behavior: contain; padding: 1rem 2.6rem 1rem 1rem; border-color: #dccab4; box-shadow: 0 8px 30px #30261f24; border-radius: 12px; gap: .85rem; }
+.map-preview > img { width: 90px; height: 100px; }
+.map-preview strong { display: block; font-size: .88rem; line-height: 1.4; }
+.map-preview strong a { color: var(--ink); text-decoration: none; }
+.map-preview .form-label { font-size: .72rem; margin-bottom: .25rem; }
+.map-preview .form-select { font-size: .78rem; min-height: 40px; padding: .45rem 1.8rem .45rem .65rem; }
+.map-preview .match-reasons { font-size: .7rem; margin-block: .45rem; }
+.map-preview p, .map-preview a, .map-preview .btn-link { font-size: .75rem; }
+.map-preview-close { position: absolute; top: .3rem; right: .3rem; display: grid; place-items: center; height: 36px; width: 36px; border: 0; border-radius: 50%; background: #f6f0e7; color: var(--ink); font-size: 1.4rem; }
+.map-preview-close:hover { background: #e9dfd0; }
+.price-marker.selected-price-cluster span { outline: 2px solid #fff; box-shadow: 0 3px 12px #30261f55; }
+.map-discovery-page .property-card { scroll-margin-top: 1rem; }
+.map-discovery-page .property-card.is-selected { border-color: var(--accent); background: #fffdf8; }
+.map-discovery-page .property-card .btn-link { text-decoration: none; }
+.map-discovery-page .property-card .btn-link:hover { text-decoration: underline; }
+.map-discovery-page .property-card .match-reasons { margin-bottom: .6rem; }
+
+@media (min-width: 992px) {
+  .site-header:has(+ main .map-discovery-page) { position: sticky; top: 0; }
+  .map-discovery-page .discovery-map-column { top: 5.5rem; height: calc(100dvh - 6.5rem); }
+  .map-discovery-page .property-card { scroll-margin-top: 5.5rem; }
+  .discovery-layout.with-map { grid-template-columns: minmax(0, 1fr) minmax(400px, 49%); }
+  .map-discovery-page .discovery-results { grid-row: 2; }
+  .discovery-controls { grid-row: 1; }
+  .map-discovery-page .with-map .listing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .map-discovery-page .with-map .property-cover { height: clamp(155px, 13vw, 225px); }
+}
+@media (min-width: 992px) and (max-width: 1279px) {
+  .map-discovery-page .with-map .listing-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 991px) {
+  .map-discovery-page { padding: 1.25rem 1rem 2rem; }
+  .discovery-map-column { grid-column: 1; grid-row: auto; position: static; height: 76dvh; min-height: 400px; }
+  .discovery-controls .page-heading { margin-bottom: .75rem; }
+  .discovery-controls .discovery-toolbar { margin: .75rem 0; }
+  .map-canvas .map-preview { left: .65rem; right: .65rem; max-height: 46%; padding: .85rem 2.4rem .85rem .85rem; }
+  .map-preview > img { width: 65px; height: 75px; }
+  .map-preview .match-reasons { display: none; }
+  .map-heading { gap: .15rem; }
+}
+@media (prefers-reduced-motion: reduce) { .discovery-page * { scroll-behavior: auto; } }

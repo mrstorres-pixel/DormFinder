@@ -85,6 +85,12 @@ Inquiry and viewing screens share property/room context, preserve historical sna
 
 Release verified: frontend source 6c2da4e is READY in existing Vercel deployment dpl_H92dnpEHJbxQK7dSY4vADJFyaLDL at https://dormfinder-pink.vercel.app. All eighteen live Chromium/WebKit cases pass in one 2.9-minute run. Fifty frontend tests, lint/build, eighteen full affected local browser cases and ten final focused cases pass. The production entry matches index-V9l_CNZo.js; campus, real map tile and public-asset credential checks pass. Backend remains 5d48f44, with no schema, dependency or provider configuration changes.
 
+### Map-centered discovery refinement — October 12, 2026
+
+The user requested that the map feel like a main feature and stay on the right while browsing. The discovery page now places a viewport-sized map alongside the entire search/results column, with a persistent desktop header and map. The selected-room preview sits inside the map, has a close control with keyboard focus return, and retains room/card/price/comparison synchronization. Mobile keeps its List/Map switch. Search controls and active filters are more compact; explanation text follows results instead of pushing the map below the fold.
+
+Map label grouping now accounts for overlapping label footprints rather than arbitrary grid boundaries. Zooming reveals separate listings; a selected group displays the chosen room's price and basis with the group count. Existing tile attribution, unavailable-map messaging, campus reference, area search and browsing continuity remain available. This refinement uses the existing frontend/API and free provider plans. Local and live evidence are recorded in validation.md; deeper comparison and landlord/admin redesigns remain separate planned work.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.
