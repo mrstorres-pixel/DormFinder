@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { applyLocalFallbackPolicy } from './local-fallback-policy'
 import { readFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
@@ -17,6 +18,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
   const pageErrors = []
   async function pageFor() {
     const context = await browser.newContext({ baseURL })
+    await applyLocalFallbackPolicy(context, baseURL)
     contexts.push(context)
     const page = await context.newPage()
     page.setDefaultTimeout(20_000)

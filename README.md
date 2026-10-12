@@ -60,3 +60,7 @@ See [deployment runbook](docs/deployment.md), [architecture and permissions](doc
 
 DormFinder intends to support SDG 11 through centralized location information, SDG 4 through campus-oriented housing discovery, and SDG 1 through transparent housing costs. No proven safety, affordability, poverty-reduction or education outcome is claimed.
 
+
+## Local fallback verification
+
+After dependencies and the fictional dataset are prepared, run `npm.cmd --prefix frontend run test:fallback` with local servers running. It refuses cloud targets and exercises all three roles and the sample dataset in Chromium/WebKit while blocking external browser requests. Map tiles need internet; local listings, costs, private photos and inquiries remain available. The cold-restart and frontend rollback rehearsal passed on October 12, 2026. See [recovery instructions](docs/deployment.md) for scope and limits.

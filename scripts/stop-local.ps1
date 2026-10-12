@@ -9,6 +9,7 @@ if (Test-Path $runtimeFile) {
         $expectedStart = $runtime.($service + 'Started')
         if ($process -and $process.StartTime.ToUniversalTime().ToString('o') -eq $expectedStart) {
             & taskkill.exe /PID $processId /T /F | Out-Null
+            if ($LASTEXITCODE -ne 0) { throw 'Could not stop a tracked server. Runtime tracking was preserved; retry from an authorized PowerShell session.' }
         }
     }
     Remove-Item -LiteralPath $runtimeFile

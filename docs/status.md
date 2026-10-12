@@ -94,3 +94,11 @@ Remaining work is tracked explicitly: verify additional campuses; improve restor
 The next student-usability increment is deployed: map center/zoom, pending area-search state, selected listing/room and List/Map mode survive listing visits and return navigation. Filter URLs remain authoritative. Searches retain independent bounded tab context, while result pages share context. A first mobile Show on map action still centers its chosen listing; restored views keep the student's position.
 
 Frontend source 916df82 is live on the existing Vercel project. Twenty-three frontend tests, lint/build and all eight affected deployed browser scenarios have passing evidence (including the targeted rerun documented in validation.md). Backend/data/provider credentials are unchanged. The next implementation item is fuller unsaved-edit protection for browser Back and programmatic navigation; additional sourced campuses remain in the backlog.
+
+## Recovery verification - October 12, 2026
+
+The current frontend was temporarily rolled back to its immediately previous compatible Vercel production build and then restored successfully. The public build marker, API readiness, ten campuses and sixteen sample listings passed on the previous build. Current build and automatic domain assignment are restored. A separate production-schema backup was restored locally with all 21 table fingerprints and constraints verified.
+
+Cold local application/database restart preserved 20 application tables (session rows excluded), 141 private files and both existing environment files. Sample and full three-role workflows pass in Chromium/WebKit with browser external requests blocked. The repeatable command is npm.cmd --prefix frontend run test:fallback. Startup/shutdown scripts now preserve setup files and report occupied ports or failed process lifecycle operations truthfully.
+
+This completes the rehearsed frontend rollback and local fallback coverage. Render rollback controls, full S3 bucket restoration, final release tagging, the remaining marketplace roadmap and the historical GitHub billing-lock CI exception remain separate. Live application code is unchanged by this operations-only increment; current sources remain backend 5b76e53 and frontend cc807b4. See deployment.md and validation.md for exact scope.

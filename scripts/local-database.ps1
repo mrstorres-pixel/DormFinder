@@ -11,7 +11,7 @@ if ($Stop) {
 }
 if (-not (Test-Path (Join-Path $env:PGDATA 'PG_VERSION'))) {
     $environmentFile = Join-Path $workspace 'backend\.env'
-    if ((Test-Path $environmentFile) -and ((Get-Content $environmentFile -Raw) -match '(?m)^DB_DATABASE=dormfinder$')) {
+    if (Test-Path -LiteralPath $environmentFile) {
         throw 'Existing configured environment found. Keep it and configure the new local database deliberately.'
     }
     $secretBytes = New-Object byte[] 32
@@ -30,13 +30,13 @@ if (-not (Test-Path (Join-Path $env:PGDATA 'PG_VERSION'))) {
     $template = $template -replace '(?m)^DB_PASSWORD=.*$', ('DB_PASSWORD=' + $databasePassword)
     [IO.File]::WriteAllText($environmentFile, $template)
 }
-& (Join-Path $pgBin 'pg_ctl.exe') status *> $null
+& (Join-Path $pgBin 'pg_isready.exe') -h 127.0.0.1 -p $pgPort *> $null
 if ($LASTEXITCODE -ne 0) {
     & (Join-Path $pgBin 'pg_ctl.exe') start -l (Join-Path $workspace '.local\postgres.log') -w
     if ($LASTEXITCODE -ne 0) { throw 'Database failed to start.' }
 }
 $environmentText = Get-Content -LiteralPath (Join-Path $workspace 'backend\.env') -Raw
-if ($environmentText -notmatch '(?m)^DB_HOST=127\.0\.0\.1$' -or $environmentText -notmatch '(?m)^DB_PORT=54329$') {
+if ($environmentText -notmatch '(?m)^DB_HOST=127\.0\.0\.1\r?$' -or $environmentText -notmatch '(?m)^DB_PORT=54329\r?$' -or $environmentText -notmatch '(?m)^DB_DATABASE=dormfinder\r?$') {
     throw 'Refusing local setup with a nonlocal backend environment.'
 }
 $env:PGPASSWORD = [regex]::Match($environmentText, '(?m)^DB_PASSWORD=(.*)$').Groups[1].Value.Trim()
@@ -52,7 +52,15 @@ try {
         if ($LASTEXITCODE -ne 0) { throw 'Schema creation failed.' }
     }
     $testingText = $environmentText -replace '(?m)^APP_ENV=.*$', 'APP_ENV=testing' -replace '(?m)^DB_DATABASE=.*$', 'DB_DATABASE=dormfinder_test'
-    [IO.File]::WriteAllText((Join-Path $workspace 'backend\.env.testing'), $testingText)
+    $testingFile = Join-Path $workspace 'backend\.env.testing'
+    if (Test-Path -LiteralPath $testingFile) {
+        $existingTesting = [IO.File]::ReadAllText($testingFile)
+        if ($existingTesting -notmatch '(?m)^DB_HOST=127\.0\.0\.1\r?$' -or $existingTesting -notmatch '(?m)^DB_PORT=54329\r?$' -or $existingTesting -notmatch '(?m)^DB_DATABASE=dormfinder_test\r?$') {
+            throw 'Existing test environment targets another database. It was preserved; configure it deliberately.'
+        }
+    } else {
+        [IO.File]::WriteAllText($testingFile, $testingText)
+    }
 } finally {
     Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue
 }

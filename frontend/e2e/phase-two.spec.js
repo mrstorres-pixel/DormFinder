@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { applyLocalFallbackPolicy } from './local-fallback-policy'
 import { readFile, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
 import { verifyDiscovery, withdrawSyntheticListings } from './discovery-flow'
@@ -21,6 +22,7 @@ test('landlord, administrator and student complete the listing and private inqui
   let ownerPage
   async function pageFor() {
     const context = await browser.newContext({ baseURL })
+    await applyLocalFallbackPolicy(context, baseURL)
     contexts.push(context)
     const page = await context.newPage()
     page.setDefaultNavigationTimeout(30_000)

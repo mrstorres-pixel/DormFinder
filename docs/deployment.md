@@ -137,3 +137,38 @@ Restore a prior compatible application deployment for recovery while retaining t
 ## Map continuity frontend release — October 11
 
 Vercel deployment dpl_DonovPo2yh2iVtdnQJes9KrKKBrP serves frontend source 916df82f2e10ecb7e35615631330e3d17365fec3 on the existing DormFinder alias. Render remains on the preceding 605085b source; no backend deployment, migration or provider environment change was needed. Per-search map/room context is public UI state in bounded browser tab storage. Keep the preceding Vercel deployment available for application rollback. Acceptance outcomes and the existing CI exception are recorded in validation.md.
+
+## Verified recovery rehearsal - October 12, 2026
+
+The production frontend rollback-and-return, isolated production-schema restore and local fallback were rehearsed. Current frontend remains source `cc807b4`, deployment `dpl_DeEfSzGkFZ81VFycqeT5K16Z9SDv`; backend remains source `5b76e53`, Render deployment `dep-db5nucm7bikc73dfm4eg`. See validation.md for results and limitations.
+
+For frontend recovery, first inspect the correct team/project and the current/previous deployments. On the free Hobby plan use only the immediately previous compatible production build; Vercel documents this restriction in [Instant Rollback](https://vercel.com/docs/instant-rollback). The rehearsed previous build is `dpl_8ggzj12syEfJE6dSSynTm2ZCX7jH`. Use the already linked project and caller's existing CLI login; never paste a token into these commands:
+
+```powershell
+vercel.cmd rollback dpl_8ggzj12syEfJE6dSSynTm2ZCX7jH --yes --scope team_lakGFdG84Dlw3s6qfEG8IKQc
+vercel.cmd rollback status dormfinder --scope team_lakGFdG84Dlw3s6qfEG8IKQc
+```
+
+Verify the public alias serves the expected build, readiness returns ready, campus/listing reads succeed and authenticated role screens work. Restore the current tested production build with:
+
+```powershell
+vercel.cmd promote dpl_DeEfSzGkFZ81VFycqeT5K16Z9SDv --yes --scope team_lakGFdG84Dlw3s6qfEG8IKQc
+vercel.cmd promote status dormfinder --scope team_lakGFdG84Dlw3s6qfEG8IKQc
+```
+
+These IDs are dated recovery references, not permanent defaults: re-inspect them after another release. Promotion restored automatic domain assignment in the rehearsal. Allow a bounded propagation recheck of the public build marker; command success alone is insufficient. The tested round trip used a finally block to restore the original current build even if the rollback smoke check failed. No database downgrade accompanied either routing change.
+
+The fresh private schema archive was actually restored into a new isolated loopback database. All 21 table row fingerprints matched the exported read-only snapshot, with ten campuses, ten migrations and validated constraints. The normal local database was preserved. The private backup and restore metadata remain in ignored files. This archive includes application-schema rows/definitions; it does not contain S3 object bytes, provider configuration or production role credentials/grants. Do not point the normal app at the private restore copy or reuse it as public demo data.
+
+For a local presentation fallback, preinstall dependencies and prepare the existing fictional dataset while internet is available. Confirm backend/.env uses local PostgreSQL on 127.0.0.1:54329 and local private storage. Open http://127.0.0.1:5173. If servers are stopped, run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/start-local.ps1
+npm.cmd --prefix frontend run test:fallback
+```
+
+The fallback test launcher refuses cloud URLs, checks local database/storage settings and uses existing private synthetic fixtures. It runs the sample and complete role workflows in Chromium/WebKit while blocking nonloopback browser requests. It performs normal synthetic test writes in the local database. Map base tiles need internet and are unavailable in this mode; listing addresses, campus reference coordinates, costs, private local photos and conversations remain usable. This is a browser-external-network rehearsal, not a physical disconnect of the whole computer.
+
+Stop tracked application servers with scripts/stop-local.ps1; database stop is a separate explicit scripts/local-database.ps1 -Stop action. Startup checks occupied ports before setup, keeps existing environment files, requires both processes to become ready and refuses Laravel port hopping. Shutdown reports failure and retains tracking if a process cannot be stopped. A restricted automation runner may require its normal authorized execution path for process start/stop; global Windows execution policy was not changed.
+
+Render's rollback control and a full S3 bucket restore were not exercised here. For backend recovery, use the service's Deploys page and an available successful artifact, checking the target command/environment snapshot and schema compatibility first. [Render's rollback documentation](https://render.com/docs/rollbacks) explains retained artifacts and configuration behavior. Keep this service free and its existing auto-deploy-off setting. The prior compatible backend reference is `dep-db5mlkdckfvc73anver0`; verify retention before relying on it. A production database/media restore requires a separately reviewed recovery procedure rather than an application rollback.
