@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 
-test('existing cloud accounts read their real dashboard counts and next actions', async ({ browser, baseURL }, testInfo) => {
+test('existing cloud accounts read their student space and operational dashboards', async ({ browser, baseURL }, testInfo) => {
   test.skip(!baseURL.startsWith('https:'), 'Read-only production acceptance uses existing cloud test accounts.')
   test.setTimeout(120_000)
   const read = async path => JSON.parse((await readFile(path, 'utf8')).replace(/^\uFEFF/, ''))
@@ -15,10 +15,22 @@ test('existing cloud accounts read their real dashboard counts and next actions'
       const account = role === 'admin' ? admin : accounts[role]
       await page.getByLabel('Email').fill(account.email)
       await page.getByLabel('Password', { exact: true }).fill(account.password)
-      const dashboard = page.waitForResponse(response => response.url().endsWith('/api/v1/dashboard') && response.status() === 200)
+      const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/favorites' : '/api/v1/dashboard') && response.status() === 200)
       await page.getByRole('button', { name: 'Sign in', exact: true }).click()
       const counts = (await (await dashboard).json()).data
       await expect(page).toHaveURL(role === 'student' ? /\/account$/ : role === 'landlord' ? /\/landlord$/ : /\/admin$/)
+      if (role === 'student') {
+        await expect(page.getByRole('heading', { name: 'Find your next place.' })).toBeVisible()
+        await expect(page.locator('.dashboard-counts')).toHaveCount(0)
+        await expect(page.getByRole('link', { name: 'Compare room options' })).toHaveAttribute('href', '/compare')
+        if (counts.length) await expect(page.locator('.space-saved').getByRole('heading', { name: counts[0].title, exact: true })).toBeVisible()
+        await page.getByRole('link', { name: 'Campus & account settings' }).click()
+        await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible()
+        await expect(page.locator('.settings-email')).toHaveText(account.email)
+        await expect(page.getByLabel('Current password')).toBeHidden()
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+        continue
+      }
       await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible()
       const notificationCard = page.locator('.dashboard-counts > div').filter({ has: page.getByRole('link', { name: 'Unread notifications', exact: true }) })
       await expect(notificationCard.locator('dd')).toHaveText(String(counts.unread_notifications))

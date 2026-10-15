@@ -38,12 +38,15 @@ for (const role of ['student', 'landlord', 'admin']) {
       return route.fulfill({ json: { data: [], meta: { current_page: 1, last_page: 1 } } })
     })
     await page.goto(role === 'student' ? '/account' : role === 'landlord' ? '/landlord' : '/admin')
-    await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible()
+    if (role !== 'student') {
+      await expect(page.getByRole('heading', { name: 'Your next steps' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Unread notifications', exact: true })).toHaveAttribute('href', '/notifications')
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
-    await expect(page.getByRole('link', { name: 'Unread notifications', exact: true })).toHaveAttribute('href', '/notifications')
     if (role === 'student') {
-      await expect(page.getByRole('link', { name: 'Find housing near your campus' })).toHaveAttribute('href', '/listings?campus_id=8&radius_km=2&sort=recommended')
-      await page.getByRole('link', { name: 'Compare your shortlist' }).click()
+      await expect(page.getByRole('heading', { name: 'Find your next place.' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Explore places' })).toHaveAttribute('href', '/listings?campus_id=8&radius_km=2&sort=recommended')
+      await page.getByRole('link', { name: 'Compare room options' }).click()
       await expect(page).toHaveURL(/\/compare$/)
     } else if (role === 'landlord') {
       await expect(page.getByText(/2 drafts or returned listings/)).toBeVisible()

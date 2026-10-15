@@ -89,6 +89,7 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   await expect(page.getByRole('heading', { name: 'Your properties', exact: true })).toBeVisible()
   if (!await page.locator('.account-menu').getAttribute('open').then(value => value !== null)) await page.locator('.account-menu > summary').click()
   await page.getByRole('link', { name: 'Profile', exact: true }).click()
+  await page.locator('.settings-security > summary').click()
   await page.getByLabel('Current password', { exact: true }).fill(password)
   await page.getByLabel('New password', { exact: true }).fill(`${password}-changed`)
   await page.getByLabel('Confirm new password', { exact: true }).fill(`${password}-changed`)

@@ -9,17 +9,17 @@ import SiteNavigation from './components/SiteNavigation'
 import HousingSearchForm from './components/HousingSearchForm'
 import FeaturedHomes from './components/FeaturedHomes'
 import RoomEntrance from './components/RoomEntrance'
-import CampusSearch from './components/CampusSearch'
 import MapPinPicker from './components/MapPinPicker'
-import { useCampuses } from './lib/discovery'
-import { amenities, browseLink } from './lib/housing'
+import { amenities } from './lib/housing'
 import { safeReturnTo, clearInquiryDrafts } from './lib/navigation'
-import useUnsavedChanges, { useDiscardChanges, useClearUnsavedChanges, useFormChanges } from './lib/useUnsavedChanges'
+import { useDiscardChanges, useClearUnsavedChanges, useFormChanges } from './lib/useUnsavedChanges'
 import UnsavedChangesProvider from './components/UnsavedChangesProvider'
 import { RoomManager, SubmissionPanel } from './components/RoomOptions'
 import ComparisonProvider from './components/ComparisonProvider'
 import { DashboardCounts, Notifications, StudentReports, ReportQueue, AccountModeration, AdminListings, AuditHistory, LifecycleControls } from './components/ModerationPages'
 
+const StudentHome = lazy(() => import('./components/StudentHome'))
+const Profile = lazy(() => import('./components/ProfileSettings'))
 const Listings = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Listings })))
 const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
 const Comparison = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Comparison })))
@@ -103,7 +103,6 @@ function AuthPage({ register = false }) {
         <button className="btn btn-primary w-100 mt-2" disabled={mutation.isPending}>{mutation.isPending ? 'Please wait…' : register ? 'Create account' : 'Sign in'}</button>
       </form>
       <p className="small mt-4 mb-0">{register ? 'Already have an account? ' : 'New to DormFinder? '}<Link to={(register ? '/login' : '/register') + window.location.search}>{register ? 'Sign in' : 'Create an account'}</Link></p>
-      <p className="small text-secondary mt-3 mb-0">Administrator accounts are created through a controlled process. No email recovery is available during early access.</p>
     </section>
   </div></div>
 }
@@ -122,7 +121,7 @@ function Account() {
   const { data: user } = useCurrentUser()
   if (user?.role === 'landlord') return <Navigate to="/landlord" replace />
   if (user?.role === 'admin') return <Navigate to="/admin" replace />
-  return <section className="container page-space student-home"><div className="page-heading"><div><span className="eyebrow">YOUR HOUSING JOURNEY</span><h1>Welcome, {user?.name}.</h1><p>Your saved rooms, conversations and viewing requests, in one place.</p></div><Link className="btn btn-primary" to={user?.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Browse listings<span aria-hidden="true"> →</span></Link></div><DashboardCounts actionsFirst /><div className="student-home-footer"><Link to="/reports">Your reports</Link><Link to="/notifications">Your updates</Link></div></section>
+  return user ? <StudentHome user={user} /> : null
 }
 
 function Landlord() {
@@ -264,40 +263,6 @@ function PhotoManager({ property }) {
       <Field label="Photo description" name="caption" placeholder="e.g. Shared room facing the courtyard" maxLength={160} />
       <button className="btn btn-outline-primary w-100" disabled={upload.isPending || remove.isPending || order.isPending}>{upload.isPending ? 'Uploading…' : 'Upload photo'}</button>
     </fieldset></form>}
-  </section>
-}
-
-function Profile() {
-  const [profileDirty, setProfileDirty] = useState(false)
-  const [passwordDirty, setPasswordDirty] = useState(false)
-  const clearProfile = useUnsavedChanges(profileDirty)
-  useUnsavedChanges(passwordDirty)
-  const clearAllUnsaved = useClearUnsavedChanges()
-  const campuses = useCampuses()
-  const [selectedCampus, setSelectedCampus] = useState(null)
-  const { data: user } = useCurrentUser()
-  const client = useQueryClient()
-  const navigate = useNavigate()
-  const nameChange = useMutation({ mutationFn: (data) => writeApi('patch', '/me', data), onSuccess: (data) => { clearProfile(); setProfileDirty(false); client.setQueryData(['me'], data) } })
-  const passwordChange = useMutation({
-    mutationFn: (data) => writeApi('patch', '/me/password', data),
-    onSuccess: () => { clearAllUnsaved(); setProfileDirty(false); setPasswordDirty(false); client.clear(); client.setQueryData(['me'], null); navigate('/login') },
-  })
-  return <section className="container page-space narrow-page"><span className="eyebrow">ACCOUNT SETTINGS</span><h1>Your profile</h1>
-    <div className="panel mt-4"><h2 className="section-title">About you</h2><p className="text-secondary">{user?.email} · {user?.role}</p><ErrorNotice error={nameChange.error} />
-      <form onChange={() => setProfileDirty(true)} onSubmit={(event) => { event.preventDefault(); nameChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}><fieldset disabled={nameChange.isPending || passwordChange.isPending}>
-        <Field label="Your name" name="name" defaultValue={user?.name} required maxLength={100} />
-        {user?.role === 'student' && <><CampusSearch campuses={campuses.data || []} value={selectedCampus ?? String(user?.preferred_campus_id || '')} onChange={value => { setSelectedCampus(value); setProfileDirty(true) }} name="preferred_campus_id" /><ErrorNotice error={campuses.error} retry={() => campuses.refetch()} /></>}
-        <button className="btn btn-primary" disabled={nameChange.isPending}>Save profile</button>
-        {nameChange.isSuccess && <span className="ms-3 text-success" role="status">Saved.</span>}
-      </fieldset></form></div>
-    <div className="panel mt-4"><h2 className="section-title">Change password</h2><p className="small text-secondary">Changing your password signs you out of all sessions.</p><ErrorNotice error={passwordChange.error} />
-      <form onChange={event => setPasswordDirty([...new FormData(event.currentTarget).values()].some(value => String(value).length > 0))} onSubmit={(event) => { event.preventDefault(); if (profileDirty && !window.confirm('Changing your password signs you out. Discard your unsaved profile changes?')) return; passwordChange.mutate(Object.fromEntries(new FormData(event.currentTarget))) }}><fieldset disabled={passwordChange.isPending || nameChange.isPending}>
-        <Field label="Current password" name="current_password" type="password" autoComplete="current-password" required />
-        <Field label="New password" name="password" type="password" autoComplete="new-password" required minLength={12} hint="At least 12 characters, including letters and numbers." />
-        <Field label="Confirm new password" name="password_confirmation" type="password" autoComplete="new-password" required />
-        <button className="btn btn-outline-primary" disabled={passwordChange.isPending}>Change password</button>
-      </fieldset></form></div>
   </section>
 }
 

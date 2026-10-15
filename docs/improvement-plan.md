@@ -127,9 +127,17 @@ Results now have a visible campus autocomplete and Search campus action above th
 
 Featured cards retain the large covers and titles, plus one quiet line showing exact base rent, per-person/per-room monthly basis, and the selected option's room capacity. Capacity is not inferred from pictures, vacancy counts or total property inventory. Whole-peso prices omit .00; fractional amounts retain their precision. The two requested explanation blocks are removed; price-basis validation and detailed listing costs remain. This frontend-only refinement preserves existing data/providers. Validation and release evidence are in validation.md.
 
-Suggested separate follow-up: simplify public account-page copy by removing administrator setup details. This suggestion has not been implemented in this increment.
+Follow-up completed in the student-space redesign below: administrator setup details were removed from public account pages.
 
 Released source 4620368 is READY in dpl_ERxMRJUXEaGbDjWqFeDJctXvpq6g at the existing production alias. Sixty-one frontend tests, lint/build and all twenty scoped live Chromium/WebKit scenarios pass, with the live cases in one clean 1.8-minute run. Exact build/engine markers, font/demo-cover loading, readiness, public asset scanning and real map tiles pass. Backend, existing data, free providers and the user's certificate are preserved.
+
+### A usable student space and personal settings ? October 15, 2026
+
+Replace the student dashboard's generic next-step cards, full-name greeting and statistics strip with a direct campus search, actual saved-place previews, recent conversations and future proposed/agreed viewings. Use exact room links, price bases and capacities, retain explicit demo imagery labeling and show stale/sold-out/unavailable saved inventory honestly. Hide empty activity sections, keep failed collections independently recoverable and put activity before saved places on mobile. Previews use the existing first API page, with full-list links; viewing previews explicitly identify additional pages rather than claiming a complete next-visit schedule.
+
+Personal settings now separate name/email, saved campus and collapsed password controls. Selecting and saving campus drives the next student search; invalid unselected text cannot clear a preference accidentally. Existing independent unsaved-change/password guards, errors and session revocation are retained. The student page and profile are separately loaded and do not load on the public homepage. Guest navigation has Browse and one Sign in entry; registration still offers student/owner roles through Create an account. The redundant For landlords navbar entry and public administrator setup note are removed. Reports/notifications remain in Account. Landlord/admin operational dashboards retain their existing counts.
+
+Local frontend gates and scoped browser journeys pass as recorded in validation.md. This frontend-only change uses existing authenticated/public APIs and preserves data, backend authorization, free services and the user's certificate. Deeper comparison and landlord/admin layout work remains planned. Release evidence follows validation.
 
 ## Part 1: Foundation and university discovery
 

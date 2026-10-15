@@ -34,6 +34,7 @@ test('profile and password edits have independent guards and failed saves retain
   await profileApi(page)
   await page.goto('/profile')
   await page.getByLabel('Your name').fill('Unsaved profile name')
+  await page.locator('.settings-security > summary').click()
   await page.getByLabel('New password', { exact: true }).fill('Synthetic-password-27')
   await page.getByRole('link', { name: 'Browse', exact: true }).click()
   await stay(page)
@@ -55,9 +56,12 @@ test('profile and password edits have independent guards and failed saves retain
 })
 
 test('password changes confirm other profile edits before the API and clear guards only on success', async ({ page }) => {
+  const errors = []
+  page.on('pageerror', error => errors.push(error.message))
   const api = await profileApi(page)
   await page.goto('/profile')
   await page.getByLabel('Your name').fill('Still unsaved name')
+  await page.locator('.settings-security > summary').click()
   await page.getByLabel('Current password').fill('Synthetic-current-27')
   await page.getByLabel('New password', { exact: true }).fill('Synthetic-new-password-27')
   await page.getByLabel('Confirm new password').fill('Synthetic-new-password-27')
@@ -74,4 +78,5 @@ test('password changes confirm other profile edits before the API and clear guar
   await page.getByRole('button', { name: 'Change password', exact: true }).click()
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole('dialog')).not.toBeVisible()
+  expect(errors).toEqual([])
 })

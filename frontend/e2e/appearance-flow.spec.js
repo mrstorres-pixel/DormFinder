@@ -10,7 +10,7 @@ test('grouped navigation and progressive listing actions keep private drafts and
   await page.goto('/login')
   await page.getByLabel('Email address').fill(accounts.student.email)
   await page.getByLabel('Password', { exact: true }).fill(accounts.student.password)
-  const dashboard = page.waitForResponse(response => response.url().endsWith('/api/v1/dashboard') && response.status() === 200)
+  const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/api/v1/favorites') && response.status() === 200)
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await dashboard
   const account = page.locator('.account-menu')
