@@ -6,8 +6,8 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 export function createDormRoom(canvas) {
   const renderer = new WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power' })
   const scene = new Scene()
-  scene.background = new Color('#e9dfcd')
-  renderer.setClearColor('#e9dfcd')
+  scene.background = new Color('#f0f4fa')
+  renderer.setClearColor('#f0f4fa')
   renderer.toneMapping = ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.15
   const camera = new PerspectiveCamera(54, 1, .05, 40)
@@ -33,21 +33,21 @@ export function createDormRoom(canvas) {
     const shape = new PlaneGeometry(width, depth); geometry.add(shape)
     const object = new Mesh(shape, mat); object.rotation.x = -Math.PI / 2; object.position.set(x, .015, z); parent.add(object)
   }
-  scene.add(new HemisphereLight('#fff6e6', '#9f8266', 2.6))
-  const sun = new DirectionalLight('#ffe7c0', 3.2); sun.position.set(-3, 6, -2); scene.add(sun)
-  const fill = new DirectionalLight('#dceaf3', 1.2); fill.position.set(3, 3, 7); scene.add(fill)
+  scene.add(new HemisphereLight('#f4f7ff', '#9f8266', 2.6))
+  const sun = new DirectionalLight('#fff3df', 3.2); sun.position.set(-3, 6, -2); scene.add(sun)
+  const fill = new DirectionalLight('#dceaff', 1.2); fill.position.set(3, 3, 7); scene.add(fill)
 
   // Floor, plaster walls and a centered doorway, with the camera outside initially.
   box([6.4, .16, 15], [0, -.09, 2.5], '#c9a77d')
   for (let i = 0; i < 17; i++) box([.012, .006, 15], [-3.15 + i * .39, .003, 2.5], '#b89770', details)
-  box([6.4, 3.4, .16], [0, 1.7, -3.6], '#f2e8d7')
-  box([.16, 3.4, 7.2], [-3.2, 1.7, 0], '#e9ddc9')
-  box([.16, 3.4, 7.2], [3.2, 1.7, 0], '#e6d5bb')
-  box([2.35, 3.4, .2], [-2.025, 1.7, 3.6], '#e9ddc9')
-  box([2.35, 3.4, .2], [2.025, 1.7, 3.6], '#e9ddc9')
-  box([1.7, .55, .2], [0, 3.125, 3.6], '#e9ddc9')
-  for (const x of [-.9, .9]) box([.12, 2.94, .28], [x, 1.47, 3.62], '#f8f0e3')
-  box([1.92, .12, .28], [0, 2.94, 3.62], '#f8f0e3')
+  box([6.4, 3.4, .16], [0, 1.7, -3.6], '#f4f7fc')
+  box([.16, 3.4, 7.2], [-3.2, 1.7, 0], '#f5f7fc')
+  box([.16, 3.4, 7.2], [3.2, 1.7, 0], '#e6edf7')
+  box([2.35, 3.4, .2], [-2.025, 1.7, 3.6], '#f5f7fc')
+  box([2.35, 3.4, .2], [2.025, 1.7, 3.6], '#f5f7fc')
+  box([1.7, .55, .2], [0, 3.125, 3.6], '#f5f7fc')
+  for (const x of [-.9, .9]) box([.12, 2.94, .28], [x, 1.47, 3.62], '#ffffff')
+  box([1.92, .12, .28], [0, 2.94, 3.62], '#ffffff')
   box([6.2, .12, .06], [0, .06, -3.47], '#faf3e6')
   for (const x of [-3.08, 3.08]) box([.06, .12, 7], [x, .06, 0], '#faf3e6')
   // Hallway details give the opening scene a sense of arrival.
@@ -56,10 +56,10 @@ export function createDormRoom(canvas) {
   box([1.5, .025, .75], [0, .02, 4.3], '#a98561')
   for (let i = 0; i < 7; i++) box([1.4, .006, .012], [0, .036, 4 + i * .1], '#92704e', details)
   const door = new Group(); door.position.set(-.84, 0, 3.6); scene.add(door)
-  box([1.68, 2.84, .09], [.84, 1.42, 0], '#9b5d39', door)
+  box([1.68, 2.84, .09], [.84, 1.42, 0], '#15386a', door)
   for (const y of [.74, 2]) {
-    box([1.35, 1.05, .025], [.84, y, .06], '#ad7049', door)
-    box([1.17, .88, .02], [.84, y, .077], '#a46742', door)
+    box([1.35, 1.05, .025], [.84, y, .06], '#204a82', door)
+    box([1.17, .88, .02], [.84, y, .077], '#1b4278', door)
   }
   box([.06, .2, .05], [1.48, 1.35, .09], '#c6ab70', door)
   box([.2, .035, .06], [1.41, 1.39, .13], '#e2c991', door)
@@ -74,8 +74,8 @@ export function createDormRoom(canvas) {
   box([2.8, .075, .32], [-.65, 1.09, -3.32], '#b48b60')
   box([3.05, .045, .05], [-.65, 3.08, -3.23], '#90714f')
   for (const x of [-2, .7]) {
-    box([.36, 1.95, .12], [x, 2.06, -3.2], '#dfceb3')
-    for (let i = 0; i < 4; i++) box([.04, 1.94, .04], [x - .13 + i * .085, 2.06, -3.12], '#eadbc2', details)
+    box([.36, 1.95, .12], [x, 2.06, -3.2], '#b5c6dc')
+    for (let i = 0; i < 4; i++) box([.04, 1.94, .04], [x - .13 + i * .085, 2.06, -3.12], '#d5e0ee', details)
   }
   for (let i = 0; i < 2; i++) {
     const patch = mesh(new PlaneGeometry(.95, 2.5), '#e4c59a', [-.85 + i * 1.08, .012, -.75], scene, true)
@@ -88,10 +88,10 @@ export function createDormRoom(canvas) {
   for (const x of [1.29, 2.61]) for (const z of [-2.65, -.45]) box([.1, .32, .1], [x, .16, z], '#805938')
   box([1.62, 1.05, .12], [1.95, .65, -2.85], '#bd9570')
   cushion([1.48, .22, 2.4], [1.95, .56, -1.55], '#f4ecde')
-  cushion([1.5, .17, 1.68], [1.95, .73, -1.18], '#96a28b')
+  cushion([1.5, .17, 1.68], [1.95, .73, -1.18], '#92b2d2')
   cushion([1.25, .16, .43], [1.95, .75, -2.42], '#fff5df')
-  box([1.53, .035, .52], [1.95, .84, -.67], '#ba7251')
-  for (let i = 0; i < 9; i++) box([.012, .006, .49], [1.26 + i * .17, .862, -.67], '#d4a07d', details)
+  box([1.53, .035, .52], [1.95, .84, -.67], '#315cce')
+  for (let i = 0; i < 9; i++) box([.012, .006, .49], [1.26 + i * .17, .862, -.67], '#abc1f1', details)
 
   // Desk and chair on the left; all dimensions are deliberately human-scale.
   shadow(1.85, .9, -1.65, -2.65)

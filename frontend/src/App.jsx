@@ -44,7 +44,7 @@ function Layout({ children }) {
   })
   return <>
     <a className="skip-link" href="#main">Skip to content</a>
-    <header className="site-header"><div className="container d-flex align-items-center justify-content-between gap-3">
+    <header className="site-header"><div className="site-header-inner d-flex align-items-center justify-content-between gap-3">
       <Link className="brand-link" to="/" aria-label="DormFinder home"><Brand /></Link>
       <button type="button" className="btn btn-outline-primary menu-toggle" aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(value => !value)}>Menu</button>
       <SiteNavigation user={user} menuOpen={menuOpen} closeMenu={() => setMenuOpen(false)} signingOut={logout.isPending} onSignOut={() => { if (confirmDiscard()) logout.mutate() }} />
@@ -65,7 +65,6 @@ function Home() {
     <RoomEntrance />
     <section id="find-housing" tabIndex="-1" className="hero campus-hero home-discovery-hero"><div className="container"><div className="home-introduction"><span className="eyebrow">STUDENT HOUSING, CLOSE TO CAMPUS</span><h2>Find your place near campus.</h2><p>Choose where you study. Find a room that fits. Talk to the owner when you're ready.</p></div><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div></section>
     <FeaturedHomes />
-    <section className="container home-journey" id="how-it-works" aria-label="How to find your place"><div><span>01</span><p><strong>Explore</strong>Find rooms near your college.</p></div><div><span>02</span><p><strong>Compare</strong>Keep costs and choices together.</p></div><div><span>03</span><p><strong>Visit</strong>Ask questions and arrange a viewing.</p></div></section>
   </>
 }
 

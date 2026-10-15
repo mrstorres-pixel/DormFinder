@@ -1,0 +1,35 @@
+import { test, expect } from '@playwright/test'
+
+test('the wider header and image-led home stay readable on desktop and mobile', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/')
+  await expect(page.locator('.featured-home').first()).toBeVisible({ timeout: 30_000 })
+  await page.evaluate(() => document.fonts.ready)
+  expect(await page.evaluate(() => document.fonts.check('500 16px Inter'))).toBe(true)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-family', /Inter/)
+  const brand = await page.getByRole('link', { name: 'DormFinder home' }).boundingBox()
+  const navigation = await page.getByRole('navigation', { name: 'Main navigation' }).boundingBox()
+  expect(brand.x).toBeLessThan(64)
+  expect(1440 - navigation.x - navigation.width).toBeLessThan(64)
+  await expect(page.locator('.home-journey')).toHaveCount(0)
+  for (const card of await page.locator('.featured-home').all()) {
+    await card.scrollIntoViewIfNeeded()
+    await expect(card.getByRole('heading', { level: 3 })).toBeVisible()
+    await expect.poll(() => card.locator('img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true)
+    await expect(card.locator('.featured-copy p')).toHaveCount(0)
+    const cover = await card.locator('.featured-cover').boundingBox()
+    expect(cover.height).toBeGreaterThan(280)
+    await expect(card.getByRole('link')).toHaveAttribute('href', /\/listings\/\d+\?option=\d+/)
+  }
+  for (const width of [360, 768]) {
+    await page.setViewportSize({ width, height: 900 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await page.setViewportSize({ width: 360, height: 900 })
+  await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
+  await page.getByRole('button', { name: 'Menu', exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeVisible()
+  await page.getByRole('link', { name: 'Browse', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Places for your student life', exact: true })).toBeVisible()
+})

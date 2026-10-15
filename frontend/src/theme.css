@@ -1,0 +1,101 @@
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/InterVariable.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+}
+:root {
+  --theme-ink: #14233e;
+  --theme-muted: #56657c;
+  --theme-accent: #2558e5;
+  --theme-accent-dark: #1943b5;
+  --theme-surface: #fff;
+  --theme-soft: #f0f5fc;
+  --theme-line: #d9e2ef;
+  --ink: var(--theme-ink);
+  --muted: var(--theme-muted);
+  --accent: var(--theme-accent);
+  --teal: var(--theme-accent);
+  --surface: var(--theme-surface);
+  --page: #f8faff;
+  --line: var(--theme-line);
+  --bs-body-font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  --bs-body-color: var(--ink);
+  --bs-body-bg: var(--page);
+  --bs-primary: var(--accent);
+  --bs-primary-rgb: 37, 88, 229;
+  --bs-link-color: var(--accent);
+  --bs-link-hover-color: var(--theme-accent-dark);
+  --bs-border-color: var(--line);
+  font-family: var(--bs-body-font-family);
+}
+body { font-family: var(--bs-body-font-family); font-size: 1rem; }
+button, input, select, textarea { font-family: inherit; }
+h1, h2, h3, h4 { font-family: inherit; letter-spacing: -.035em; font-weight: 600; }
+p { line-height: 1.65; }
+.btn { font-size: .875rem; font-weight: 600; border-radius: 10px; }
+.btn-primary { --bs-btn-hover-bg: var(--theme-accent-dark); --bs-btn-hover-border-color: var(--theme-accent-dark); --bs-btn-active-bg: #153a9d; --bs-btn-active-border-color: #153a9d; --bs-btn-disabled-bg: #788bb8; --bs-btn-disabled-border-color: #788bb8; box-shadow: 0 4px 12px #2558e51a; }
+.btn-outline-primary { --bs-btn-color: var(--accent); --bs-btn-border-color: #b9caf6; --bs-btn-hover-bg: var(--accent); --bs-btn-hover-color: white; --bs-btn-active-bg: var(--theme-accent-dark); }
+.btn-outline-secondary { --bs-btn-color: var(--muted); --bs-btn-border-color: var(--line); }
+.form-control, .form-select { background-color: white; color: var(--ink); border-color: #c9d5e5; font-size: .9rem; }
+.form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px #2558e51a; }
+:focus-visible { outline-color: var(--accent) !important; }
+.site-header { background: #fffffffa; border-bottom: 1px solid #e5ebf4; padding: .85rem 0; }
+.site-header-inner { width: 100%; max-width: none; padding-inline: clamp(20px, 3vw, 64px); margin: 0; }
+.brand { font-size: 1.4rem; font-weight: 700; letter-spacing: -.055em; }
+.brand small { display: none; }
+.main-navigation { margin-left: auto; gap: .65rem; }
+.main-navigation .nav-link, .navigation-menu > summary { font-size: .875rem; font-weight: 500; }
+.main-navigation .nav-link.is-current { background: #edf3ff; color: var(--accent); }
+.navigation-popover { box-shadow: 0 16px 48px #14233e14; }
+.site-footer { background: #14233e; color: #c2cde0; border: 0; padding-block: 1.6rem; }
+.site-footer > .container { max-width: none; padding-inline: clamp(20px, 3vw, 64px); }
+.room-entrance { background: #f0f4fa; }
+.room-intro h1, .room-ending p { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 600; letter-spacing: -.06em; }
+.room-intro h1 { font-size: clamp(2.8rem, 4.9vw, 5.6rem); line-height: 1.12; }
+.room-intro em, .room-ending em { font-style: normal; font-weight: 600; color: var(--accent); }
+.room-intro .eyebrow, .room-ending .eyebrow { color: var(--muted); font-weight: 600; letter-spacing: .14em; }
+.room-intro { left: 5%; max-width: 720px; }
+.room-intro > p { font-size: 1rem; color: var(--muted); }
+.room-ending { background: #fffffff0; box-shadow: 0 12px 40px #14233e0a; border-radius: 16px; }
+.room-search-link { color: var(--accent); border-color: #dce5f4; background: white; box-shadow: 0 5px 20px #14233e0d; }
+.room-search-link:hover { background: var(--accent); }
+.room-scroll-cue > span { border-color: #14233e33; }
+.home-discovery-hero#find-housing { background: white; padding-block: 4rem 2.5rem; }
+#find-housing .home-introduction h2 { font-family: inherit; font-size: clamp(1.8rem, 3vw, 2.7rem); font-weight: 600; letter-spacing: -.04em; }
+#find-housing .home-campus-form { border-color: var(--line); background: #fff; box-shadow: 0 12px 40px #14233e08; }
+.featured-homes { max-width: none; padding: 2rem clamp(20px, 3vw, 64px) 5rem; background: white; }
+.featured-homes .section-heading { margin-bottom: 1.5rem; align-items: center; }
+.featured-homes h2 { font-size: clamp(1.5rem, 2.4vw, 2.3rem); font-weight: 600; letter-spacing: -.045em; }
+.featured-homes .section-heading > a { text-decoration: none; font-size: .85rem; white-space: nowrap; }
+.featured-grid { gap: 1.5rem; }
+.featured-home { min-width: 0; }
+.featured-home > a { color: var(--ink); display: block; text-decoration: none; }
+.featured-cover { height: auto; aspect-ratio: 4 / 3; border-radius: 16px; overflow: hidden; background: #eef3fa; border: 0; }
+.featured-cover img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.featured-home > a:hover .featured-cover img { transform: scale(1.035); }
+.featured-copy { padding: 1rem .1rem 0; }
+.featured-copy h3 { font-size: 1.05rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.5; margin: 0; }
+.featured-home .status-badge { top: .85rem; right: .85rem; font-family: inherit; font-size: .65rem; background: #ffffffed; color: var(--ink); border: 1px solid #d9e2ef; box-shadow: 0 2px 8px #14233e0a; }
+.panel { background: white; border-color: var(--line); box-shadow: 0 4px 20px #14233e04; }
+.room-overview-price, .room-price, .featured-price { color: var(--accent); }
+@media (min-width: 992px) { .site-header:has(+ main .map-discovery-page) { padding-block: .85rem; } }
+@media (max-width: 767px) {
+  .site-header-inner { flex-wrap: wrap; gap: .65rem; }
+  .main-navigation { margin-left: 0; }
+  .site-header { padding-block: .75rem; }
+  .brand { font-size: 1.25rem; }
+  .room-intro { left: 7%; width: 86%; }
+  .room-intro h1 { font-size: clamp(2.25rem, 8.7vw, 3.6rem); }
+  .room-intro > p { font-size: .85rem; }
+  .room-ending p { font-size: clamp(2rem, 7.5vw, 2.8rem); }
+  .home-discovery-hero#find-housing { padding-block: 2.5rem 1.5rem; }
+  .featured-homes { padding-bottom: 3rem; }
+  .featured-grid { gap: 1.75rem; }
+  .featured-homes .section-heading { align-items: start; gap: .7rem; }
+  .featured-homes .section-heading > a { font-size: .75rem; margin-top: .35rem; }
+  .featured-cover { aspect-ratio: 5 / 4; }
+  .featured-copy h3 { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) { .featured-cover img { transition: none; } }

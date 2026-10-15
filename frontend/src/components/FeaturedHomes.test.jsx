@@ -20,7 +20,7 @@ describe('homepage room discovery', () => {
     expect(screen.getByRole('heading', { name: 'Fresh residence' }).closest('a')).toHaveAttribute('href', '/listings/1?option=11')
     expect(screen.queryByRole('heading', { name: 'Stale residence' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Sold-out residence' })).not.toBeInTheDocument()
-    expect(screen.getByText('₱4,000.00')).toBeInTheDocument()
+    expect(screen.queryByText('₱4,000.00')).not.toBeInTheDocument()
   })
 
   it('keeps the saved campus radius for an empty result rather than silently broadening', async () => {
@@ -38,5 +38,16 @@ describe('homepage room discovery', () => {
     fireEvent.error(screen.getByAltText('Fictional room illustration'))
     expect(screen.getByText('Photo unavailable')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Fresh residence' }).closest('a')).toHaveAttribute('href', '/listings/1?option=11')
+  })
+
+  it('uses clearly labeled concept imagery only for the approved fictional demos', () => {
+    mocks.data = [{ ...property(1, '[DEMO] Near Campus Twin Dorm', [room(11, 400000, 2)]), is_demo: true }]
+    const { rerender } = render(<MemoryRouter><FeaturedHomes /></MemoryRouter>)
+    expect(screen.getByAltText('AI-generated illustration of a fictional twin student dorm')).toHaveAttribute('src', '/images/demo/twin-room.webp')
+    expect(screen.getByText('AI demo illustration')).toBeInTheDocument()
+    mocks.data[0].is_demo = false
+    rerender(<MemoryRouter><FeaturedHomes /></MemoryRouter>)
+    expect(screen.getByAltText('Fictional room illustration')).toHaveAttribute('src', '/room-1.jpg')
+    expect(screen.queryByText('AI demo illustration')).not.toBeInTheDocument()
   })
 })

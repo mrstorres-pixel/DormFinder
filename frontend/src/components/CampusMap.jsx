@@ -91,7 +91,8 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   }, [engine, pins, selectedId, campusId])
   useEffect(() => {
     if (!engine || engine.campusId !== campusId || !radius) return
-    const circle = engine.L.circle([latitude, longitude], { radius: Number(radius) * 1000, color: '#9c3d15', fillOpacity: 0.04, weight: 1 }).addTo(engine.map)
+    const color = getComputedStyle(element.current).getPropertyValue('--accent').trim() || '#2558e5'
+    const circle = engine.L.circle([latitude, longitude], { radius: Number(radius) * 1000, color, fillOpacity: 0.04, weight: 1 }).addTo(engine.map)
     return () => circle.remove()
   }, [engine, radius, latitude, longitude, campusId])
   function searchArea() {

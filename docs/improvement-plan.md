@@ -6,7 +6,7 @@ Status: core releases, the practical-feature batch, two appearance/flow incremen
 
 Make finding student housing near a specific college or university the main experience. Support multiple institutions and distinct campuses, rather than only TIP. Use SuzyRent's side-by-side rental results and map as inspiration, with clearer student costs, campus context, useful comparisons and honest availability. Aim for measurable usability and reliability rather than claiming to be better in every way without evidence.
 
-Use a warm visual identity: ivory backgrounds, white surfaces, dark brown text and burnt orange actions. Carry consistent controls, navigation, feedback and accessibility across student, landlord and administrator screens.
+Use the October 15 approved visual identity: white surfaces, deep navy text, cobalt-blue actions and subtle blue-gray supporting surfaces. Use self-hosted Inter throughout, clear contrast, restrained borders and image-led homepage features. Carry consistent controls, navigation, feedback and accessibility across student, landlord and administrator screens. This supersedes the earlier ivory/brown direction; dated release notes below preserve its history.
 
 ## Next phase: a connected visual and interaction redesign
 
@@ -28,7 +28,7 @@ Use persistent campus/search context in discovery, selected property/room contex
 
 ### Shared visual foundation and navigation
 
-- Keep the warm housing identity, with restrained orange accents, legible dark text, calmer neutral surfaces and consistent spacing. Use photography and useful content to establish hierarchy.
+- Keep the approved white/navy/cobalt housing identity, legible text, calmer supporting surfaces and consistent spacing. Use photography and useful content to establish hierarchy.
 - Define shared page headings, property/room summaries, cost summaries, status treatments, empty states, feedback and action placement. Use borders and cards for meaningful groups; avoid wrapping every paragraph or action in another panel.
 - Give each screen one clear primary action appropriate to its state. Keep secondary actions visible but quieter; destructive actions belong away from the primary task.
 - Organize student navigation around Find housing, Saved places, Conversations and Viewings. Group favorites and named shortlists within Saved places, and place profile/settings and notification access in a consistent account area. Preserve the existing routes and access rules while simplifying how they are presented.
@@ -108,6 +108,14 @@ The user prioritized a scroll-animated landing page ahead of the remaining saved
 Implemented with pinned Three.js 0.186.1, loaded only from the homepage when motion is enabled. The room uses original geometry, batched materials, soft lighting and inexpensive contact shadows. A matching original SVG appears before loading and on graphics failures. Reduced motion removes the extended sequence and does not download the engine; preference changes are handled. Rendering occurs only when scene progress or size changes, stops while offscreen/hidden, and releases resources on unmount. Device-pixel ratio is capped at 1.5 desktop/1 mobile, with adaptive resolution for slower graphics devices. No external models, embeds or paid resources are needed.
 
 The existing campus form, preferences, featured listings and landlord path follow the room. Find housing skips directly to search with focus return to the campus field when available. The scene is marked as imagined artwork and makes no rental availability or verification claims. API, database and authentication behavior are unchanged. Local evidence and release status are in validation.md. Saved places/comparison, landlord/admin visual work and the retained functional priorities remain pending.
+
+### White, navy and cobalt visual refresh — October 15, 2026
+
+The user approved replacing the earlier beige/brown palette with white, navy and cobalt. The global palette now uses shared semantic colors across the existing routes, controls, drawers, maps and workspaces. Inter is self-hosted with its OFL license and used for body text, controls and headings; decorative serif/italic headings are removed. Navigation spans the viewport with the brand left and links right, using responsive side padding and the existing mobile menu. The Explore/Compare/Visit numbered strip is removed.
+
+Homepage features now prioritize large covers and listing titles, with prices, availability counts, room descriptions and explanatory footer text removed from those cards. Exact selected-room links and fresh-availability/campus selection rules remain. Demo identification stays visible. The user separately approved original, photo-like demo covers: three generated interiors are mapped only to the named fictional demo samples and labeled AI demo illustration. Uploaded photos for ordinary listings and existing detail galleries are preserved. Prompts, provenance, license and asset paths are recorded in design-assets.md.
+
+The animated room and its static poster share the new palette, while natural wood gives the scene some warmth and depth. Existing search, saved context, drafts and access rules remain in place. This is a frontend-only increment; no backend deployment, migration, provider environment change or paid resource is required. Saved places/comparison and deeper landlord/admin visual layouts remain planned. Validation and release evidence are in validation.md.
 
 ## Part 1: Foundation and university discovery
 

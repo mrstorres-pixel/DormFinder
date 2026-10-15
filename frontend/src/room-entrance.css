@@ -1,31 +1,31 @@
-.room-entrance { --intro-opacity: 1; --ending-opacity: 0; --journey-progress: 0; position: relative; height: 300svh; background: #eadfcc; }
+.room-entrance { --intro-opacity: 1; --ending-opacity: 0; --journey-progress: 0; position: relative; height: 300svh; background: var(--theme-line); }
 .room-stage { position: sticky; top: 0; height: 100svh; min-height: 480px; overflow: hidden; isolation: isolate; }
 .room-canvas, .room-poster, .room-scrim { position: absolute; inset: 0; width: 100%; height: 100%; }
 .room-poster { object-fit: cover; }
 .room-canvas { display: block; }
 .room-canvas[hidden] { display: none; }
-.room-scrim { pointer-events: none; background: linear-gradient(90deg, #f8f0e4e8, #f8f0e420 60%, transparent); opacity: var(--intro-opacity); }
+.room-scrim { pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--theme-soft) 91%, transparent), color-mix(in srgb, var(--theme-soft) 12.5%, transparent) 60%, transparent); opacity: var(--intro-opacity); }
 .room-intro { position: absolute; top: 22%; left: max(6%, calc((100vw - 1320px) / 2)); width: 46%; max-width: 650px; opacity: var(--intro-opacity); pointer-events: none; }
-.room-intro .eyebrow, .room-ending .eyebrow { color: #794329; font-size: .68rem; letter-spacing: .2em; }
-.room-intro h1, .room-ending p { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; font-size: clamp(2.8rem, 5.1vw, 5.6rem); letter-spacing: -.055em; line-height: 1.08; color: #382e25; margin: 1.15rem 0 1.4rem; }
-.room-intro em, .room-ending em { font-weight: 400; color: #9c461e; }
-.room-intro > p { color: #635747; font-size: clamp(.9rem, 1.25vw, 1.1rem); line-height: 1.8; }
-.room-search-link { position: absolute; top: 1.5rem; right: 3%; display: flex; align-items: center; gap: 2rem; min-height: 48px; padding: .85rem 1.3rem; border: 1px solid #ffffff80; border-radius: 100px; background: #fffaf1; color: #743b23; box-shadow: 0 3px 18px #3d281914; font-size: .9rem; font-weight: 600; text-decoration: none; z-index: 2; }
-.room-search-link:hover { background: #9c461e; color: white; }
-.room-search-link:focus-visible { outline: 3px solid #9c461e; outline-offset: 4px; }
+.room-intro .eyebrow, .room-ending .eyebrow { color: var(--theme-ink); font-size: .68rem; letter-spacing: .2em; }
+.room-intro h1, .room-ending p { font-family: var(--bs-body-font-family); font-weight: 400; font-size: clamp(2.8rem, 5.1vw, 5.6rem); letter-spacing: -.055em; line-height: 1.08; color: var(--theme-ink); margin: 1.15rem 0 1.4rem; }
+.room-intro em, .room-ending em { font-weight: 400; color: var(--theme-accent); }
+.room-intro > p { color: var(--theme-ink); font-size: clamp(.9rem, 1.25vw, 1.1rem); line-height: 1.8; }
+.room-search-link { position: absolute; top: 1.5rem; right: 3%; display: flex; align-items: center; gap: 2rem; min-height: 48px; padding: .85rem 1.3rem; border: 1px solid #ffffff80; border-radius: 100px; background: var(--theme-surface); color: var(--theme-ink); box-shadow: 0 3px 18px color-mix(in srgb, var(--theme-ink) 7.8%, transparent); font-size: .9rem; font-weight: 600; text-decoration: none; z-index: 2; }
+.room-search-link:hover { background: var(--theme-accent); color: white; }
+.room-search-link:focus-visible { outline: 3px solid var(--theme-accent); outline-offset: 4px; }
 .room-search-link span { font-size: 1.25rem; }
-.room-ending { position: absolute; left: 6%; bottom: 15%; opacity: var(--ending-opacity); pointer-events: none; padding: 1.5rem 2rem; background: #fffaf1ec; border-radius: 2px 30px 2px 2px; }
+.room-ending { position: absolute; left: 6%; bottom: 15%; opacity: var(--ending-opacity); pointer-events: none; padding: 1.5rem 2rem; background: color-mix(in srgb, var(--theme-surface) 92.5%, transparent); border-radius: 2px 30px 2px 2px; }
 .room-ending p { font-size: clamp(2.5rem, 4vw, 4.5rem); margin: .65rem 0 0; }
-.room-bottom { position: absolute; bottom: 2rem; left: 6%; right: 3%; display: flex; align-items: end; justify-content: space-between; gap: 1rem; color: #4d4135; }
+.room-bottom { position: absolute; bottom: 2rem; left: 6%; right: 3%; display: flex; align-items: end; justify-content: space-between; gap: 1rem; color: var(--theme-ink); }
 .room-scroll-cue { display: flex; align-items: center; gap: .9rem; font-size: .8rem; opacity: var(--intro-opacity); }
-.room-scroll-cue > span { display: grid; place-items: center; border: 1px solid #6c543655; border-radius: 50%; width: 38px; height: 48px; font-size: 1.2rem; }
-.room-art-label { font-size: .65rem; padding: .35rem .6rem; border-radius: 4px; background: #fffaf1d9; }
-.room-progress { position: absolute; inset: auto 0 0; height: 3px; background: #a28c6d22; }
-.room-progress > span { display: block; height: 100%; background: #9c461e; transform: scaleX(var(--journey-progress)); transform-origin: left; }
+.room-scroll-cue > span { display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--theme-ink) 33.3%, transparent); border-radius: 50%; width: 38px; height: 48px; font-size: 1.2rem; }
+.room-art-label { font-size: .65rem; padding: .35rem .6rem; border-radius: 4px; background: color-mix(in srgb, var(--theme-surface) 85.1%, transparent); }
+.room-progress { position: absolute; inset: auto 0 0; height: 3px; background: color-mix(in srgb, var(--theme-muted) 13.3%, transparent); }
+.room-progress > span { display: block; height: 100%; background: var(--theme-accent); transform: scaleX(var(--journey-progress)); transform-origin: left; }
 .room-entrance[data-mode=static] { height: auto; }
 .room-entrance[data-mode=static] .room-scroll-cue, .room-entrance[data-mode=static] .room-progress { display: none; }
 .home-discovery-hero#find-housing { padding: 3.5rem 0 2rem; scroll-margin-top: 1rem; }
-#find-housing .home-introduction h2 { font-family: Georgia, 'Times New Roman', serif; font-size: clamp(2rem, 3.2vw, 3rem); font-weight: 400; letter-spacing: -.04em; }
+#find-housing .home-introduction h2 { font-family: var(--bs-body-font-family); font-size: clamp(2rem, 3.2vw, 3rem); font-weight: 400; letter-spacing: -.04em; }
 #find-housing:focus { outline: none; }
 @media (max-width: 767px) {
   .room-entrance { height: 200svh; }
@@ -33,7 +33,7 @@
   .room-intro { top: 14%; left: 7%; width: 86%; }
   .room-intro h1 { font-size: clamp(2.4rem, 9vw, 3.8rem); margin-top: .85rem; }
   .room-intro > p { font-size: .85rem; line-height: 1.5; }
-  .room-scrim { background: linear-gradient(180deg, #f8f0e4f5, #f8f0e4c0 32%, transparent 64%); }
+  .room-scrim { background: linear-gradient(180deg, color-mix(in srgb, var(--theme-soft) 96.1%, transparent), color-mix(in srgb, var(--theme-soft) 75.3%, transparent) 32%, transparent 64%); }
   .room-search-link { top: 1rem; right: 5%; padding: .65rem 1rem; gap: 1rem; font-size: .8rem; }
   .room-ending { left: 5%; right: 5%; bottom: 14%; padding: 1.15rem; }
   .room-ending p { font-size: 2.5rem; }
