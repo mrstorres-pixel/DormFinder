@@ -119,6 +119,16 @@ The animated room and its static poster share the new palette, while natural woo
 
 Released source 93021f3 is READY in dpl_936fS3U5iUKgnVUzukNyNAePGMoR at the existing production alias. Fifty-eight frontend tests, lint/build and all twenty-four scoped live Chromium/WebKit scenarios pass, with the live cases in one clean 1.8-minute run. Font and cover loading, exact build/engine markers, readiness and public asset/map checks pass. Production data, free providers and the user's certificate remain intact.
 
+### Campus-first controls and minimal listing facts — October 15, 2026
+
+The user requested a visible campus search on results, with all remaining refinements in the existing drawer; minimal price and room-capacity information on featured cards; removal of the text under Sort and the recommendations explanation block; and one Sign in entry instead of separate Sign in/Get started links. The user selected the single Sign in option; registration stays accessible from the existing Create an account link on that page. Role-specific landlord entry and authenticated navigation remain available.
+
+Results now have a visible campus autocomplete and Search campus action above the listings, beside Filters on desktop and adapted to mobile. Changing campus preserves budget, price basis, amenities and other requirements while clearing page/old map bounds. Newly selected campuses get a 2 km radius if no distance is already specified; explicit sorting and distance choices are preserved. Clearing the campus removes its radius and campus-only sorting. Unselected queries show an error and retain typed text. The drawer contains location/radius, budget, room and amenity controls; its Clear filters action clears refinements while retaining the visible campus. Campus is excluded from the advanced-filter count and chips.
+
+Featured cards retain the large covers and titles, plus one quiet line showing exact base rent, per-person/per-room monthly basis, and the selected option's room capacity. Capacity is not inferred from pictures, vacancy counts or total property inventory. Whole-peso prices omit .00; fractional amounts retain their precision. The two requested explanation blocks are removed; price-basis validation and detailed listing costs remain. This frontend-only refinement preserves existing data/providers. Validation and release evidence are in validation.md.
+
+Suggested separate follow-up: simplify public account-page copy by removing administrator setup details. This suggestion has not been implemented in this increment.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.

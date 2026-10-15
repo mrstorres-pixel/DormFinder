@@ -5,6 +5,7 @@ import { api } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { preferredOption, browseLink } from '../lib/housing'
 import { ErrorNotice, Loading } from './Feedback'
+import { pesos } from '../lib/money'
 
 const demoCovers = {
   '[DEMO] Near Campus Twin Dorm': { url: '/images/demo/twin-room.webp', caption: 'AI-generated illustration of a fictional twin student dorm' },
@@ -30,7 +31,7 @@ export default function FeaturedHomes() {
     {query.isPending ? <Loading>Finding available rooms…</Loading> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rooms.length ? <div className="featured-grid">{rooms.map(({ property, option }) => {
       const illustration = property.is_demo && demoCovers[property.title]
       const photo = illustration || property.photos?.[0]
-      return <article className="featured-home" key={property.id}><Link to={'/listings/' + property.id + '?option=' + option.id + (campusId ? '&campus_id=' + campusId : '')} state={{ browse: campusId ? browseLink(campusId) : '/listings?available_only=1' }}><div className="featured-cover"><Cover key={photo?.url || 'no-photo'} photo={photo} />{property.is_demo && <span className="status-badge" title={illustration ? 'AI-generated interior concept for a fictional demo listing; not a photo of the property.' : undefined}>{illustration ? 'AI demo illustration' : 'Synthetic demo'}</span>}</div><div className="featured-copy"><h3>{property.title}</h3></div></Link></article>
+      return <article className="featured-home" key={property.id}><Link to={'/listings/' + property.id + '?option=' + option.id + (campusId ? '&campus_id=' + campusId : '')} state={{ browse: campusId ? browseLink(campusId) : '/listings?available_only=1' }}><div className="featured-cover"><Cover key={photo?.url || 'no-photo'} photo={photo} />{property.is_demo && <span className="status-badge" title={illustration ? 'AI-generated interior concept for a fictional demo listing; not a photo of the property.' : undefined}>{illustration ? 'AI demo illustration' : 'Synthetic demo'}</span>}</div><div className="featured-copy"><h3>{property.title}</h3><div className="featured-facts"><span><strong>{pesos(option.monthly_rent_centavos).replace(/\.00$/, '')}</strong> / {option.price_basis === 'per_person' ? 'person' : 'room'} / month</span>{Number.isFinite(option.capacity) && <span>{option.capacity}-person room</span>}</div></div></Link></article>
     })}</div> : <div className="featured-empty"><p>{campusId ? 'No recently confirmed rooms within 2 km of your saved campus yet.' : 'No recently confirmed vacancies to show yet.'}</p><Link to={campusId ? browseLink(campusId) : '/listings'}>Explore listings and their confirmation dates →</Link></div>}
   </section>
 }

@@ -61,17 +61,17 @@ describe('discovery controls', () => {
     expect(result.has('page')).toBe(false)
   })
 
-  it('clears only the draft until applied, including campus, budget, amenities and rent sorting', async () => {
+  it('clears the advanced draft until applied while retaining the separately selected campus', async () => {
     const onSearch = vi.fn()
     const user = userEvent.setup()
     render(<SearchFilters params={new URLSearchParams('campus_id=1&radius_km=2&q=DEMO&price_basis=per_person&max_rent_centavos=500000&amenities[]=wifi&sort=rent_asc')} onSearch={onSearch} />)
     await user.click(screen.getByRole('button', { name: /^Filters/ }))
-    await user.click(screen.getAllByRole('button', { name: 'Clear all', exact: true })[0])
+    await user.click(screen.getAllByRole('button', { name: 'Clear filters', exact: true })[0])
     expect(onSearch).not.toHaveBeenCalled()
     expect(screen.getByLabelText('Maximum monthly rent (PHP)')).toHaveValue('')
     expect(screen.getByLabelText('Wi-Fi')).not.toBeChecked()
     await user.click(screen.getByRole('button', { name: 'Apply filters' }))
-    expect(onSearch).toHaveBeenCalledWith({ sort: 'newest' })
+    expect(onSearch).toHaveBeenCalledWith({ campus_id: '1', sort: 'newest' })
   })
 
   it('offers keyboard and button gallery navigation and refresh for failed photos', async () => {

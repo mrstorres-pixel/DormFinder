@@ -60,7 +60,7 @@ test('filter drawer preserves layout and drafts, then applies refinements withou
   await expect(map.locator('.campus-marker')).toBeVisible()
   await expect.poll(readView).toEqual(before)
   await trigger.click()
-  await drawer.getByRole('button', { name: 'Clear all', exact: true }).click()
+  await drawer.getByRole('button', { name: 'Clear filters', exact: true }).click()
   await expect(drawer.getByLabel('Maximum monthly rent (PHP)')).toHaveValue('')
   await expect(page).toHaveURL(/max_rent_centavos=900000/)
   await drawer.getByRole('button', { name: 'Close filters' }).click()

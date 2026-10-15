@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
-import CampusSearch from './CampusSearch'
 import { amenities } from '../lib/housing'
 import { pesos, toCentavos } from '../lib/money'
 
-const visibleFilters = params => [...params.entries()].filter(([key]) => !['page', 'sort', 'south', 'north', 'east', 'west'].includes(key))
+const visibleFilters = params => [...params.entries()].filter(([key]) => !['campus_id', 'page', 'sort', 'south', 'north', 'east', 'west'].includes(key))
 
-export default function SearchFilters({ params, onSearch, campuses = [] }) {
+export default function SearchFilters({ params, onSearch }) {
   const [error, setError] = useState('')
-  const [campusId, setCampusId] = useState(params.get('campus_id') || '')
   const [expanded, setExpanded] = useState(false)
   const [resetSort, setResetSort] = useState(false)
-  const [campusReset, setCampusReset] = useState(0)
   const dialog = useRef(null)
   const trigger = useRef(null)
   const form = useRef(null)
@@ -41,7 +38,8 @@ export default function SearchFilters({ params, onSearch, campuses = [] }) {
     const data = new FormData(event.currentTarget)
     const values = Object.fromEntries(data)
     const next = { sort: resetSort ? 'newest' : params.get('sort') || 'newest' }
-    for (const key of ['q', 'property_type', 'price_basis', 'campus_id', 'available_only', 'inventory_type', 'radius_km']) if (values[key]) next[key] = values[key]
+    if (params.has('campus_id')) next.campus_id = params.get('campus_id')
+    for (const key of ['q', 'property_type', 'price_basis', 'available_only', 'inventory_type', 'radius_km']) if (values[key]) next[key] = values[key]
     if (next.radius_km && !next.campus_id) { fail('Choose a campus before filtering by distance.', 'radius_km'); return }
     for (const name of ['min', 'max']) {
       if (values[name + '_rent']?.trim()) {
@@ -65,19 +63,17 @@ export default function SearchFilters({ params, onSearch, campuses = [] }) {
     } else onSearch(next)
   }
   function clearDraft() {
-    setError(''); setCampusId(''); setCampusReset(value => value + 1); setResetSort(true)
+    setError(''); setResetSort(true)
     for (const field of form.current.elements) {
       if (field.type === 'checkbox') field.checked = false
       else if (['text', 'hidden', 'select-one'].includes(field.type)) field.value = ''
     }
-    form.current.querySelector('input[role="combobox"]')?.blur()
   }
-  function clearApplied() { onSearch({}) }
+  function clearApplied() { onSearch(params.has('campus_id') ? { campus_id: params.get('campus_id'), sort: 'newest' } : {}) }
   function remove(key, value) {
     const next = new URLSearchParams(params)
     if (key === 'amenities[]') { const keep = next.getAll(key).filter(item => item !== value); next.delete(key); keep.forEach(item => next.append(key, item)) }
     else next.delete(key)
-    if (key === 'campus_id') next.delete('radius_km')
     if (key === 'price_basis') { next.delete('min_rent_centavos'); next.delete('max_rent_centavos'); if (next.get('sort')?.startsWith('rent_')) next.delete('sort') }
     next.delete('page'); onSearch(next)
   }
@@ -98,7 +94,7 @@ export default function SearchFilters({ params, onSearch, campuses = [] }) {
       <form ref={form} id="housing-filters" className="filter-drawer-form" onSubmit={submit}>
         <header className="filter-drawer-heading"><div><h2 id="filter-drawer-title">Find your fit</h2><p>Refine the places you want to see.</p></div><button type="button" className="drawer-close" aria-label="Close filters" onClick={close}>×</button></header>
         <div className="filter-drawer-body">
-          <fieldset><legend>Campus and location</legend><CampusSearch key={campusReset} campuses={campuses} value={campusId} onChange={setCampusId} />
+          <fieldset><legend>Location</legend>
             <label>Distance from campus<select className="form-select" name="radius_km" defaultValue={params.get('radius_km') || ''}><option value="">No distance limit</option>{[0.5, 1, 2, 5].map(radius => <option key={radius} value={radius}>Within {radius} km</option>)}</select></label>
             <label>Search property or city<input className="form-control" name="q" defaultValue={params.get('q') || ''} placeholder="Property, address or city" maxLength={100} /></label>
           </fieldset>
@@ -113,13 +109,13 @@ export default function SearchFilters({ params, onSearch, campuses = [] }) {
           </div></fieldset>
           <fieldset><legend>Amenities and availability</legend><div className="filter-amenities">{Object.entries(amenities).map(([value, label]) => <label key={value}><input name="amenities[]" type="checkbox" value={value} defaultChecked={params.getAll('amenities[]').includes(value)} />{label}</label>)}</div><label className="filter-availability"><input name="available_only" type="checkbox" value="1" defaultChecked={params.get('available_only') === '1'} />Available units confirmed within 14 days</label><p className="filter-hint">Price and availability must match the same room option.</p></fieldset>
         </div>
-        <footer className="filter-drawer-footer">{error && <p role="alert" className="text-danger">{error}</p>}<div><button type="button" className="btn btn-link" onClick={clearDraft}>Clear all</button><button className="btn btn-primary">Apply filters</button></div></footer>
+        <footer className="filter-drawer-footer">{error && <p role="alert" className="text-danger">{error}</p>}<div><button type="button" className="btn btn-link" onClick={clearDraft}>Clear filters</button><button className="btn btn-primary">Apply filters</button></div></footer>
       </form>
     </dialog>
-    {!!params.size && <div className="active-filters" aria-label="Active search filters">{applied.map(([key, value]) => <button type="button" className="filter-chip" key={key + value} onClick={() => remove(key, value)} aria-label={'Remove filter ' + key + ' ' + value}>{key === 'campus_id' ? campuses.find(c => String(c.id) === value)?.name || 'Campus' : key === 'amenities[]' ? amenities[value] : key === 'available_only' ? 'Recently confirmed vacancies' : key === 'radius_km' ? 'Within ' + value + ' km' : key.includes('rent_centavos') ? key.startsWith('min') ? 'From ' + pesos(Number(value)) : 'Up to ' + pesos(Number(value)) : value.replaceAll('_', ' ')} <span aria-hidden="true">×</span></button>)}<button className="btn btn-link btn-sm" onClick={clearApplied}>Clear all</button></div>}
+    {!!applied.length && <div className="active-filters" aria-label="Active search filters">{applied.map(([key, value]) => <button type="button" className="filter-chip" key={key + value} onClick={() => remove(key, value)} aria-label={'Remove filter ' + key + ' ' + value}>{key === 'amenities[]' ? amenities[value] : key === 'available_only' ? 'Recently confirmed vacancies' : key === 'radius_km' ? 'Within ' + value + ' km' : key.includes('rent_centavos') ? key.startsWith('min') ? 'From ' + pesos(Number(value)) : 'Up to ' + pesos(Number(value)) : value.replaceAll('_', ' ')} <span aria-hidden="true">×</span></button>)}<button className="btn btn-link btn-sm" onClick={clearApplied}>Clear filters</button></div>}
   </div>
 }
 
 export function ListingSort({ params, onSearch }) {
-  return <label className="listing-sort">Sort<select aria-label="Sort listings" className="form-select" value={params.get('sort') || 'newest'} onChange={event => { const next = new URLSearchParams(params); next.set('sort', event.target.value); next.delete('page'); onSearch(next) }}><option value="recommended">Recommended near campus</option><option value="newest">Recently approved</option><option value="rent_asc" disabled={!params.get('price_basis')}>Monthly rent: low to high</option><option value="rent_desc" disabled={!params.get('price_basis')}>Monthly rent: high to low</option><option value="distance">Nearest campus first</option></select>{!params.get('price_basis') && <span>Choose a price basis in Filters to sort by rent.</span>}</label>
+  return <label className="listing-sort">Sort<select aria-label="Sort listings" className="form-select" value={params.get('sort') || 'newest'} onChange={event => { const next = new URLSearchParams(params); next.set('sort', event.target.value); next.delete('page'); onSearch(next) }}><option value="recommended">Recommended near campus</option><option value="newest">Recently approved</option><option value="rent_asc" disabled={!params.get('price_basis')}>Monthly rent: low to high</option><option value="rent_desc" disabled={!params.get('price_basis')}>Monthly rent: high to low</option><option value="distance">Nearest campus first</option></select></label>
 }

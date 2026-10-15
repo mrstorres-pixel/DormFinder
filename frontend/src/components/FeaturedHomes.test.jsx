@@ -8,7 +8,7 @@ vi.mock('@tanstack/react-query', () => ({ useQuery: options => { mocks.options =
 vi.mock('../lib/auth', () => ({ useCurrentUser: () => ({ data: mocks.user }) }))
 vi.mock('../lib/api', () => ({ api: { get: mocks.get } }))
 
-const room = (id, rent, available, stale = false) => ({ id, name: 'Room ' + id, monthly_rent_centavos: rent, monthly_fixed_total_centavos: rent + 10000, price_basis: 'per_person', available_units: available, availability_stale: stale })
+const room = (id, rent, available, stale = false) => ({ id, name: 'Room ' + id, capacity: 4, monthly_rent_centavos: rent, monthly_fixed_total_centavos: rent + 10000, price_basis: 'per_person', available_units: available, availability_stale: stale })
 const property = (id, title, options) => ({ id, title, city: 'Manila', room_options: options, photos: [{ url: '/room-' + id + '.jpg', caption: 'Fictional room illustration' }] })
 
 describe('homepage room discovery', () => {
@@ -20,7 +20,8 @@ describe('homepage room discovery', () => {
     expect(screen.getByRole('heading', { name: 'Fresh residence' }).closest('a')).toHaveAttribute('href', '/listings/1?option=11')
     expect(screen.queryByRole('heading', { name: 'Stale residence' })).not.toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Sold-out residence' })).not.toBeInTheDocument()
-    expect(screen.queryByText('₱4,000.00')).not.toBeInTheDocument()
+    expect(screen.getByText('₱4,000')).toBeInTheDocument()
+    expect(screen.getByText('4-person room')).toBeInTheDocument()
   })
 
   it('keeps the saved campus radius for an empty result rather than silently broadening', async () => {

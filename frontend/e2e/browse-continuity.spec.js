@@ -1,4 +1,3 @@
-import { openFilters } from './discovery-flow'
 import { test, expect } from '@playwright/test'
 
 test('listing round trips restore unsubmitted map movement, room choice and display mode', async ({ page }) => {
@@ -47,10 +46,9 @@ test('listing round trips restore unsubmitted map movement, room choice and disp
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await expect.poll(markerPosition).toEqual(position)
 
-  await openFilters(page)
   await page.getByRole('combobox', { name: 'College or university' }).fill('DLSU')
   await page.getByRole('button', { name: /DLSU/ }).click()
-  await page.getByRole('button', { name: 'Apply filters', exact: true }).click()
+  await page.getByRole('button', { name: 'Search campus', exact: true }).click()
   await expect(map.locator('.campus-marker')).toHaveAttribute('title', /DLSU/)
   await expect(map.locator('.leaflet-tile').first()).toHaveAttribute('src', /\/15\//)
   await expect(page.getByRole('article', { name: 'Selected map listing' })).toHaveCount(0)
