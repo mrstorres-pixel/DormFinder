@@ -129,6 +129,8 @@ Featured cards retain the large covers and titles, plus one quiet line showing e
 
 Suggested separate follow-up: simplify public account-page copy by removing administrator setup details. This suggestion has not been implemented in this increment.
 
+Released source 4620368 is READY in dpl_ERxMRJUXEaGbDjWqFeDJctXvpq6g at the existing production alias. Sixty-one frontend tests, lint/build and all twenty scoped live Chromium/WebKit scenarios pass, with the live cases in one clean 1.8-minute run. Exact build/engine markers, font/demo-cover loading, readiness, public asset scanning and real map tiles pass. Backend, existing data, free providers and the user's certificate are preserved.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.
@@ -198,7 +200,7 @@ Verification: the final backend suite passed 99 tests/830 assertions; the curren
 5. Rehearse guest campus search and all three account roles against the deployed system; verify public listings, private inquiries, storage, maps and responsive navigation.
 6. Record deployed commit/URLs, test evidence, limitations and recovery instructions. Keep the prior deployment available for rollback. Rehearsed October 12: Vercel production rollback-and-return, actual private schema restore into an isolated local database, cold local restart with data/photo preservation and local role/sample workflows with external browser requests blocked. Render rollback and complete S3 bucket restore remain separate coverage.
 
-Production status: frontend source 93021f3 is live on the existing free Vercel project, and backend source 5d48f44 remains live on the existing free Render service. Fifteen sourced campuses, private inquiries/shortlists/viewings, moderation, map continuity, form protection and the connected discovery/decision journey remain available. The preceding backed-up migration preserved application records and restricted grants; these frontend-only visual releases required no database changes. Secrets and the user certificate were excluded. See validation.md for acceptance evidence and deployment.md for current recovery references.
+Production status: frontend source 4620368 is live on the existing free Vercel project, and backend source 5d48f44 remains live on the existing free Render service. Fifteen sourced campuses, private inquiries/shortlists/viewings, moderation, map continuity, form protection and the connected discovery/decision journey remain available. The preceding backed-up migration preserved application records and restricted grants; these frontend-only visual releases required no database changes. Secrets and the user certificate were excluded. See validation.md for acceptance evidence and deployment.md for current recovery references.
 
 ## Order, timebox and release criteria
 
