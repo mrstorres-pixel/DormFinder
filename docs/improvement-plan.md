@@ -101,6 +101,14 @@ The modal supports outside-click dismissal, Escape, keyboard focus containment a
 
 Released source 163ad43 is READY in dpl_413BQYzMg1nU7HvuqbutsB5cp4yf at the existing production alias. Fifty-five frontend tests, lint/build and all eighteen scoped local and eighteen live browser scenarios have passing evidence across main runs and corrected test-only reruns. Real map tiles, readiness, public asset scanning and the production build marker pass. Remaining visual stages and retained functional priorities are unchanged.
 
+### Scroll into your next dorm room — October 15, 2026
+
+The user prioritized a scroll-animated landing page ahead of the remaining saved-places/comparison redesign. The approved direction is an original stylized 3D, cozy single-student room with warm cream, wood and orange colors; a visible Find housing shortcut; and a simplified mobile entrance. The door opens during the first quarter of the scroll, the camera aligns with and enters the doorway during the middle half, and the furnished room reveals the closing message during the final quarter. Upward scrolling reverses the scene. Desktop uses three viewport heights and mobile two, without scroll interception or audio.
+
+Implemented with pinned Three.js 0.186.1, loaded only from the homepage when motion is enabled. The room uses original geometry, batched materials, soft lighting and inexpensive contact shadows. A matching original SVG appears before loading and on graphics failures. Reduced motion removes the extended sequence and does not download the engine; preference changes are handled. Rendering occurs only when scene progress or size changes, stops while offscreen/hidden, and releases resources on unmount. Device-pixel ratio is capped at 1.5 desktop/1 mobile, with adaptive resolution for slower graphics devices. No external models, embeds or paid resources are needed.
+
+The existing campus form, preferences, featured listings and landlord path follow the room. Find housing skips directly to search with focus return to the campus field when available. The scene is marked as imagined artwork and makes no rental availability or verification claims. API, database and authentication behavior are unchanged. Local evidence and release status are in validation.md. Saved places/comparison, landlord/admin visual work and the retained functional priorities remain pending.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.

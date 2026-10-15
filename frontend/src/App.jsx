@@ -8,6 +8,7 @@ import Brand from './components/Brand'
 import SiteNavigation from './components/SiteNavigation'
 import HousingSearchForm from './components/HousingSearchForm'
 import FeaturedHomes from './components/FeaturedHomes'
+import RoomEntrance from './components/RoomEntrance'
 import CampusSearch from './components/CampusSearch'
 import MapPinPicker from './components/MapPinPicker'
 import { useCampuses } from './lib/discovery'
@@ -61,7 +62,8 @@ function Layout({ children }) {
 
 function Home() {
   return <>
-    <section className="hero campus-hero home-discovery-hero"><div className="container"><div className="home-introduction"><span className="eyebrow">STUDENT HOUSING, CLOSE TO CAMPUS</span><h1>Your next place, <span>closer to campus.</span></h1><p>Choose where you study. Find a room that fits. Talk to the owner when you're ready.</p></div><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div></section>
+    <RoomEntrance />
+    <section id="find-housing" tabIndex="-1" className="hero campus-hero home-discovery-hero"><div className="container"><div className="home-introduction"><span className="eyebrow">STUDENT HOUSING, CLOSE TO CAMPUS</span><h2>Find your place near campus.</h2><p>Choose where you study. Find a room that fits. Talk to the owner when you're ready.</p></div><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div></section>
     <FeaturedHomes />
     <section className="container home-journey" id="how-it-works" aria-label="How to find your place"><div><span>01</span><p><strong>Explore</strong>Find rooms near your college.</p></div><div><span>02</span><p><strong>Compare</strong>Keep costs and choices together.</p></div><div><span>03</span><p><strong>Visit</strong>Ask questions and arrange a viewing.</p></div></section>
   </>
