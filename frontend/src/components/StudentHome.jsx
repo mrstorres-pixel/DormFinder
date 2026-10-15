@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
 import { browseLink, preferredOption } from '../lib/housing'
 import { viewingLabel } from '../lib/practical'
-import HousingSearchForm from './HousingSearchForm'
+import Avatar from './Avatar'
 import HomeListingCard from './HomeListingCard'
 import { ErrorNotice, Loading } from './Feedback'
 import './student-space.css'
@@ -20,16 +20,16 @@ function UpcomingViewings({ userId }) {
   const visits = future(accepted.data?.data).slice(0, 2)
   const hasMore = proposals.data?.meta?.last_page > 1 || accepted.data?.meta?.last_page > 1
   if (!proposals.isPending && !accepted.isPending && !proposals.error && !accepted.error && !decisions.length && !visits.length && !hasMore) return null
-  return <section className="space-activity" aria-labelledby="home-viewings"><div className="space-section-heading"><h2 id="home-viewings">Your viewings</h2><Link to="/viewings">See all<span className="visually-hidden"> viewings</span> →</Link></div>
+  return <section className="space-activity" aria-labelledby="home-viewings"><div className="space-section-heading"><h2 id="home-viewings">Recent viewings</h2></div>
     {(proposals.isPending || accepted.isPending) && <Loading>Checking your viewings…</Loading>}
     {proposals.error && <><p>Suggested viewing times could not load.</p><ErrorNotice error={proposals.error} retry={() => proposals.refetch()} /></>}
     {accepted.error && <><p>Agreed viewing times could not load.</p><ErrorNotice error={accepted.error} retry={() => accepted.refetch()} /></>}
     {[...decisions, ...visits].map(viewing => <article className="space-viewing" key={viewing.id}>
       <span className={'space-status' + (viewing.status === 'proposed' ? ' needs-response' : '')}>{!viewing.can_schedule ? 'Scheduling paused' : viewing.status === 'proposed' ? 'New time to review' : 'Time agreed'}</span>
       <h3>{viewing.listing_snapshot.title}</h3><p>{viewing.listing_snapshot.room_name}</p><time dateTime={viewing.starts_at}>{viewingLabel(viewing.starts_at)}</time>
-      <Link to={'/viewings?status=' + viewing.status + '#viewing-' + viewing.id}>{viewing.status === 'proposed' ? 'Review suggested time' : 'View visit details'}<span className="visually-hidden"> for {viewing.listing_snapshot.title}</span> →</Link>
+      <Link className="btn btn-outline-primary btn-sm" to={'/viewings?status=' + viewing.status + '#viewing-' + viewing.id}>{viewing.status === 'proposed' ? 'Review suggested time' : 'View visit details'}<span className="visually-hidden"> for {viewing.listing_snapshot.title}</span></Link>
     </article>)}
-    {hasMore && <p className="space-quiet-note">Recent requests shown. See all for your full schedule.</p>}
+    {hasMore && <p className="space-quiet-note">Recent requests shown.</p>}
   </section>
 }
 
@@ -37,8 +37,8 @@ function RecentConversations({ userId }) {
   const query = useHomeCollection(userId, 'inquiries')
   const rows = [...(query.data?.data || [])].sort((a, b) => Number(!!b.awaiting_reply && b.can_reply) - Number(!!a.awaiting_reply && a.can_reply)).slice(0, 3)
   if (!query.isPending && !query.error && !rows.length) return null
-  return <section className="space-activity" aria-labelledby="home-conversations"><div className="space-section-heading"><h2 id="home-conversations">Recent conversations</h2><Link to="/inquiries">See all<span className="visually-hidden"> conversations</span> →</Link></div>
-    {query.isPending ? <Loading>Checking your conversations…</Loading> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : <div className="space-conversations">{rows.map(thread => <Link className="space-conversation" to={'/inquiries/' + thread.id} key={thread.id}><span className="conversation-initial" aria-hidden="true">{thread.participant_name?.slice(0, 1) || '↗'}</span><div><h3>{thread.listing_snapshot.title}</h3><p>{thread.participant_name}</p><span className={'space-conversation-state' + (thread.awaiting_reply && thread.can_reply ? ' needs-response' : '')}>{!thread.can_reply ? 'Replies paused · View conversation' : thread.awaiting_reply ? 'Reply to owner →' : 'View conversation →'}</span></div></Link>)}</div>}
+  return <section className="space-activity" aria-labelledby="home-conversations"><div className="space-section-heading"><h2 id="home-conversations">Recent messages</h2></div>
+    {query.isPending ? <Loading>Checking your conversations…</Loading> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : <div className="space-conversations">{rows.map(thread => <Link className="space-conversation" to={'/inquiries/' + thread.id} key={thread.id}><Avatar src={thread.participant_avatar_url} name={thread.participant_name} /><div><h3>{thread.participant_name}</h3><p>{thread.listing_snapshot.title}</p><span className={'space-conversation-state' + (thread.awaiting_reply && thread.can_reply ? ' needs-response' : '')}>{!thread.can_reply ? 'Conversation paused' : thread.last_message_body || 'Open conversation'}</span>{thread.awaiting_reply && thread.can_reply && <small className="inbox-reply-needed">Reply waiting</small>}</div></Link>)}</div>}
   </section>
 }
 
@@ -48,14 +48,12 @@ function SavedPlaces({ user }) {
   return <section className="space-saved" aria-labelledby="home-saved"><div className="space-section-heading"><h2 id="home-saved">Saved places</h2><Link to="/favorites">See all<span className="visually-hidden"> saved places</span> →</Link></div>
     {query.isPending ? <Loading>Loading your saved places…</Loading> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="space-saved-grid">{rows.slice(0, 4).map(property => <HomeListingCard key={property.id} property={property} option={preferredOption(property.room_options)} browse="/favorites" saved />)}</div> : <div className="space-saved-empty"><span aria-hidden="true">♡</span><h3>{query.data?.meta?.unavailable_ids?.length ? 'Your saved listings are currently unavailable.' : 'Found a place you like?'}</h3><p>{query.data?.meta?.unavailable_ids?.length ? 'They remain saved. Browse for other options while their listings are unavailable.' : 'Save it while you browse. Come back here when you’re ready to decide.'}</p><Link className="btn btn-outline-primary" to={user.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Explore places →</Link></div>}
     {rows.length > 0 && query.data?.meta?.unavailable_ids?.length > 0 && <p className="space-quiet-note">Some other saved listings are currently unavailable. <Link to="/favorites">Check saved places</Link>.</p>}
-    <div className="space-saved-tools"><Link to="/shortlists">Your shortlists<span aria-hidden="true"> ↗</span></Link><Link to="/compare">Compare room options<span aria-hidden="true"> ↗</span></Link></div>
   </section>
 }
 
 export default function StudentHome({ user }) {
   return <div className="student-space container page-space">
-    <header className="space-introduction"><div><span className="eyebrow">YOUR SPACE</span><h1>Find your next place.</h1></div><Link className="space-settings-link" to="/profile">Campus & account settings<span aria-hidden="true"> ↗</span></Link></header>
-    <section className="space-campus" aria-label="Find housing near campus"><HousingSearchForm home /></section>
+    <header className="space-introduction"><div className="space-person"><Avatar src={user.avatar_url} name={user.name} size="large" /><div><h1>Your space</h1><p>{user.name}</p></div></div><Link className="btn btn-outline-primary btn-sm" to="/profile">Edit profile</Link></header>
     <div className="space-content"><aside className="space-updates" aria-label="Your conversations and viewings"><UpcomingViewings userId={user.id} /><RecentConversations userId={user.id} /></aside><SavedPlaces user={user} /></div>
   </div>
 }

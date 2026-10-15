@@ -20,11 +20,10 @@ test('existing cloud accounts read their student space and operational dashboard
       const counts = (await (await dashboard).json()).data
       await expect(page).toHaveURL(role === 'student' ? /\/account$/ : role === 'landlord' ? /\/landlord$/ : /\/admin$/)
       if (role === 'student') {
-        await expect(page.getByRole('heading', { name: 'Find your next place.' })).toBeVisible()
+        await expect(page.getByRole('heading', { name: 'Your space', exact: true })).toBeVisible()
         await expect(page.locator('.dashboard-counts')).toHaveCount(0)
-        await expect(page.getByRole('link', { name: 'Compare room options' })).toHaveAttribute('href', '/compare')
         if (counts.length) await expect(page.locator('.space-saved').getByRole('heading', { name: counts[0].title, exact: true })).toBeVisible()
-        await page.getByRole('link', { name: 'Campus & account settings' }).click()
+        await page.getByRole('link', { name: 'Edit profile' }).click()
         await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible()
         await expect(page.locator('.settings-email')).toHaveText(account.email)
         await expect(page.getByLabel('Current password')).toBeHidden()

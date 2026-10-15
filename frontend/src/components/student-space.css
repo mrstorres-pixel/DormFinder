@@ -1,6 +1,13 @@
 .student-space { max-width: 1320px; padding-top: 2.75rem; padding-bottom: 4rem; }
 .space-introduction { display: flex; align-items: end; justify-content: space-between; gap: 1.5rem; margin-bottom: 1.8rem; }
 .space-introduction h1 { font-size: clamp(1.9rem, 3.2vw, 2.8rem); margin: .6rem 0 0; letter-spacing: -.045em; }
+.space-person { display: flex; align-items: center; gap: 1.2rem; min-width: 0; }
+.space-person h1 { margin: 0; font-size: 2rem; }
+.space-person p { font-size: .8rem; color: var(--muted); margin: .4rem 0 0; overflow-wrap: anywhere; }
+.space-introduction > .btn { flex: none; }
+.space-conversation > div { min-width: 0; }
+.space-conversation-state { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.space-conversation .inbox-reply-needed { display: block; margin-top: .5rem; color: var(--accent); font-size: .7rem; }
 .space-settings-link { font-size: .82rem; color: var(--muted); padding: .6rem 0; }
 .space-campus { margin-bottom: 2.75rem; }
 .space-campus .home-campus-form { max-width: none; margin: 0; background: white; padding: 1.5rem; border: 1px solid var(--line); box-shadow: none; }

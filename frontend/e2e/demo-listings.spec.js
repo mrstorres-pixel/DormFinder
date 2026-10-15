@@ -30,7 +30,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await page.goto('/login')
     await page.getByLabel('Email address').fill(account.email)
     await page.getByLabel('Password', { exact: true }).fill(account.password)
-    const dashboard = page.waitForResponse(response => response.url().endsWith('/api/v1/dashboard') && response.status() === 200)
+    const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/favorites' : '/api/v1/dashboard') && response.status() === 200)
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
     await dashboard
     await expect(page).toHaveURL(role === 'landlord' ? /\/landlord$/ : /\/account$/)
@@ -113,11 +113,11 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await student.getByRole('button', { name: 'Send private inquiry', exact: true }).click()
     await expect(student).toHaveURL(/\/inquiries\/\d+$/)
     const inquiryPath = new URL(student.url()).pathname
-    await expect(student.getByText(question, { exact: true })).toBeVisible()
+    await expect(student.getByRole('log', { name: 'Conversation messages' }).getByText(question, { exact: true })).toBeVisible()
     const landlord = await pageFor()
     await login(landlord, owner, 'landlord')
     await landlord.goto(inquiryPath)
-    await expect(landlord.getByText(question, { exact: true })).toBeVisible()
+    await expect(landlord.getByRole('log', { name: 'Conversation messages' }).getByText(question, { exact: true })).toBeVisible()
     await landlord.getByLabel('Your reply').fill(reply)
     await landlord.getByRole('button', { name: 'Send reply', exact: true }).click()
     await expect(landlord.getByRole('log', { name: 'Conversation messages' }).getByText(reply, { exact: true })).toBeVisible()

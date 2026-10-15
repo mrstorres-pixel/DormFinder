@@ -5,6 +5,8 @@
   font-weight: 400 700;
   font-display: swap;
 }
+.app-layout { min-height: 100dvh; display: flex; flex-direction: column; }
+.app-layout > main { flex: 1; min-width: 0; }
 :root {
   --theme-ink: #14233e;
   --theme-muted: #56657c;

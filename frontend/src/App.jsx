@@ -32,6 +32,7 @@ const InquiryList = lazy(() => import('./components/InquiryPages').then(module =
 const InquiryThread = lazy(() => import('./components/InquiryPages').then(module => ({ default: module.InquiryThread })))
 
 function Layout({ children }) {
+  const { pathname } = useLocation()
   const confirmDiscard = useDiscardChanges()
   const clearAllUnsaved = useClearUnsavedChanges()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -42,7 +43,7 @@ function Layout({ children }) {
     mutationFn: () => writeApi('post', '/auth/logout'),
     onSuccess: () => { clearAllUnsaved(); clearInquiryDrafts(); setMenuOpen(false); client.clear(); client.setQueryData(['me'], null); navigate('/') },
   })
-  return <>
+  return <div className={'app-layout' + (pathname === '/inquiries' || pathname.startsWith('/inquiries/') ? ' is-messaging' : '')}>
     <a className="skip-link" href="#main">Skip to content</a>
     <header className="site-header"><div className="site-header-inner d-flex align-items-center justify-content-between gap-3">
       <Link className="brand-link" to="/" aria-label="DormFinder home"><Brand /></Link>
@@ -57,7 +58,7 @@ function Layout({ children }) {
       <span>DormFinder · Made for student life.</span>
       <span>Find a place near your college or university.</span>
     </div></footer>
-  </>
+  </div>
 }
 
 function Home() {

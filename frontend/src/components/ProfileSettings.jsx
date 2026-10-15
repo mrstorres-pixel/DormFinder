@@ -7,6 +7,7 @@ import { useCampuses } from '../lib/discovery'
 import useUnsavedChanges, { useClearUnsavedChanges } from '../lib/useUnsavedChanges'
 import { ErrorNotice, Field, Loading } from './Feedback'
 import CampusSearch from './CampusSearch'
+import ProfilePhoto from './ProfilePhoto'
 import './student-space.css'
 
 export default function ProfileSettings() {
@@ -35,6 +36,7 @@ export default function ProfileSettings() {
   return <section className="container page-space profile-settings">
     <Link className="settings-back" to={user.role === 'student' ? '/account' : user.role === 'landlord' ? '/landlord' : '/admin'}>← {user.role === 'student' ? 'Your space' : 'Your workspace'}</Link>
     <h1>Your profile</h1>
+    <ProfilePhoto user={user} />
     <form className="profile-main-form" onChange={() => setProfileDirty(true)} onSubmit={saveProfile}><fieldset disabled={nameChange.isPending || passwordChange.isPending}>
       <section className="settings-section" aria-labelledby="personal-details"><div><h2 id="personal-details">Personal details</h2></div><div><Field label="Your name" name="name" defaultValue={user.name} required maxLength={100} error={fieldErrors(nameChange.error)} /><span className="form-label d-block">Email address</span><p className="settings-email">{user.email}</p></div></section>
       {user.role === 'student' && <section className="settings-section" aria-labelledby="campus-preference"><div><h2 id="campus-preference">Your campus</h2><p>Start your next search here.</p></div><div>{campuses.isPending || campuses.error ? <><input type="hidden" name="preferred_campus_id" value={selectedCampus ?? String(user.preferred_campus_id || '')} />{campuses.isPending && <Loading>Loading campuses…</Loading>}</> : <CampusSearch campuses={campuses.data || []} value={selectedCampus ?? String(user.preferred_campus_id || '')} onChange={value => { setSelectedCampus(value); setProfileDirty(true); setCampusError('') }} name="preferred_campus_id" />}{campusError && <p role="alert">{campusError}</p>}</div></section>}

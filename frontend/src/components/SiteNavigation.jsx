@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { browseLink } from '../lib/housing'
+import Avatar from './Avatar'
 
 const navigationClass = ({ isActive }) => 'nav-link' + (isActive ? ' is-current' : '')
 
@@ -31,12 +32,12 @@ export default function SiteNavigation({ user, menuOpen, closeMenu, onSignOut, s
     <NavLink className={navigationClass} to={user?.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Browse</NavLink>
     {user ? <>
       {user.role === 'student' && <details className={'navigation-menu saved-menu ' + (['/favorites', '/shortlists', '/compare'].includes(location.pathname) ? 'is-current' : '')}>
-        <summary>Saved places</summary><div className="navigation-popover"><p className="navigation-caption">Keep your options together</p><NavLink className={navigationClass} to="/favorites">Favorites<small>Quickly saved properties</small></NavLink><NavLink className={navigationClass} to="/shortlists">Shortlists<small>Room choices and private notes</small></NavLink></div>
+        <summary>Saved places</summary><div className="navigation-popover"><NavLink className={navigationClass} to="/favorites">Favorites</NavLink><NavLink className={navigationClass} to="/shortlists">Shortlists</NavLink></div>
       </details>}
       {user.role === 'landlord' && <NavLink className={navigationClass} to="/landlord">My space</NavLink>}
       {user.role === 'admin' && <NavLink className={navigationClass} to="/admin">Reviews</NavLink>}
-      {['student', 'landlord'].includes(user.role) && <><NavLink className={navigationClass} to="/inquiries">Inquiries</NavLink><NavLink className={navigationClass} to="/viewings">Viewings</NavLink></>}
-      <details className={'navigation-menu account-menu ' + (['/account', '/profile', '/notifications', '/reports'].includes(location.pathname) ? 'is-current' : '')}><summary><span className="account-avatar" aria-hidden="true">{user.name?.slice(0, 1).toUpperCase()}</span><span>Account</span></summary><div className="navigation-popover">{user.role === 'student' && <NavLink className={navigationClass} to={accountPath}>Your space</NavLink>}<NavLink className={navigationClass} to="/profile">Profile</NavLink><NavLink className={navigationClass} to="/notifications">Notifications</NavLink>{user.role === 'student' && <NavLink className={navigationClass} to="/reports">Your reports</NavLink>}<button className="navigation-signout" disabled={signingOut} onClick={onSignOut}>Sign out</button></div></details>
+      {['student', 'landlord'].includes(user.role) && <><NavLink className={navigationClass} to="/inquiries">Messages</NavLink><NavLink className={navigationClass} to="/viewings">Viewings</NavLink></>}
+      <details className={'navigation-menu account-menu ' + (['/account', '/profile', '/notifications', '/reports'].includes(location.pathname) ? 'is-current' : '')}><summary><Avatar src={user.avatar_url} name={user.name} size="small" /><span>Account</span></summary><div className="navigation-popover">{user.role === 'student' && <NavLink className={navigationClass} to={accountPath}>Your space</NavLink>}<NavLink className={navigationClass} to="/profile">Profile</NavLink><NavLink className={navigationClass} to="/notifications">Notifications</NavLink>{user.role === 'student' && <NavLink className={navigationClass} to="/reports">Your reports</NavLink>}<button className="navigation-signout" disabled={signingOut} onClick={onSignOut}>Sign out</button></div></details>
     </> : <div className="guest-navigation"><NavLink className="btn btn-primary btn-sm" to="/login">Sign in</NavLink></div>}
   </nav>
 }

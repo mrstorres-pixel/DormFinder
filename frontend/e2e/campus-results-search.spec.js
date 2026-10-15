@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 
 test('visible campus search and the separate drawer retain requirements without retaining the old area', async ({ page }) => {
+  const keyWarnings = []
+  page.on('console', message => { if (message.type() === 'error' && /Encountered two children|unique.*key/.test(message.text())) keyWarnings.push(message.text()) })
   test.setTimeout(120_000)
   const directory = (await (await page.request.get('/api/v1/campuses')).json()).data
   const first = directory.find(campus => campus.slug === 'ue-manila')
@@ -38,6 +40,7 @@ test('visible campus search and the separate drawer retain requirements without 
   await form.getByRole('button', { name: /DLSU/ }).click()
   await form.getByRole('button', { name: 'Search campus', exact: true }).click()
   await expect.poll(() => new URL(page.url()).searchParams.get('campus_id')).toBe(String(next.id))
+  await expect(page.locator('.discovery-controls .eyebrow')).toHaveText(next.name)
   await expect(campus).toHaveValue(next.name)
   const applied = new URL(page.url()).searchParams
   expect(applied.get('max_rent_centavos')).toBe('900000')
@@ -61,4 +64,5 @@ test('visible campus search and the separate drawer retain requirements without 
     await page.setViewportSize({ width, height: 900 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
+  expect(keyWarnings).toEqual([])
 })

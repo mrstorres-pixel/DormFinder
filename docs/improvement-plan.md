@@ -139,6 +139,16 @@ Personal settings now separate name/email, saved campus and collapsed password c
 
 Local frontend gates and scoped browser journeys pass as recorded in validation.md. This frontend-only change uses existing authenticated/public APIs and preserves data, backend authorization, free services and the user's certificate. Deeper comparison and landlord/admin layout work remains planned. Released source b51af8d is READY in dpl_GTWSyUZJD7RjkjrJpCtwfRCRYPUW at the existing production alias. Sixty-six frontend tests, lint/build, forty scoped local browser cases across recorded runs and forty deployed Chromium/WebKit cases in one clean 2.6-minute run pass. Independent real-account/private API, public-asset credential, readiness and map checks pass. See validation.md and deployment.md for evidence and recovery references.
 
+### Conversation-first messages and a simpler personal area — October 15, 2026
+
+The user's follow-up supersedes the preceding account-page search placement: remove discovery search from Your space, retain campus preference in profile settings and keep discovery in Browse/home. Remove explanatory Saved places menu copy and redundant Viewings/conversations cross-links. Keep viewing-specific navigation as compact contextual buttons.
+
+Replace the inquiry/ticket presentation with Messages for both students and owners. Use a desktop inbox/chat workspace, person-first photo/name headers, recent message previews, distinct incoming/outgoing bubbles, compact Philippine-time timestamps and a fixed composer. Phones show the inbox or selected chat with a clear back control. Start on the latest history page, retain explicit earlier/later navigation and avoid pulling a reader away from older messages during polling. Preserve participant-only access, paused conversations, unsaved drafts and retry identity; Enter sends, Shift+Enter inserts a line break and IME composition is respected.
+
+Support actual profile-photo upload/removal through the existing private storage, with initials when no photo is present. Normalize JPEG/PNG/WebP images to a maximum 512px dimension, strip metadata and limit input to 3 MB/12 megapixels. Only self and existing conversation participants can retrieve a photo. Use a deterministic per-user object key, existing user timestamps and no schema change. Do not add public bucket access, third-party avatar services, fabricated people, typing indicators or read receipts.
+
+Backend/frontend tests and browser acceptance evidence are recorded in validation.md. Preserve existing accounts, listings, private conversations, free providers and the user's certificate. Saved-place/comparison and deeper operational layouts remain on the plan outside this increment.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.

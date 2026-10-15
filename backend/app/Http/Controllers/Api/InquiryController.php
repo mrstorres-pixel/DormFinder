@@ -22,7 +22,7 @@ class InquiryController extends Controller
         abort_unless(in_array($request->user()->role, ['student', 'landlord'], true), 403);
         $column = $request->user()->role === 'student' ? 'student_id' : 'landlord_id';
 
-        return InquiryResource::collection(Inquiry::query()->where($column, $request->user()->id)->select('inquiries.*')->selectSub(DB::table('inquiry_messages')->select('sender_id')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_sender_id')->with(['property', 'student', 'landlord'])->latest('last_message_at')->paginate(12));
+        return InquiryResource::collection(Inquiry::query()->where($column, $request->user()->id)->select('inquiries.*')->selectSub(DB::table('inquiry_messages')->select('sender_id')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_sender_id')->selectSub(DB::table('inquiry_messages')->select('body')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_message_body')->with(['property', 'student', 'landlord'])->latest('last_message_at')->orderByDesc('id')->paginate(12));
     }
 
     private function authorizeParticipant(Request $request, Inquiry $inquiry): void
@@ -44,7 +44,11 @@ class InquiryController extends Controller
     {
         $this->authorizeParticipant($request, $inquiry);
 
-        return InquiryMessageResource::collection($inquiry->messages()->with('sender')->paginate(30));
+        $request->validate(['page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'latest' => ['nullable', 'boolean']]);
+        $query = $inquiry->messages()->with('sender');
+        $page = $request->boolean('latest') ? max(1, (int) ceil((clone $query)->count() / 30)) : null;
+
+        return InquiryMessageResource::collection($query->paginate(30, ['*'], 'page', $page));
     }
 
     public function store(Request $request, Property $property): JsonResponse

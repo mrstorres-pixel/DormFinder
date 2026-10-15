@@ -1,4 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -27,15 +27,15 @@ const respond = collections => mocks.get.mockImplementation(async (path, options
 
 describe('student space', () => {
   beforeEach(() => { mocks.get.mockReset() })
-  it('gives an empty account a campus search and useful save action without statistics or empty activity panels', async () => {
+  it('keeps the personal area separate from search, with a useful save action and no empty activity panels', async () => {
     respond({})
     show()
     expect(await screen.findByRole('heading', { name: 'Found a place you like?' })).toBeVisible()
-    expect(screen.getByRole('combobox', { name: 'College or university' })).toHaveValue('Saved university')
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Edit profile' })).toHaveAttribute('href', '/profile')
     expect(screen.getByRole('link', { name: 'Explore places →' })).toHaveAttribute('href', '/listings?campus_id=8&radius_km=2&sort=recommended')
-    expect(screen.queryByRole('heading', { name: 'Your viewings' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Recent conversations' })).not.toBeInTheDocument()
-    expect(screen.queryByText(user.name)).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Recent viewings' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Recent messages' })).not.toBeInTheDocument()
     expect(mocks.get.mock.calls.some(([path]) => path === '/dashboard')).toBe(false)
   })
   it('opens the displayed room at its exact price, with a caution for stale saved inventory', async () => {
@@ -58,17 +58,15 @@ describe('student space', () => {
   it('prioritizes a reply over waiting conversations without implying paused threads can be answered', async () => {
     respond({ '/inquiries': [{ id: 1, participant_name: 'Owner A', can_reply: true, awaiting_reply: false, listing_snapshot: { title: 'Waiting residence' } }, { id: 2, participant_name: 'Owner B', can_reply: true, awaiting_reply: true, listing_snapshot: { title: 'Reply residence' } }, { id: 3, participant_name: 'Owner C', can_reply: false, awaiting_reply: true, listing_snapshot: { title: 'Paused residence' } }] })
     show()
-    const heading = await screen.findByRole('heading', { name: 'Reply residence' })
-    const section = heading.closest('section')
-    expect(within(section).getAllByRole('link')[1]).toHaveAttribute('href', '/inquiries/2')
-    expect(screen.getByText('Replies paused · View conversation')).toBeVisible()
+    const heading = await screen.findByRole('heading', { name: 'Owner B' })
+    expect(heading.closest('a')).toHaveAttribute('href', '/inquiries/2')
+    expect(screen.getByText('Conversation paused')).toBeVisible()
   })
-  it('keeps search usable when private activity fails and distinguishes unavailable saves from an unused account', async () => {
+  it('keeps account settings usable when activity fails and distinguishes unavailable saves from an unused account', async () => {
     respond({ '/inquiries': new Error('Synthetic private activity failure'), unavailable: [22] })
     show()
     expect(await screen.findByRole('alert')).toHaveTextContent('We could not reach DormFinder')
-    expect(screen.getByRole('combobox', { name: 'College or university' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Find housing near my campus' })).toBeEnabled()
+    expect(screen.getByRole('link', { name: 'Edit profile' })).toHaveAttribute('href', '/profile')
     expect(screen.getByRole('heading', { name: 'Your saved listings are currently unavailable.' })).toBeVisible()
     expect(screen.getByRole('button', { name: 'Try again' })).toBeVisible()
   })

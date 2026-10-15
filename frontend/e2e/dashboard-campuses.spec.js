@@ -44,10 +44,9 @@ for (const role of ['student', 'landlord', 'admin']) {
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
     if (role === 'student') {
-      await expect(page.getByRole('heading', { name: 'Find your next place.' })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Your space', exact: true })).toBeVisible()
       await expect(page.getByRole('link', { name: 'Explore places' })).toHaveAttribute('href', '/listings?campus_id=8&radius_km=2&sort=recommended')
-      await page.getByRole('link', { name: 'Compare room options' }).click()
-      await expect(page).toHaveURL(/\/compare$/)
+      await expect(page.getByRole('link', { name: 'Edit profile' })).toHaveAttribute('href', '/profile')
     } else if (role === 'landlord') {
       await expect(page.getByText(/2 drafts or returned listings/)).toBeVisible()
       await expect(page.getByRole('link', { name: 'Respond to students' })).toHaveAttribute('href', '/inquiries')

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\HealthController;
@@ -28,6 +29,10 @@ Route::prefix('v1')->group(function (): void {
 
     Route::middleware(['auth:sanctum', 'active', 'throttle:api'])->group(function (): void {
         Route::get('me', [AuthController::class, 'me']);
+        Route::get('me/avatar', [AvatarController::class, 'info']);
+        Route::post('me/avatar', [AvatarController::class, 'store'])->middleware('throttle:uploads');
+        Route::delete('me/avatar', [AvatarController::class, 'destroy'])->middleware('throttle:uploads');
+        Route::get('avatars/{user}', [AvatarController::class, 'show'])->whereNumber('user');
         Route::get('dashboard', DashboardController::class);
         Route::get('notifications', [NotificationController::class, 'index']);
         Route::put('notifications/{notification}/read', [NotificationController::class, 'read'])->whereNumber('notification');

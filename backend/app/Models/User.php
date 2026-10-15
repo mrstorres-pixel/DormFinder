@@ -26,4 +26,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Property::class, 'landlord_id');
     }
+
+    public function avatarUrl(): string
+    {
+        return '/api/v1/avatars/'.$this->id.'?v='.($this->updated_at?->format('Uu') ?? '0');
+    }
 }

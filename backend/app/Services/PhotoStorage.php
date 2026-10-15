@@ -93,7 +93,7 @@ class PhotoStorage
         }
     }
 
-    private function normalize(UploadedFile $file): string
+    public function normalize(UploadedFile $file, int $maxDimension = 1600): string
     {
         $size = @getimagesize($file->getRealPath());
         if (! $size || ! in_array($size[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)
@@ -119,7 +119,7 @@ class PhotoStorage
         }
         $width = imagesx($source);
         $height = imagesy($source);
-        $scale = min(1, 1600 / max($width, $height));
+        $scale = min(1, $maxDimension / max($width, $height));
         $target = imagecreatetruecolor(max(1, (int) round($width * $scale)), max(1, (int) round($height * $scale)));
         imagefill($target, 0, 0, imagecolorallocate($target, 255, 255, 255));
         imagecopyresampled($target, $source, 0, 0, 0, 0, imagesx($target), imagesy($target), $width, $height);
