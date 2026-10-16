@@ -172,7 +172,7 @@ test('guest viewing shortcut returns through sign-in to the selected room and ke
   await page.getByRole('button', { name: 'Sign in', exact: true }).click()
   await expect(page).toHaveURL(/\/listings\/21\?option=42#request-viewing$/)
   await expect(page.getByRole('dialog', { name: 'Request a viewing', exact: true })).toBeVisible()
-  await expect(page.getByLabel('Choose a room option')).toHaveValue('42')
+  await expect(page.getByRole('group', { name: 'Choose a room option' }).locator('input:checked')).toHaveValue('42')
   await expect(page.getByRole('dialog', { name: 'Message owner', exact: true })).toBeHidden()
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Message owner', exact: true }).click()

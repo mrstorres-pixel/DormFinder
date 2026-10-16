@@ -1,5 +1,13 @@
 # DormFinder improvement plan
 
+## Listing cards, room choices and comparison — October 16, 2026
+
+The user approved this order: simplify browse cards, replace the listing-detail room dropdown with visible choices, then redesign comparison around photos and essential costs. All three are implemented. Browse cards use larger 4:3 covers, title/city, explicitly straight-line campus distance, selected-room rent/basis, capacity and availability. Extra fixed monthly fees remain visible; full addresses and repeated explanations move out of the card. A single room needs no dropdown. Existing card/map/comparison selection synchronization, saving and browse-return state are preserved.
+
+Listing details show native keyboard-accessible radio cards with each room's price basis, capacity, vacancies and sold-out/stale cautions. The selected room drives the existing charge summary, viewing/message actions, saving and comparison. Unsent viewing requests retain their existing discard guard. Comparison uses linked photo columns, concise highlights and aligned essential cost/capacity/inventory/distance rows; full charges, fees, address, amenities and rules are expandable. Phone comparison scrolls inside its panel with persistent row labels. Existing pricing-basis eligibility rules, unavailable-selection recovery and private data behavior remain unchanged.
+
+Local acceptance passes 78 frontend tests, lint/build, 48 production-build Chromium/WebKit checks and two additional actual-account draft-protection checks. Screenshots cover cards, room choices and comparison on desktop/mobile. Publication and final live acceptance are recorded in validation.md and deployment.md. No API, schema, provider setting, new dependency, demo-data reset or paid resource is part of this increment. Deeper landlord/admin improvements and verified walking endpoints remain planned; live backend rollback remains deferred.
+
 ## Listing photos and hero finish — October 16, 2026
 
 The user approved removing the redundant Choose a room hyperlink, opening listings from their images, enlarging photos centrally over a dark backdrop, replacing text photo-navigation buttons with arrows inside the image, and polishing the hero wall while retaining its current scroll animation. This frontend increment implements linked browse/map-preview/comparison covers with the same room/campus/back-navigation context as their title links. Existing home and saved-place cover links are preserved.

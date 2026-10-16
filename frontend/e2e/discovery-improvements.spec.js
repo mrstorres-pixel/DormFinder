@@ -20,7 +20,7 @@ test('university discovery, guest comparison, map search and mobile navigation w
   await page.locator('.property-card').first().getByRole('checkbox',{name:/Compare/}).check()
   await page.getByRole('link',{name:'Compare 1 listing',exact:true}).click()
   await expect(page.getByRole('table')).toBeVisible()
-  await page.getByRole('link',{name:'View and ask owner'}).click()
+  await page.getByRole('link',{name:'View room'}).click()
   await page.getByRole('link',{name:'Message owner',exact:true}).click()
   await expect(page).toHaveURL(/login\?returnTo=/)
   const destination=new URL(page.url()).searchParams.get('returnTo')

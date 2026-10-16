@@ -1,0 +1,74 @@
+.property-card .property-cover { height: auto; aspect-ratio: 4 / 3; }
+.map-discovery-page .with-map .property-card .property-cover { height: auto; }
+.property-card .listing-card-body { padding: 1.1rem; display: flex; flex-direction: column; gap: .7rem; }
+.property-card .listing-card-body h2 { margin: 0; font-size: 1.05rem; }
+.property-card .listing-card-body p { margin: 0; }
+.property-card .card-location { color: var(--muted); font-size: .78rem; }
+.property-card .card-room-picker .form-label { margin-bottom: .3rem; color: var(--muted); }
+.property-card .card-room-picker .form-select { margin: 0 !important; }
+.property-card .card-price-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .5rem; }
+.property-card .card-price-line .room-price { margin: 0; font-size: 1.3rem; }
+.property-card .card-monthly-total { color: var(--muted); font-size: .76rem; }
+.property-card .card-room-meta { display: flex; flex-wrap: wrap; gap: .25rem .6rem; font-size: .8rem; }
+.property-card .card-room-meta span + span { padding-left: .6rem; border-left: 1px solid var(--line); }
+.property-card .card-match { color: var(--accent); font-size: .76rem; }
+.property-card .card-actions { display: flex; flex-wrap: wrap; gap: .25rem .7rem; align-items: center; border-top: 1px solid var(--line); padding-top: .6rem; margin-top: .1rem; }
+.property-card .card-actions label { display: flex; align-items: center; gap: .4rem; min-height: 44px; font-size: .8rem; cursor: pointer; }
+.property-card .card-actions .btn { min-height: 44px; padding: .5rem .25rem; }
+.property-card .card-actions .save-place-control { margin: 0 !important; }
+.card-actions .save-place-compact, .comparison-column-actions .save-place-compact { border: 0; background: none; color: var(--ink); padding: .5rem .25rem; min-height: 44px; font-size: .8rem; }
+.card-actions .save-place-compact[aria-pressed=true], .comparison-column-actions .save-place-compact[aria-pressed=true] { color: var(--accent); }
+.comparison-column-actions .save-place-guest { font-size: .8rem; text-decoration: none; }
+.property-card .card-actions .save-place-guest { font-size: .8rem; text-decoration: none; min-height: 44px; display: flex; align-items: center; }
+.room-caution { color: #935b0b; }
+.room-choices { min-width: 0; margin: .9rem 0 1.25rem; padding: 0; }
+.room-choices legend { float: none; font-size: .85rem; font-weight: 600; margin-bottom: .65rem; }
+.room-choice { position: relative; display: flex; align-items: start; gap: .7rem; padding: .9rem; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; margin-bottom: .6rem; background: #fff; }
+.room-choice.is-chosen { border-color: var(--accent); background: var(--theme-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.room-choice:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
+.room-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.room-choice-content { display: grid; gap: .35rem; min-width: 0; flex: 1; }
+.room-choice-content strong { font-size: .88rem; overflow-wrap: anywhere; }
+.room-choice-price { font-size: .95rem; font-weight: 650; }
+.room-choice-price small { font-size: .72rem; font-weight: 400; color: var(--muted); }
+.room-choice-meta { font-size: .74rem; color: var(--muted); }
+.room-choice-check { width: 20px; height: 20px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; font-size: .7rem; flex: 0 0 auto; }
+.is-chosen .room-choice-check { background: var(--accent); color: #fff; border-color: var(--accent); }
+.comparison-page { max-width: 1480px; }
+.comparison-intro { color: var(--muted); max-width: 65ch; }
+.comparison-essential { margin: 1.5rem 0; }
+.comparison-page .comparison-scroll { position: relative; max-width: calc(150px + var(--comparison-count) * 410px); margin: 0; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.comparison-page .comparison-table { margin: 0; min-width: calc(150px + var(--comparison-count) * 270px); }
+.comparison-page .comparison-table th:first-child { width: 150px; }
+.comparison-page .comparison-table thead th { font-weight: 400; background: #fff; }
+.comparison-page .comparison-table th, .comparison-page .comparison-table td { padding: 1rem; border-color: var(--line); }
+.comparison-page .comparison-table tbody th { font-size: .8rem; font-weight: 550; color: var(--muted); background: var(--theme-soft); }
+.comparison-page .comparison-table tbody td { font-size: .88rem; }
+.comparison-page .comparison-photo { height: auto; max-height: 240px; aspect-ratio: 4 / 3; margin: 0 0 .9rem; border-radius: 10px; }
+.comparison-page .comparison-photo-placeholder { display: grid; place-items: center; aspect-ratio: 4 / 3; max-height: 240px; background: var(--theme-soft); color: var(--muted); border-radius: 10px; margin-bottom: .9rem; font-size: .8rem; }
+.comparison-page .comparison-table h2 { font-size: 1.05rem; margin: 0 0 .8rem; }
+.comparison-page .comparison-table h2 a { color: var(--ink); text-decoration: none; }
+.comparison-page .comparison-table label { color: var(--muted); font-size: .75rem; }
+.comparison-page .comparison-table select { color: var(--ink); }
+.comparison-column-actions { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .8rem; }
+.comparison-column-actions .btn { font-size: .8rem; min-height: 44px; }
+.comparison-price { font-size: 1.15rem; color: var(--accent); }
+.comparison-price small { display: block; color: var(--muted); font-weight: 400; font-size: .75rem; margin-top: .2rem; }
+.comparison-highlight-list { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: .8rem 0 0; }
+.comparison-highlight-list li { font-size: .72rem; color: var(--accent); background: var(--theme-soft); padding: .35rem .5rem; border-radius: 6px; }
+.comparison-footnote { font-size: .78rem; color: var(--muted); margin: .85rem 0 0; }
+.comparison-terms { margin: 1.4rem 0 2rem; }
+.comparison-terms > summary { cursor: pointer; font-weight: 600; padding: 1rem 0; min-height: 48px; }
+.comparison-terms .comparison-table { table-layout: fixed; }
+.comparison-terms .comparison-table thead th { font-size: .88rem; font-weight: 600; }
+.comparison-scroll-hint { display: none; color: var(--muted); font-size: .75rem; margin-bottom: .5rem; }
+@media (max-width: 991px) {
+  .comparison-scroll-hint { display: block; }
+}
+@media (max-width: 575px) {
+  .comparison-page .comparison-table { min-width: calc(112px + var(--comparison-count) * 235px); }
+  .comparison-page .comparison-table th:first-child { width: 112px; }
+  .comparison-page .comparison-table th, .comparison-page .comparison-table td { padding: .8rem; }
+  .comparison-page .comparison-table tbody th { position: sticky; left: 0; z-index: 1; }
+  .property-card .listing-card-body { padding: 1rem; }
+}

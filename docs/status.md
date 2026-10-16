@@ -1,5 +1,9 @@
 # Implementation status
 
+## Current increment — cards, room choices and comparison, October 16
+
+The approved three-part improvement is implemented: larger image-led browse cards with concise selected-room price/capacity/inventory; visible keyboard-accessible room choices with synchronized costs/actions; and photo-led comparison with essentials first and expandable full terms. Existing search, map/room synchronization, gallery, private forms and Saved places remain usable. Local acceptance passes 78 frontend tests, lint/build, 48 production-build Chromium/WebKit scenarios and two actual-account draft-protection scenarios. Publication/live checks are in progress. No backend deploy, dependency, schema or data change is required. Existing free services and the user certificate are preserved. Other roadmap items retain their earlier status.
+
 ## Current increment — listing photos and hero finish, October 16
 
 Implemented and deployed clickable listing-cover images with retained room/campus context, a centered enlarged-photo viewer over a dark backdrop, arrows within the gallery, and removal of the redundant Choose a room link. The hero's hallway wall now fills the top and left of the frame while retaining the existing entrance animation. Captions, thumbnails, keyboard/focus behavior, signed-image refresh, reduced motion and graphics-failure fallback remain usable. Frontend acceptance passes 78 tests / 22 files, lint and production build; all 52 scoped live Chromium/WebKit checks pass in one final run, including actual WebGL and walking routes. Frontend source 4519e3f is READY in Vercel dpl_6vXx2SipD91faPUoW2TFf2ghyZTm at the existing public alias. The deployed walking-route backend cef1f6d, existing data, free services and user certificate are preserved.
