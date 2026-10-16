@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
+    public function unreadCount(Request $request): JsonResponse
+    {
+        return response()->json(['data' => ['unread_count' => DB::table('user_notifications')->where('recipient_id', $request->user()->id)->whereNull('read_at')->count()]]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $request->validate(['page' => ['nullable', 'integer', 'between:1,100000']]);

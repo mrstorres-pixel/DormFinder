@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function (): void {
         Route::get('avatars/{user}', [AvatarController::class, 'show'])->whereNumber('user');
         Route::get('dashboard', DashboardController::class);
         Route::get('notifications', [NotificationController::class, 'index']);
+        Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
         Route::put('notifications/{notification}/read', [NotificationController::class, 'read'])->whereNumber('notification');
         Route::get('reports', [ReportController::class, 'index']);
         Route::post('listings/{property}/reports', [ReportController::class, 'store'])->whereNumber('property')->middleware('throttle:reports');

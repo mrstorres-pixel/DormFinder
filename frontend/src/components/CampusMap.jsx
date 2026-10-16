@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { preferredOption } from '../lib/housing'
 import { pesos } from '../lib/money'
 import { mapClusters } from '../lib/mapClusters'
+import { campusIcon } from '../lib/mapMarkers'
 import 'leaflet/dist/leaflet.css'
 
 export default function CampusMap({ properties, campus, selectedId, onSelect, onAreaSearch, radius, bounds, viewport, onViewportChange, children }) {
@@ -36,7 +37,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
       const tile = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })
       tile.on('tileerror', () => { if (!cancelled) setFailed(true) }).addTo(map)
       const label = document.createElement('span'); label.textContent = campusName + ' — approximate campus reference'
-      L.marker([latitude, longitude], { icon: L.divIcon({ className: 'campus-marker', html: '<span>C</span>', iconSize: [30, 30] }), title: campusName }).addTo(map).bindPopup(label)
+      L.marker([latitude, longitude], { icon: campusIcon(L), title: campusName + ' — selected campus', zIndexOffset: 2000 }).addTo(map).bindPopup(label)
       map.on('moveend', () => {
         if (cancelled) return
         setMoved(true)
@@ -112,6 +113,6 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     <div className="campus-map" ref={element} role="region" aria-label="Listing map" />
     {children}
     </div>
-    <p className="small map-note">Campus reference and owner-supplied pins · straight-line distances, not walking routes. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
+    <p className="small map-note">{properties.some(property => property.is_demo) ? 'Demo pins are fictional; other pins are owner-supplied.' : 'Owner-supplied property pins.'} Campus is an approximate reference. Distances are straight lines. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
   </section>
 }

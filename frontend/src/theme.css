@@ -50,6 +50,12 @@ p { line-height: 1.65; }
 .main-navigation { margin-left: auto; gap: .65rem; }
 .main-navigation .nav-link, .navigation-menu > summary { font-size: .875rem; font-weight: 500; }
 .main-navigation .nav-link.is-current { background: #edf3ff; color: var(--accent); }
+.site-header-inner > .brand-link { order: 0; }
+.site-header-inner > .main-navigation { order: 1; }
+.site-header-inner > .menu-toggle { order: 3; }
+.notification-bell { order: 2; position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; color: var(--ink); border-radius: 50%; text-decoration: none; }
+.notification-bell:hover, .notification-bell.is-current { color: var(--accent); background: var(--theme-soft); }
+.notification-unread-dot { position: absolute; top: 7px; right: 8px; width: 10px; height: 10px; background: var(--accent); border: 2px solid white; border-radius: 50%; }
 .navigation-popover { box-shadow: 0 16px 48px #14233e14; }
 .site-footer { background: #14233e; color: #c2cde0; border: 0; padding-block: 1.6rem; }
 .site-footer > .container { max-width: none; padding-inline: clamp(20px, 3vw, 64px); }
@@ -84,6 +90,10 @@ p { line-height: 1.65; }
 .room-overview-price, .room-price, .featured-price { color: var(--accent); }
 @media (min-width: 992px) { .site-header:has(+ main .map-discovery-page) { padding-block: .85rem; } }
 @media (max-width: 767px) {
+  .site-header-inner { column-gap: .5rem !important; }
+  .site-header-inner > .notification-bell { order: 1; margin-left: auto; }
+  .site-header-inner > .menu-toggle { order: 2; }
+  .site-header-inner > .main-navigation { order: 3; }
   .site-header-inner { flex-wrap: wrap; gap: .65rem; }
   .main-navigation { margin-left: 0; }
   .site-header { padding-block: .75rem; }

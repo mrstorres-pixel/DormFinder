@@ -6,6 +6,7 @@ import { useComparison, comparisonItems } from '../lib/comparison'
 import { pesos } from '../lib/money'
 import { preferredOption } from '../lib/housing'
 import { detailedMatches } from '../lib/practical'
+import { campusIcon } from '../lib/mapMarkers'
 import FavoriteButton from './SavePlaceButton'
 export { FavoriteButton }
 import 'leaflet/dist/leaflet.css'
@@ -72,7 +73,7 @@ function LoadedMap({ properties, campus }) {
       const tiles = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })
       tiles.on('tileerror', () => { if (!cancelled) setError(true) }).addTo(map)
       const campusLabel = document.createElement('span'); campusLabel.textContent = campus.name + ' — approximate center'
-      L.marker([campus.latitude, campus.longitude], { title: campus.name, icon: L.divIcon({ className: 'campus-marker', html: '<span>C</span>', iconSize: [30, 30] }) }).addTo(map).bindPopup(campusLabel)
+      L.marker([campus.latitude, campus.longitude], { title: campus.name + ' — selected campus', icon: campusIcon(L), zIndexOffset: 2000 }).addTo(map).bindPopup(campusLabel)
       const pins = JSON.parse(markerData)
       for (const property of pins) {
         const label = document.createElement('a'); label.textContent = property.title; label.href = '/listings/' + property.id

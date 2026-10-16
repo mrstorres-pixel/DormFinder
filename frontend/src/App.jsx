@@ -6,6 +6,7 @@ import { useCurrentUser } from './lib/auth'
 import { ErrorNotice, Field, Loading } from './components/Feedback'
 import Brand from './components/Brand'
 import SiteNavigation from './components/SiteNavigation'
+import NotificationBell from './components/NotificationBell'
 import HousingSearchForm from './components/HousingSearchForm'
 import FeaturedHomes from './components/FeaturedHomes'
 import RoomEntrance from './components/RoomEntrance'
@@ -50,6 +51,7 @@ function Layout({ children }) {
       <Link className="brand-link" to="/" aria-label="DormFinder home"><Brand /></Link>
       <button type="button" className="btn btn-outline-primary menu-toggle" aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(value => !value)}>Menu</button>
       <SiteNavigation user={user} menuOpen={menuOpen} closeMenu={() => setMenuOpen(false)} signingOut={logout.isPending} onSignOut={() => { if (confirmDiscard()) logout.mutate() }} />
+      {user && <NotificationBell userId={user.id} onOpen={() => setMenuOpen(false)} />}
     </div></header>
     <main id="main" tabIndex="-1">
       {logout.error && <div className="container mt-3"><ErrorNotice error={logout.error} /></div>}

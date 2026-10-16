@@ -222,17 +222,20 @@ class PhaseFourTest extends TestCase
         $this->postJson('/api/v1/listings/'.$property->id.'/inquiries', $data)->assertCreated();
         $this->postJson('/api/v1/listings/'.$property->id.'/inquiries', $data)->assertCreated();
         $id = DB::table('user_notifications')->where('recipient_id', $property->landlord_id)->value('id');
+        $this->getJson('/api/v1/notifications/unread-count')->assertOk()->assertExactJson(['data' => ['unread_count' => 0]]);
         $this->getJson('/api/v1/notifications')->assertOk()->assertJsonCount(0, 'data');
         $this->putJson('/api/v1/notifications/'.$id.'/read')->assertNotFound();
         $this->become($property->landlord);
         $response = $this->getJson('/api/v1/notifications')->assertOk()->assertJsonCount(1, 'data');
         $this->assertStringNotContainsString($data['body'], $response->getContent());
         $this->getJson('/api/v1/dashboard')->assertOk()->assertJsonPath('data.unread_notifications', 1);
+        $this->getJson('/api/v1/notifications/unread-count')->assertOk()->assertExactJson(['data' => ['unread_count' => 1]]);
         $this->putJson('/api/v1/notifications/'.$id.'/read')->assertOk();
         $read = DB::table('user_notifications')->where('id', $id)->value('read_at');
         $this->putJson('/api/v1/notifications/'.$id.'/read')->assertOk();
         $this->assertSame($read, DB::table('user_notifications')->where('id', $id)->value('read_at'));
         $this->getJson('/api/v1/dashboard')->assertOk()->assertJsonPath('data.unread_notifications', 0);
+        $this->getJson('/api/v1/notifications/unread-count')->assertOk()->assertExactJson(['data' => ['unread_count' => 0]]);
         $this->become($this->admin());
         $this->getJson('/api/v1/notifications')->assertOk()->assertJsonCount(0, 'data');
     }
