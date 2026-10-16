@@ -12,12 +12,19 @@ test('existing cloud accounts read their student space and operational dashboard
     try {
       const page = await context.newPage()
       await page.goto('/login')
+      expect((await page.request.get('/api/v1/notifications/unread-count', { headers: { Accept: 'application/json' } })).status()).toBe(401)
       const account = role === 'admin' ? admin : accounts[role]
       await page.getByLabel('Email').fill(account.email)
       await page.getByLabel('Password', { exact: true }).fill(account.password)
       const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/saved-places' : '/api/v1/dashboard') && response.status() === 200)
       await page.getByRole('button', { name: 'Sign in', exact: true }).click()
       const counts = (await (await dashboard).json()).data
+      const unreadResponse = await page.evaluate(async () => { const response = await fetch('/api/v1/notifications/unread-count', { credentials: 'include', headers: { Accept: 'application/json' } }); return { status: response.status, body: await response.json() } })
+      expect(unreadResponse.status).toBe(200)
+      const unread = unreadResponse.body.data.unread_count
+      expect(Number.isSafeInteger(unread) && unread >= 0).toBe(true)
+      await expect(page.locator('.notification-bell')).toHaveAttribute('aria-label', unread ? `Notifications — ${unread} unread` : 'Notifications')
+      await expect(page.locator('.notification-unread-dot')).toHaveCount(unread ? 1 : 0)
       await expect(page).toHaveURL(role === 'student' ? /\/account$/ : role === 'landlord' ? /\/landlord$/ : /\/admin$/)
       if (role === 'student') {
         await expect(page.getByRole('heading', { name: 'Your space', exact: true })).toBeVisible()
