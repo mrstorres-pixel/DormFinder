@@ -62,7 +62,8 @@ function ViewingDetails({ viewing, role, refresh, back, onDirtyChange, focused }
   useEffect(() => { onDirtyChange(dirty); return () => onDirtyChange(false) }, [dirty, onDirtyChange])
   const [error, setError] = useState('')
   const heading = useRef(null)
-  useEffect(() => { if (focused) heading.current?.focus({ preventScroll: true }) }, [focused])
+  const proposal = useRef(null)
+  useEffect(() => { if (focused) { heading.current?.focus({ preventScroll: true }); heading.current?.scrollIntoView({ block: 'start' }) } }, [focused])
   const mutation = useMutation({ mutationFn: data => writeApi('patch', '/viewings/' + viewing.id, { ...data, revision: viewing.revision }), onSuccess: async () => { clear(); setDirty(false); await refresh() } })
   const active = ['requested', 'proposed', 'accepted'].includes(viewing.status)
   function decide(event) {
@@ -77,19 +78,23 @@ function ViewingDetails({ viewing, role, refresh, back, onDirtyChange, focused }
     if (['cancel', 'decline'].includes(action) && !window.confirm(action === 'cancel' ? 'Cancel this viewing request?' : 'Decline this viewing request?')) return
     mutation.mutate(data)
   }
+  const decisions = <>
+    <ErrorNotice error={mutation.error} />{error && <p role="alert">{error}</p>}
+    {active && <form onSubmit={decide} onChange={() => setDirty(true)}><fieldset disabled={mutation.isPending}>
+      {(!viewing.can_schedule || viewing.time_passed) && <p className="appointment-paused">{viewing.time_passed ? 'This time has passed.' : 'Scheduling is paused.'} You can still cancel this request.</p>}
+      {role === 'landlord' && viewing.status !== 'accepted' && <details ref={proposal} className="viewing-proposal"><summary>Suggest a different time or add a note</summary><Field label="Message for the student" name={'owner-note-' + viewing.id} as="textarea" maxLength={1000} defaultValue={viewing.owner_note} /><Field label="Suggest another time (Philippine time)" name={'proposed-time-' + viewing.id} type="datetime-local" /></details>}
+      <div className="appointment-decisions">{!viewing.time_passed && viewing.can_schedule && ((role === 'landlord' && viewing.status === 'requested') || (role === 'student' && viewing.status === 'proposed')) && <button className="btn btn-primary" name="action" value="accept">{role === 'student' ? 'Accept suggested time' : 'Accept viewing'}</button>}{role === 'landlord' && viewing.status !== 'accepted' && <><button className="btn btn-outline-primary" name="action" value="propose" disabled={!viewing.can_schedule} onClick={event => { if (proposal.current && !proposal.current.open) { event.preventDefault(); proposal.current.open = true; proposal.current.querySelector('input')?.focus() } }}>Suggest another time</button><button className="btn btn-outline-danger" name="action" value="decline">Decline request</button></>}<button className="appointment-cancel" name="action" value="cancel">Cancel viewing</button></div>
+    </fieldset></form>}
+  </>
   return <article id={'viewing-' + viewing.id} ref={heading} tabIndex={-1} className="appointment-details" aria-label="Viewing details">
     <button type="button" className="appointment-back" onClick={back}>← Back to viewings</button><AppointmentPhoto viewing={viewing} />
     <div className="appointment-detail-content"><span className={'appointment-state state-' + viewing.status}>{stateLabel(viewing, role)}</span><h2>{viewing.listing_snapshot.title}</h2><p className="appointment-room">{viewing.listing_snapshot.room_name}</p>
     <div className="appointment-date"><span aria-hidden="true">◷</span><div><strong>{viewingLabel(viewing.starts_at)}</strong><small>One-hour visit · Philippine time</small></div></div>
+    {viewing.status !== 'accepted' && decisions}
     <div className="appointment-person"><Avatar src={viewing.participant_avatar_url} name={viewing.participant_name} /><div><strong>{viewing.participant_name}</strong><small>{role === 'student' ? 'Property owner' : 'Student'}</small></div></div>
     <div className="appointment-address"><h3>Meeting address</h3><p>{viewing.listing_snapshot.address}, {viewing.listing_snapshot.city}</p>{viewing.status === 'accepted' && !viewing.time_passed && <small>Confirm the meeting point with the owner before visiting.</small>}</div>
     {(viewing.student_note || viewing.owner_note || viewing.requested_start !== viewing.starts_at) && <section className="appointment-notes" aria-label="Request notes">{viewing.student_note && <div><h3>Student note</h3><p className="preserve-lines">{viewing.student_note}</p></div>}{viewing.owner_note && <div><h3>Owner note</h3><p className="preserve-lines">{viewing.owner_note}</p></div>}{viewing.requested_start !== viewing.starts_at && <small>Originally requested: {viewingLabel(viewing.requested_start)}</small>}</section>}
-    <ErrorNotice error={mutation.error} />{error && <p role="alert">{error}</p>}
-    {active && <form onSubmit={decide} onChange={() => setDirty(true)}><fieldset disabled={mutation.isPending}>
-      {(!viewing.can_schedule || viewing.time_passed) && <p className="appointment-paused">{viewing.time_passed ? 'This time has passed.' : 'Scheduling is paused.'} You can still cancel this request.</p>}
-      {role === 'landlord' && viewing.status !== 'accepted' && <details className="viewing-proposal"><summary>Suggest a different time or add a note</summary><Field label="Message for the student" name={'owner-note-' + viewing.id} as="textarea" maxLength={1000} defaultValue={viewing.owner_note} /><Field label="Suggest another time (Philippine time)" name={'proposed-time-' + viewing.id} type="datetime-local" /></details>}
-      <div className="appointment-decisions">{!viewing.time_passed && viewing.can_schedule && ((role === 'landlord' && viewing.status === 'requested') || (role === 'student' && viewing.status === 'proposed')) && <button className="btn btn-primary" name="action" value="accept">{role === 'student' ? 'Accept suggested time' : 'Accept viewing'}</button>}{role === 'landlord' && viewing.status !== 'accepted' && <><button className="btn btn-outline-primary" name="action" value="propose" disabled={!viewing.can_schedule}>Suggest another time</button><button className="btn btn-outline-danger" name="action" value="decline">Decline request</button></>}<button className="appointment-cancel" name="action" value="cancel">Cancel viewing</button></div>
-    </fieldset></form>}
+    {viewing.status === 'accepted' && decisions}
     <div className="appointment-context-actions">{viewing.conversation_id ? <Link className="btn btn-outline-primary" to={'/inquiries/' + viewing.conversation_id}>{role === 'student' ? 'Message owner' : 'Message student'}</Link> : role === 'student' && viewing.can_schedule ? <Link className="btn btn-outline-primary" to={'/listings/' + viewing.property_id + '?option=' + viewing.room_option_id + '#message-owner'}>Message owner</Link> : null}{role === 'landlord' ? <Link className="btn btn-outline-primary" to={'/landlord/properties/' + viewing.property_id}>Manage listing</Link> : viewing.property_preview && <Link className="btn btn-outline-primary" to={'/listings/' + viewing.property_id + '?option=' + viewing.room_option_id}>View selected room</Link>}</div>
     </div>
   </article>
