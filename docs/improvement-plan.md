@@ -1,5 +1,11 @@
 # DormFinder improvement plan
 
+## Walking routes and campus overlap — October 16, 2026
+
+The user approved implementing this map increment. Walk to campus is implemented for a selected browse listing and a single listing's detail map: estimated walking minutes, pedestrian-network distance and a highlighted route. Selection changes/closing clear stale routes; explicit errors/retry retain search usability. Campus/price label collisions use anchored leader lines. Existing coordinates, room selections, saved data and free services are preserved.
+
+This increment uses bounded, on-demand FOSSGIS foot routing with shared caching, global cooldown, a conservative daily app cap and no API key or paid account. Routing to current approximate campus references is labeled explicitly; verified public gates, access hours, property-entrance verification and walking-based filters/sorts remain planned. Fictional demo origins are labeled. No claim of verified entrance access is introduced. Architecture.md records the provider policy and limits. Local acceptance is passing; production publication and live acceptance are being recorded in deployment.md and validation.md.
+
 Status: core releases, the practical-feature batch and the connected visual refinements, including unified Saved places, are deployed October 11–16, 2026. Discovery, selected-room details, image-led home, messaging, viewings and the personal area share the current white/navy/cobalt identity. Saved places now combines one-click saving with optional collections and private room notes. Further comparison-page and deeper landlord/admin workspace redesigns remain planned, alongside the retained functional priorities below. Live Render rollback remains explicitly deferred. Preserve existing data and completed work; keep the current React/Laravel/Supabase/Render/Vercel stack and existing free services. Never reset production data or expose credentials.
 
 ## Product direction

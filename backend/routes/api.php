@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\RoomOptionController;
 use App\Http\Controllers\Api\SavedPlaceController;
 use App\Http\Controllers\Api\ShortlistController;
 use App\Http\Controllers\Api\ViewingController;
+use App\Http\Controllers\Api\WalkingRouteController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -24,6 +25,7 @@ Route::prefix('v1')->group(function (): void {
     Route::get('campuses', [ListingController::class, 'campuses'])->middleware('throttle:api');
     Route::get('listings', [ListingController::class, 'index'])->middleware('throttle:api');
     Route::get('listings-map', [ListingController::class, 'map'])->middleware('throttle:api');
+    Route::get('listings/{property}/walking-route', WalkingRouteController::class)->whereNumber('property')->middleware(['throttle:api', 'throttle:walking']);
     Route::post('compare', [ListingController::class, 'compare'])->middleware('throttle:api');
     Route::get('listings/{property}', [ListingController::class, 'show'])->whereNumber('property')->middleware('throttle:api');
     Route::get('media/{photo}', [PhotoController::class, 'local'])->name('photos.local');

@@ -1,5 +1,9 @@
 # Implementation status
 
+## Current increment — walking routes, October 16
+
+Implemented selected-route walking minutes, distance and a highlighted pedestrian path on browse and single-listing detail maps. Campus/cluster labels avoid overlap without changing stored coordinates. Routing is explicit and cached, with bounded free-provider usage and honest approximate-campus/demo labels. Existing search distance behavior is retained. Local backend acceptance passes 122 tests / 1121 assertions; frontend passes 75 tests, lint and production build. Chromium/WebKit release checks and publication are in progress. No migration, dependency or paid resource was added. Verified entrances and walking-based ranking remain future work.
+
 Approved deadline: October 14, 2026, Asia/Singapore. Free tiers only. Codex owns implementation.
 
 ## Inspection after interrupted validation

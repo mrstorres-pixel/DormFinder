@@ -73,7 +73,7 @@ test('unknown unread status stays usable and guests do not request private notif
   expect(guest.reads).toBe(0)
 })
 
-test('campus stays prominent and individual price pins retain their actual coordinate positions', async ({ page }, testInfo) => {
+test('campus stays prominent and price labels retain anchors at their actual coordinate positions', async ({ page }, testInfo) => {
   const campus = { id: 8, name: 'Synthetic University', institution_name: 'Synthetic University', city: 'Manila', latitude: 14.6, longitude: 120.98 }
   const room = { id: 21, name: 'Shared room', capacity: 2, price_basis: 'per_person', inventory_type: 'bedspace', monthly_rent_centavos: 400000, monthly_fixed_total_centavos: 425000, available_units: 2, availability_stale: false }
   const places = [{ id: 1, title: 'Northwest room', latitude: 14.6037, longitude: 120.9755 }, { id: 2, title: 'Southeast room', latitude: 14.5971, longitude: 120.9842 }].map(place => ({ ...place, city: 'Manila', property_type: 'dormitory', is_demo: true, photos: [], room_options: [room] }))
@@ -93,7 +93,7 @@ test('campus stays prominent and individual price pins retain their actual coord
     const rect = node.getBoundingClientRect(), center = node.querySelector('.campus-pin').getBoundingClientRect()
     const pixel = point => { const sin = Math.sin(point.latitude * Math.PI / 180); return { x: (point.longitude + 180) / 360 * 256 * 2 ** 15, y: (.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * 256 * 2 ** 15 } }
     const reference = pixel(campus)
-    return { campusError: Math.hypot(center.x + center.width / 2 - rect.x - rect.width / 2, center.y + center.height / 2 - rect.y - rect.height / 2), campusZ: Number(getComputedStyle(node.querySelector('.campus-marker')).zIndex), pins: places.map(place => { const pin = [...node.querySelectorAll('.price-marker')].find(pin => pin.title.startsWith(place.title)), bounds = pin.getBoundingClientRect(), expected = pixel(place); return { error: Math.hypot(bounds.x + bounds.width / 2 - rect.x - rect.width / 2 - expected.x + reference.x, bounds.y + bounds.height / 2 - rect.y - rect.height / 2 - expected.y + reference.y), z: Number(getComputedStyle(pin).zIndex) } }) }
+    return { campusError: Math.hypot(center.x + center.width / 2 - rect.x - rect.width / 2, center.y + center.height / 2 - rect.y - rect.height / 2), campusZ: Number(getComputedStyle(node.querySelector('.campus-marker')).zIndex), pins: places.map(place => { const pin = [...node.querySelectorAll('.price-marker')].find(pin => pin.title.startsWith(place.title)), bounds = pin.getBoundingClientRect(), expected = pixel(place), style = getComputedStyle(pin); return { error: Math.hypot(bounds.x - parseFloat(style.marginLeft) - rect.x - rect.width / 2 - expected.x + reference.x, bounds.y - parseFloat(style.marginTop) - rect.y - rect.height / 2 - expected.y + reference.y), z: Number(style.zIndex) } }) }
   }, { places, campus })
   expect(positions.campusError).toBeLessThan(2)
   for (const pin of positions.pins) { expect(pin.error).toBeLessThan(2); expect(positions.campusZ).toBeGreaterThan(pin.z) }

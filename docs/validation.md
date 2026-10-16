@@ -1,5 +1,15 @@
 # Validation evidence — October 9, 2026
 
+## Walking-route acceptance — October 16, 2026
+
+Local backend: 122 tests / 1121 assertions pass, including seven new walking-route tests: real foot-graph URL/options, cache reuse and coordinate invalidation, public visibility before cached responses, inactive owners/campuses, missing/remote pins, global lock/cooldown/daily cap, per-IP cap, timeout/no-route/malformed/oversnapped responses. Pint passes. Local frontend: 75 tests across 21 files, lint and production build pass; the existing deferred decorative 3D chunk warning is unchanged.
+
+New browser cases cover campus/cluster non-overlap, unchanged geographic anchors, route distance/time/path, no automatic route request, cached reuse, clearing, late-response isolation, explicit retry, detail-map use and phone rotation/overflow. Actual browser → Laravel → FOSSGIS foot-graph journeys pass in Chromium/WebKit; one local response was 620 m / 498 seconds with 30 geometry points. A separate public provider probe returned 521.9 m / 419.4 seconds. These are fictional demo endpoints, not verified rental or campus-gate access.
+
+During validation, a request made during a Leaflet zoom transition initially fitted incorrectly; fitting now waits for zoom completion, uses actual preview height and refits on resize. The previous marker-coordinate assertion was updated to inspect geographic anchors because displaced labels now intentionally have leader lines. An existing Saved places keyboard regression revealed delayed dialog focus restoration stealing focus after a collection was selected; ActionDialog now preserves focus that the user has already moved elsewhere. Its regression still checks opener restoration and subsequent keyboard focus. Initial failed runs are not represented as passing. Final scoped production-build browser acceptance and live release evidence follow below.
+
+The final 42 distinct scoped local Chromium/WebKit scenarios have passing evidence across the main run and the final 16-case Saved places/viewings rerun. The final focus fix restores the opener synchronously when closing a dialog, so no delayed animation-frame callback can steal subsequent keyboard focus. Tests, lint and production build were run after the fix. Public routing remained functional when local browser tile requests were unavailable, exercising the map-imagery fallback separately from routing.
+
 ## Passed locally
 
 - PHP 8.4.26, PostgreSQL 17.11: **41 PHPUnit tests, 126 assertions**.

@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('messages', fn (Request $request) => Limit::perMinute(20)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('reports', fn (Request $request) => Limit::perHour(10)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
+        RateLimiter::for('walking', fn (Request $request) => Limit::perMinute(10)->by('walking:'.$request->ip()));
 
         if ($this->app->isProduction() && ! $this->app->runningInConsole()) {
             if (config('app.debug') || ! config('session.secure') || config('filesystems.default') !== 's3'

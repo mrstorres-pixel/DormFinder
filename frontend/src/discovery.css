@@ -38,6 +38,13 @@
 .leaflet-marker-icon.campus-marker.leaflet-interactive { pointer-events: none; }
 .campus-marker .campus-pin { display: grid; place-items: center; width: 44px; height: 44px; background: #14233e; color: white; border: 3px solid white; outline: 3px solid #2558e5; outline-offset: 1px; border-radius: 50%; box-shadow: 0 3px 14px #14233e66; pointer-events: auto; }
 .campus-marker .campus-pin-label { position: absolute; top: 51px; left: 22px; transform: translateX(-50%); display: block; width: max-content; height: auto; padding: 3px 8px; background: white; color: #14233e; border: 1px solid #d9e2ef; border-radius: 6px; font: 600 11px/1.4 Inter, sans-serif; box-shadow: 0 2px 6px #14233e22; pointer-events: none; }
+.walking-route-control { padding: .6rem .15rem .25rem; flex: 0 0 auto; }
+.walking-route-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; }
+.walking-route-control strong { display: block; font-size: .86rem; margin-top: .3rem; }
+.walking-route-control p { font-size: .7rem; line-height: 1.5; margin: .25rem 0; color: var(--theme-muted); }
+.walking-route-control .walking-attribution { font-size: .65rem; }
+.walking-route-control:has(strong) .walking-route-actions { float: right; }
+.walking-route-path, .walking-route-connection, .map-label-leader { pointer-events: none; }
 .map-discovery-page .property-card { scroll-margin-top: 1rem; }
 .map-discovery-page .property-card.is-selected { border-color: var(--accent); background: var(--theme-surface); }
 .map-discovery-page .property-card .btn-link { text-decoration: none; }
@@ -58,6 +65,8 @@
   .map-discovery-page .with-map .listing-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 991px) {
+  .discovery-map-column:has(.has-walking-route) { height: auto; min-height: 0; }
+  .has-walking-route .map-canvas { flex: none; height: 70dvh; min-height: 460px; }
   .map-discovery-page { padding: 1.25rem 1rem 2rem; }
   .discovery-map-column { grid-column: 1; grid-row: auto; position: static; height: 76dvh; min-height: 400px; }
   .discovery-controls .page-heading { margin-bottom: .75rem; }

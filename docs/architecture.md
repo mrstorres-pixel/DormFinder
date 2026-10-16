@@ -1,5 +1,15 @@
 # Architecture, API and permissions
 
+## Selected walking routes — October 16, 2026
+
+`GET /api/v1/listings/{property}/walking-route?campus_id=...` resolves only a currently public listing with an active owner and an active campus. Callers cannot supply URLs or arbitrary coordinates. Missing pins and pairs more than 10 km apart are rejected before contacting the provider. Existing discovery distance filters/sorts remain explicitly straight-line distances.
+
+The fixed HTTPS endpoint is FOSSGIS's worldwide OSRM **routed-foot** graph, returning GeoJSON, distance and duration. Only public coordinates are sent, with an identifying User-Agent and no credentials/cookies. There are no driving-graph or straight-line-speed substitutes. Redirects/retries are disabled; connection/total timeouts are 3/10 seconds. Response size, geometry, summaries and snapping are checked; endpoint snapping is limited to 100 m. Solid blue denotes the walking graph; dashed connections to pins are outside its estimate. Campus references are approximate centers, not verified public gates; demo locations remain fictional.
+
+The existing shared database cache stores successful coordinate/profile pairs for 24 hours, no-route responses for ten minutes and temporary failures for 30 seconds. A shared atomic lock and a full 1.1-second cooldown after every outbound attempt enforce the provider's one-request-per-second maximum across workers. DormFinder additionally caps outbound requests at 250 per UTC day and incoming requests at ten per minute per IP. The daily cap is our conservative app limit, not a claimed provider entitlement; cached routes remain usable after reaching it. No bulk routing, API key, paid resource or schema change. Heavy usage requires another provider or self-hosting before raising these limits. Required attribution and the OSM correction link remain visible. Sources: [FOSSGIS usage summary](https://routing.openstreetmap.de/about.html), [provider graph URLs](https://github.com/fossgis-routing-server/osrm-frontend/blob/master/src/leaflet_options.js).
+
+The browser requests one route only after Walk to campus is chosen, cancels obsolete selections, clears paths when closing/changing selections and caches by both endpoints. Browse and single-listing detail maps support the flow. Route fitting waits for active Leaflet zoom transitions, reserves actual preview space and refits on resize. Price/cluster labels that overlap the campus move in screen space, with leader lines to unchanged geographic anchors. Neither real listing coordinates nor fictional demo coordinates are rewritten.
+
 ## Intended deployment
 
 ```mermaid

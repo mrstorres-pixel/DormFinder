@@ -13,7 +13,7 @@ export default function ActionDialog({ open, title, onClose, children, returnFoc
     const overflow = root.style.overflow
     root.style.overflow = 'hidden'
     node.showModal()
-    return () => { node.close(); root.style.overflow = overflow; requestAnimationFrame(() => { if (opener?.isConnected) opener.focus({ preventScroll: true }) }) }
+    return () => { node.close(); root.style.overflow = overflow; if (opener?.isConnected) opener.focus({ preventScroll: true }) }
   }, [open, returnFocus])
   function keepFocus(event) {
     if (event.key !== 'Tab') return

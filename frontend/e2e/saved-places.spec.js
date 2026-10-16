@@ -188,6 +188,7 @@ test('switching collections opens the right room and explicit discard clears onl
   await edit.click()
   await expect(page.getByLabel('Details for')).toHaveValue('1')
   await page.keyboard.press('Escape')
+  await expect(edit).toBeFocused()
   const nextCollection = page.getByRole('button', { name: 'Quiet options', exact: true })
   await nextCollection.focus()
   await nextCollection.press('Enter')
