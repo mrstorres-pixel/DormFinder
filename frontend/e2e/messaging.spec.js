@@ -75,6 +75,12 @@ test('messages feel like a conversation and preserve latest history, retries and
     expect(composer.y + composer.height).toBeLessThanOrEqual(viewport.height + 1)
     if (viewport.height > 500) await page.screenshot({ path: `../.local/messaging-${testInfo.project.name}-${viewport.width}.png`, fullPage: true })
   }
+  await page.setViewportSize({ width: 390, height: 520 })
+  await log.focus()
+  await page.keyboard.press('Home')
+  await expect.poll(() => log.evaluate(node => node.scrollTop)).toBe(0)
+  await page.keyboard.press('End')
+  await expect.poll(() => log.evaluate(node => node.scrollTop)).toBeGreaterThan(0)
   await page.setViewportSize({ width: 390, height: 844 })
   await page.getByRole('link', { name: 'Back to messages' }).click()
   await expect(page.getByRole('heading', { name: 'Messages', exact: true })).toBeVisible()
