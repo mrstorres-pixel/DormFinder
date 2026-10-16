@@ -2,6 +2,16 @@
 
 Phases 1–4 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
 
+## Walking routes and campus label separation — October 16, 2026
+
+Current application source is cef1f6dbc99b822330fda02e45cad26b08d9a64f. The existing free Render service srv-db44ecrbc2fs73aj14q0, in the user-confirmed workspace tea-d7ip6vu7r5hc73ccjjng, is live on dep-db8v1urrjlhs73dl7njg since 09:41:10 UTC. Auto-deploy remains off and the established Docker entrypoint is retained. No schema migration, environment/permission change, dependency or paid resource was required.
+
+Vercel dpl_83tf9nAnRWs3PBjvzdv6BeDvbR9y is READY at https://dormfinder-kv81repgh-mrstorres-pixels-projects.vercel.app and the existing public alias https://dormfinder-pink.vercel.app. The clean committed archive .local/walking-source-cef1f6d was linked only after verifying project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1 / team team_lakGFdG84Dlw3s6qfEG8IKQc and frontend root/Node24/build settings. Staging used --skip-domain; authenticated CLI checks verified entry index-YxYBzQNQ.js and a byte-identical Discovery-CG0RwRVN.js before promotion. CSS is index-DA_MsN22.css. Backend readiness and a real foot route passed before promoting. Deployment protection was retained.
+
+All 42 scoped live Chromium/WebKit acceptance cases pass in one final run. Public assets/credential scanning, fonts/demo images/deferred 3D, readiness, 15 campuses, 16 map matches and 16 real tiles with zero tile failures pass. A real production route returned 620 m / 498 seconds and 30 geometry points. Desktop/mobile screenshots confirm the full path and campus caption stay above the preview. Bounded Render app-error queries from 09:41:10 through 09:45:06 UTC returned no entries. Twenty-two staged source/test/documentation files passed credential/excluded-file scanning. The user certificate remains untracked with its previous SHA256 unchanged.
+
+The immediately preceding compatible recovery pair is frontend da8c94d / dpl_EgfHPFuuJGja43i7m1yx7A4gLczE and backend da8c94d / dep-db8ug8favr4c73cdeofg. Re-inspect artifact availability and current routing before recovery; do not roll back the earlier additive Saved places migration or remove private notes. No new rollback rehearsal occurred. Live backend rollback remains explicitly deferred; the historical GitHub CI billing exception was not reverified. Public-gate verification and walking-based ranking remain planned; current walking estimates terminate at labeled approximate campus references.
+
 ## October 9 continuation checkpoint
 
 Use these existing resources; do not recreate them:
