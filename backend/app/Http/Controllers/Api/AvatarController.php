@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Inquiry;
 use App\Models\User;
+use App\Models\ViewingRequest;
 use App\Services\PhotoStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -77,6 +78,10 @@ class AvatarController extends Controller
     {
         $viewer = $request->user();
         abort_unless($viewer->id === $user->id || Inquiry::query()->where(function ($query) use ($viewer, $user): void {
+            $query->where('student_id', $viewer->id)->where('landlord_id', $user->id);
+        })->orWhere(function ($query) use ($viewer, $user): void {
+            $query->where('landlord_id', $viewer->id)->where('student_id', $user->id);
+        })->exists() || ViewingRequest::query()->where(function ($query) use ($viewer, $user): void {
             $query->where('student_id', $viewer->id)->where('landlord_id', $user->id);
         })->orWhere(function ($query) use ($viewer, $user): void {
             $query->where('landlord_id', $viewer->id)->where('student_id', $user->id);

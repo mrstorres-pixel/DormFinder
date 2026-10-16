@@ -38,14 +38,36 @@ class ViewingController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         abort_unless(in_array($request->user()->role, ['student', 'landlord'], true), 403);
-        $data = $request->validate(['page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'status' => ['nullable', Rule::in([...self::ACTIVE, 'declined', 'cancelled'])]]);
+        $data = $request->validate(['page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'status' => ['nullable', Rule::in([...self::ACTIVE, 'declined', 'cancelled'])], 'group' => ['nullable', Rule::in(['upcoming', 'requests', 'history'])], 'id' => ['nullable', 'integer', 'min:1'], 'property_id' => ['nullable', 'integer', 'min:1'], 'active' => ['nullable', 'boolean']]);
         $column = $request->user()->role === 'student' ? 'student_id' : 'landlord_id';
-        $query = ViewingRequest::query()->where($column, $request->user()->id)->with(['student', 'landlord', 'property.roomOptions'])->latest('id');
+        $query = ViewingRequest::query()->where($column, $request->user()->id)->select('viewing_requests.*')->selectSub(DB::table('inquiries')->select('id')->whereColumn('property_id', 'viewing_requests.property_id')->whereColumn('student_id', 'viewing_requests.student_id')->whereColumn('landlord_id', 'viewing_requests.landlord_id')->limit(1), 'conversation_id')->with(['student', 'landlord', 'property.roomOptions', 'property.photos']);
+        if (! empty($data['id'])) {
+            $query->whereKey($data['id']);
+        }
+        if (! empty($data['property_id'])) {
+            $query->where('property_id', $data['property_id']);
+        }
+        if ($request->boolean('active')) {
+            $query->whereIn('status', self::ACTIVE)->where(function ($active): void {
+                $active->whereIn('status', ['requested', 'proposed'])->orWhere('starts_at', '>', now());
+            });
+        }
+        if (($data['group'] ?? null) === 'upcoming') {
+            $query->where('status', 'accepted')->where('starts_at', '>', now())->orderBy('starts_at');
+        } elseif (($data['group'] ?? null) === 'requests') {
+            $query->whereIn('status', ['requested', 'proposed'])->orderByRaw('CASE WHEN status = ? THEN 0 ELSE 1 END', [$request->user()->role === 'student' ? 'proposed' : 'requested']);
+        } elseif (($data['group'] ?? null) === 'history') {
+            $query->where(function ($history): void {
+                $history->whereIn('status', ['cancelled', 'declined'])->orWhere(function ($past): void {
+                    $past->where('status', 'accepted')->where('starts_at', '<=', now());
+                });
+            })->orderByDesc('starts_at');
+        }
         if (! empty($data['status'])) {
             $query->where('status', $data['status']);
         }
 
-        return ViewingResource::collection($query->paginate(12));
+        return ViewingResource::collection($query->orderByDesc('id')->paginate(12));
     }
 
     public function store(Request $request, Property $property): JsonResponse

@@ -2,12 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\Inquiry;
 use App\Models\Property;
 use App\Models\RoomOption;
 use App\Models\User;
 use App\Models\ViewingRequest;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -37,6 +39,44 @@ class PracticalHousingTest extends TestCase
         $response = $this->postJson('/api/v1/listings/'.$property->id.'/viewings', $payload)->assertCreated()->assertJsonPath('data.status', 'requested')->assertJsonPath('data.revision', 1);
 
         return [$response->json('data'), $payload];
+    }
+
+    public function test_viewing_sections_filter_before_pagination_and_private_deep_links_keep_history(): void
+    {
+        [$owner, $property, $room] = $this->listing();
+        $student = User::factory()->create();
+        $attributes = ['student_id' => $student->id, 'landlord_id' => $owner->id, 'property_id' => $property->id, 'room_option_id' => $room->id];
+        ViewingRequest::factory()->count(13)->create([...$attributes, 'status' => 'cancelled']);
+        $future = ViewingRequest::factory()->create([...$attributes, 'status' => 'accepted', 'starts_at' => now()->addDays(2)]);
+        $past = ViewingRequest::factory()->create([...$attributes, 'status' => 'accepted', 'starts_at' => now()->subDay()]);
+        $pending = ViewingRequest::factory()->create([...$attributes, 'status' => 'proposed', 'starts_at' => now()->subHour()]);
+        $this->login($student);
+        $this->getJson('/api/v1/viewings?group=upcoming')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $future->id);
+        $this->getJson('/api/v1/viewings?group=requests')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $pending->id);
+        $this->getJson('/api/v1/viewings?group=history')->assertOk()->assertJsonPath('meta.total', 14)->assertJsonPath('meta.last_page', 2);
+        $this->getJson('/api/v1/viewings?id='.$past->id)->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.time_passed', true);
+        $this->getJson('/api/v1/viewings?property_id='.$property->id.'&active=1')->assertJsonCount(2, 'data');
+        $this->getJson('/api/v1/viewings?group=invalid')->assertUnprocessable();
+        $this->login(User::factory()->create());
+        $this->getJson('/api/v1/viewings?id='.$past->id)->assertOk()->assertJsonCount(0, 'data');
+        $this->getJson('/api/v1/viewings?property_id='.$property->id.'&active=1')->assertJsonCount(0, 'data');
+    }
+
+    public function test_viewing_context_only_exposes_published_images_and_the_participants_own_conversation(): void
+    {
+        Storage::fake('local');
+        [$owner, $property, $room] = $this->listing();
+        $this->login($student = User::factory()->create());
+        [$view] = $this->requestView($property, $room);
+        $conversation = Inquiry::factory()->create(['property_id' => $property->id, 'student_id' => $student->id, 'landlord_id' => $owner->id]);
+        $this->getJson('/api/v1/viewings?id='.$view['id'])->assertOk()->assertJsonPath('data.0.conversation_id', $conversation->id)->assertJsonPath('data.0.property_preview.title', $property->title)->assertJsonPath('data.0.participant_avatar_url', $owner->avatarUrl());
+        $this->get('/api/v1/avatars/'.$owner->id)->assertOk();
+        $conversation->delete();
+        $this->get('/api/v1/avatars/'.$owner->id)->assertOk();
+        $property->forceFill(['status' => 'archived'])->save();
+        $this->getJson('/api/v1/viewings?id='.$view['id'])->assertOk()->assertJsonPath('data.0.property_preview', null)->assertJsonPath('data.0.conversation_id', null)->assertJsonPath('data.0.listing_snapshot.title', $property->title)->assertJsonPath('data.0.can_schedule', false);
+        $this->login(User::factory()->create());
+        $this->get('/api/v1/avatars/'.$owner->id)->assertNotFound();
     }
 
     public function test_viewing_counterproposal_requires_student_confirmation_and_preserves_history(): void

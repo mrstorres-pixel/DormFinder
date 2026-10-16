@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
@@ -9,16 +9,19 @@ import { pesos } from '../lib/money'
 import { ErrorNotice, Field, Loading } from './Feedback'
 import { ComparisonTray } from './Discovery'
 import PropertyContext from './PropertyContext'
+import ActionDialog from './ActionDialog'
 import { safeReturnTo } from '../lib/navigation'
 
 export function AddToShortlist({ property, option }) {
+  const trigger = useRef(null)
+  const [open, setOpen] = useState(false)
   const { data: user } = useCurrentUser()
   const lists = useQuery({ queryKey: ['shortlists', user?.id], enabled: user?.role === 'student', queryFn: async () => (await api.get('/shortlists')).data.data })
   const [choice, setChoice] = useState('')
   const listId = choice || String(lists.data?.[0]?.id || '')
   const mutation = useMutation({ mutationFn: () => writeApi('post', '/shortlists/' + listId + '/items', { property_id: property.id, room_option_id: option.id }) })
   if (user?.role !== 'student') return null
-  return <details className="listing-action"><summary>Save to a shortlist</summary><section className="listing-action-body" aria-label="Save selected room to a shortlist"><ErrorNotice error={lists.error || mutation.error} />{lists.isPending ? <Loading /> : lists.data?.length ? <><label className="form-label" htmlFor="listing-shortlist">Save this room option to</label><select id="listing-shortlist" className="form-select mb-2" value={listId} onChange={event => { setChoice(event.target.value); mutation.reset() }}>{lists.data.map(list => <option key={list.id} value={list.id}>{list.name}</option>)}</select><button className="btn btn-outline-primary" disabled={mutation.isPending || !option} onClick={() => mutation.mutate()}>Save room to shortlist</button>{mutation.isSuccess && <p className="small mt-2" role="status">Room saved to your private shortlist.</p>}</> : <p>Create a named list, then return to save this room option.</p>}<Link className="d-block mt-2" to={'/shortlists?returnTo=' + encodeURIComponent('/listings/' + property.id + '?option=' + option.id + (property.distance_from_campus?.campus_id ? '&campus_id=' + property.distance_from_campus.campus_id : ''))}>Manage shortlists and notes</Link></section></details>
+  return <><button ref={trigger} type="button" onClick={() => setOpen(true)}>♡ Save</button><ActionDialog returnFocus={trigger} open={open} title="Save to a shortlist" onClose={() => setOpen(false)}><section className="listing-action-body" aria-label="Save selected room to a shortlist"><ErrorNotice error={lists.error || mutation.error} />{lists.isPending ? <Loading /> : lists.data?.length ? <><label className="form-label" htmlFor="listing-shortlist">Save this room option to</label><select id="listing-shortlist" className="form-select mb-2" value={listId} onChange={event => { setChoice(event.target.value); mutation.reset() }}>{lists.data.map(list => <option key={list.id} value={list.id}>{list.name}</option>)}</select><button className="btn btn-outline-primary" disabled={mutation.isPending || !option} onClick={() => mutation.mutate()}>Save room to shortlist</button>{mutation.isSuccess && <p className="small mt-2" role="status">Room saved to your private shortlist.</p>}</> : <p>Create a named list, then return to save this room option.</p>}<Link className="d-block mt-2" to={'/shortlists?returnTo=' + encodeURIComponent('/listings/' + property.id + '?option=' + option.id + (property.distance_from_campus?.campus_id ? '&campus_id=' + property.distance_from_campus.campus_id : ''))}>Manage shortlists and notes</Link></section></ActionDialog></>
 }
 
 function ShortlistItem({ item, listId, refresh }) {

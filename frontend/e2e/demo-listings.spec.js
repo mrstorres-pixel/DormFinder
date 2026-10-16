@@ -80,7 +80,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
       await gallery.focus()
       await student.keyboard.press('ArrowLeft')
       await expect(student.getByText('Photo 1 of 2', { exact: true })).toBeVisible()
-      await student.getByLabel('Add ' + name + ' to comparison', { exact: true }).check()
+      await student.getByRole('button', { name: '+ Compare', exact: true }).click()
       if (index === 0) {
         const save = student.getByRole('button', { name: 'Save favorite ' + name, exact: true })
         if (await save.count()) await save.click()
@@ -108,7 +108,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await student.goto('/listings/' + manifest.ids[0])
     const question = 'Synthetic sample inquiry ' + randomUUID() + ': do these demo rooms have quiet hours?'
     const reply = 'Sample owner response ' + randomUUID() + ': these fictional rooms illustrate quiet hours after 10 PM.'
-    await student.getByText('Ask the owner', { exact: true }).click()
+    await student.getByRole('button', { name: 'Message owner', exact: true }).click()
     await student.getByLabel('Your question').fill(question)
     await student.getByRole('button', { name: 'Send private inquiry', exact: true }).click()
     await expect(student).toHaveURL(/\/inquiries\/\d+$/)

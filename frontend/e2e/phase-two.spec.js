@@ -146,7 +146,7 @@ test('landlord, administrator and student complete the listing and private inqui
     await expect(student.getByText(/month · per person/)).toBeVisible()
     await student.getByRole('link', { name: 'View and ask owner' }).click()
     await expect(student.getByRole('heading', { name: title, exact: true })).toBeVisible()
-    await student.getByText('Ask the owner', { exact: true }).click()
+    await student.getByRole('button', { name: 'Message owner', exact: true }).click()
     await student.getByLabel('Your question').fill('Is this shared room quiet after 10 PM?')
     await student.getByRole('button', { name: 'Send private inquiry', exact: true }).click()
     await expect(student).toHaveURL(/\/inquiries\/\d+$/)
