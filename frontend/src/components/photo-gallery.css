@@ -1,0 +1,44 @@
+.gallery-image-stage { position: relative; overflow: hidden; border-radius: 14px; background: var(--theme-soft); }
+.gallery-expand { display: block; width: 100%; border: 0; padding: 0; background: none; cursor: zoom-in; }
+.gallery-expand > img { display: block; width: 100%; height: clamp(250px, 32vw, 460px); object-fit: contain; }
+.gallery-expand:focus-visible { outline-offset: -4px; }
+.gallery-arrow { position: absolute; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #ffffffb3; border-radius: 50%; background: #fffffff2; color: #14233e; box-shadow: 0 2px 12px #07102226; cursor: pointer; }
+.gallery-arrow:hover { background: white; box-shadow: 0 3px 18px #07102240; }
+.gallery-arrow svg, .gallery-expand-hint svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.gallery-previous { left: 12px; }
+.gallery-next { right: 12px; }
+.gallery-position { position: absolute; bottom: 12px; right: 12px; padding: .35rem .65rem; border-radius: 7px; background: #0b1732c9; color: white; font-size: .72rem; pointer-events: none; }
+.gallery-expand-hint { position: absolute; left: 12px; bottom: 12px; display: grid; place-items: center; height: 32px; width: 32px; border-radius: 7px; background: #0b1732b3; color: white; pointer-events: none; }
+.gallery-failure { font-size: .82rem; margin: .5rem 0; }
+.action-dialog.photo-viewer { width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: white; overflow: hidden; }
+.photo-viewer::backdrop { background: #071022ed; }
+.photo-viewer > header { position: absolute; inset: 0 0 auto; padding: 1rem 1.5rem; border: 0; z-index: 2; pointer-events: none; }
+.photo-viewer > header h2 { color: white; font-size: .9rem; font-weight: 500; letter-spacing: 0; }
+.photo-viewer .action-close { width: 44px; height: 44px; background: #ffffff1a; border: 1px solid #ffffff66; color: white; pointer-events: auto; }
+.photo-viewer > .action-dialog-content { height: 100%; width: 100%; padding: 76px clamp(12px, 5vw, 96px) 24px; pointer-events: none; }
+.photo-viewer-stage { position: relative; height: 100%; }
+.photo-viewer figure { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: 1rem; margin: 0; }
+.photo-viewer-image { position: relative; min-height: 0; min-width: 0; }
+.photo-viewer-image img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 4px; pointer-events: auto; }
+.photo-viewer figcaption { display: flex; justify-content: space-between; align-items: start; gap: 1.5rem; width: 100%; padding: 0 .25rem; font-size: .8rem; color: #eff4ff; }
+.photo-viewer figcaption > span:first-child { overflow: auto; max-height: 13dvh; pointer-events: auto; }
+.photo-viewer figcaption > span:last-child { white-space: nowrap; }
+.photo-viewer .gallery-arrow { pointer-events: auto; top: calc(50% - 1rem); }
+.photo-viewer .gallery-previous { left: 0; }
+.photo-viewer .gallery-next { right: 0; }
+.photo-viewer .gallery-failure { position: absolute; bottom: 3rem; left: 0; right: 0; padding: 1rem; text-align: center; background: #071022e6; pointer-events: auto; }
+.photo-viewer .gallery-failure .btn { color: #bbd0ff; }
+.property-cover-link { display: block; color: inherit; text-decoration: none; }
+.property-cover-link:focus-visible { outline-offset: -4px; }
+.map-preview-image { flex: none; }
+.map-preview-image img { width: 90px; height: 100px; }
+@media (max-width: 767px) {
+  .gallery-expand > img { height: 280px; }
+  .gallery-arrow { width: 44px; height: 44px; }
+  .gallery-previous { left: 8px; }
+  .gallery-next { right: 8px; }
+  .photo-viewer > header { padding: .75rem 1rem; }
+  .photo-viewer > .action-dialog-content { padding: 72px 12px 20px; }
+  .photo-viewer figcaption { gap: .75rem; font-size: .73rem; }
+  .map-preview-image img { width: 65px; height: 75px; }
+}

@@ -7,14 +7,17 @@ async function scrollScene(page, progress) {
     scrollTo(0, el.offsetTop + (el.offsetHeight - stage.clientHeight) * p)
   }, progress)
   await expect.poll(() => page.locator('.room-entrance').evaluate(el => Number(el.style.getPropertyValue('--journey-progress')))).toBeCloseTo(progress, 2)
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
 }
 
 test('the real room enters and reverses on scroll, adapts to mobile, and leads to campus search', async ({ page, browserName }, testInfo) => {
   test.setTimeout(120_000)
   const errors = []
+  page.on('console', message => { if (/WebGL|THREE|ROOM/.test(message.text())) console.info('Graphics diagnostic:', message.text()) })
   page.on('pageerror', error => errors.push(error.message))
   await page.addInitScript(() => {
     window.roomRenderCount = 0
+    document.addEventListener('webglcontextlost', () => console.info('ROOM context lost'), true)
     if (!window.WebGL2RenderingContext) return
     const original = WebGL2RenderingContext.prototype.clear
     WebGL2RenderingContext.prototype.clear = function (...args) { window.roomRenderCount++; return original.apply(this, args) }
@@ -94,6 +97,25 @@ test('the real room enters and reverses on scroll, adapts to mobile, and leads t
   await expect(page.getByRole('heading', { name: /Your next place/ })).toBeVisible()
   await expect(page.locator('#find-housing')).toBeAttached()
   expect(errors).toEqual([])
+})
+
+test('the hallway facade covers the top and left edges beneath the navbar', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await expect(page.locator('.room-entrance')).toHaveAttribute('data-ready', 'true')
+  const gap = await page.evaluate(() => document.querySelector('.room-entrance').getBoundingClientRect().top - document.querySelector('.site-header').getBoundingClientRect().bottom)
+  expect(Math.abs(gap)).toBeLessThan(2)
+  const frame = await page.locator('.room-canvas').screenshot({ path: testInfo.outputPath('flush-hallway.png') })
+  const coverage = await page.evaluate(async data => {
+    const image = new Image(); image.src = 'data:image/png;base64,' + data; await image.decode()
+    const surface = document.createElement('canvas'); surface.width = 144; surface.height = 90
+    const context = surface.getContext('2d'); context.drawImage(image, 0, 0, surface.width, surface.height)
+    return [[.55, .005], [.72, .005], [.28, .14]].map(([x, y]) => {
+      const color = context.getImageData(Math.floor(surface.width * x), Math.floor(surface.height * y), 1, 1).data
+      return [240, 244, 250].reduce((difference, value, index) => difference + Math.abs(color[index] - value), 0)
+    })
+  }, frame.toString('base64'))
+  for (const difference of coverage) expect(difference, 'The wall must cover the frame rather than expose the scene background').toBeGreaterThan(18)
 })
 
 test('reduced motion skips the engine and long scroll, and preference changes work', async ({ page }) => {

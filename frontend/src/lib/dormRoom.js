@@ -38,14 +38,18 @@ export function createDormRoom(canvas) {
   const fill = new DirectionalLight('#dceaff', 1.2); fill.position.set(3, 3, 7); scene.add(fill)
 
   // Floor, plaster walls and a centered doorway, with the camera outside initially.
-  box([6.4, .16, 15], [0, -.09, 2.5], '#c9a77d')
+  box([48, .16, 15], [0, -.09, 2.5], '#c9a77d')
   for (let i = 0; i < 17; i++) box([.012, .006, 15], [-3.15 + i * .39, .003, 2.5], '#b89770', details)
   box([6.4, 3.4, .16], [0, 1.7, -3.6], '#f4f7fc')
   box([.16, 3.4, 7.2], [-3.2, 1.7, 0], '#f5f7fc')
   box([.16, 3.4, 7.2], [3.2, 1.7, 0], '#e6edf7')
-  box([2.35, 3.4, .2], [-2.025, 1.7, 3.6], '#f5f7fc')
-  box([2.35, 3.4, .2], [2.025, 1.7, 3.6], '#f5f7fc')
-  box([1.7, .55, .2], [0, 3.125, 3.6], '#f5f7fc')
+  // Extend the hallway facade beyond the camera frustum, keeping the room and doorway human-scale.
+  // Its former outer edges exposed the background and side-wall caps at wide/tall aspect ratios.
+  for (const direction of [-1, 1]) {
+    box([23.15, 8, .2], [direction * 12.425, 4, 3.6], '#f5f7fc')
+    box([23.15, .12, .055], [direction * 12.425, .06, 3.73], '#ffffff')
+  }
+  box([1.7, 5.15, .2], [0, 5.425, 3.6], '#f5f7fc')
   for (const x of [-.9, .9]) box([.12, 2.94, .28], [x, 1.47, 3.62], '#ffffff')
   box([1.92, .12, .28], [0, 2.94, 3.62], '#ffffff')
   box([6.2, .12, .06], [0, .06, -3.47], '#faf3e6')

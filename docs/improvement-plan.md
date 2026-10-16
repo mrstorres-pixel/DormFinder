@@ -1,5 +1,11 @@
 # DormFinder improvement plan
 
+## Listing photos and hero finish — October 16, 2026
+
+The user approved removing the redundant Choose a room hyperlink, opening listings from their images, enlarging photos centrally over a dark backdrop, replacing text photo-navigation buttons with arrows inside the image, and polishing the hero wall while retaining its current scroll animation. This frontend increment implements linked browse/map-preview/comparison covers with the same room/campus/back-navigation context as their title links. Existing home and saved-place cover links are preserved.
+
+The gallery retains captions, thumbnails and an over-image photo count. A native modal viewer provides contain-sized images, arrow/keyboard navigation, close/Escape/backdrop dismissal, focus containment/return, and image-load recovery without losing the selected photo or room. Single/empty galleries omit unnecessary controls. The hero hallway facade now extends beyond the visible frame, with continuous wall edges and baseboards; the room dimensions, camera journey, reduced-motion fallback, loading isolation and on-demand rendering are retained. No new dependency, API or database change is included. Local acceptance is passing; final publication evidence is recorded in validation.md and deployment.md. Other roadmap items retain their previous status.
+
 ## Walking routes and campus overlap — October 16, 2026
 
 The user approved implementing this map increment. Walk to campus is implemented for a selected browse listing and a single listing's detail map: estimated walking minutes, pedestrian-network distance and a highlighted route. Selection changes/closing clear stale routes; explicit errors/retry retain search usability. Campus/price label collisions use anchored leader lines. Existing coordinates, room selections, saved data and free services are preserved.

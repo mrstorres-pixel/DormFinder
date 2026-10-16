@@ -1,5 +1,9 @@
 # Implementation status
 
+## Current increment — listing photos and hero finish, October 16
+
+Implemented clickable listing-cover images with retained room/campus context, a centered enlarged-photo viewer over a dark backdrop, arrows within the gallery, and removal of the redundant Choose a room link. The hero's hallway wall now fills the top and left of the frame while retaining the existing entrance animation. Captions, thumbnails, keyboard/focus behavior, signed-image refresh, reduced motion and graphics-failure fallback remain usable. Frontend acceptance passes 78 tests / 22 files, lint and production build. Scoped Chromium/WebKit acceptance and frontend publication are in progress. The deployed walking-route backend, existing data, free services and user certificate are preserved.
+
 ## Current increment — walking routes, October 16
 
 Implemented and deployed selected-route walking minutes, distance and a highlighted pedestrian path on browse and single-listing detail maps. Campus/cluster labels avoid overlap without changing stored coordinates. Routing is explicit and cached, with bounded free-provider usage and honest approximate-campus/demo labels. Existing search distance behavior is retained. Local backend acceptance passes 122 tests / 1121 assertions; frontend passes 75 tests, lint and production build. All 42 scoped live Chromium/WebKit checks pass, including actual pedestrian routing; public assets/credentials, real tiles and bounded Render error checks pass. Application source cef1f6d is live in Render dep-db8v1urrjlhs73dl7njg and Vercel dpl_83tf9nAnRWs3PBjvzdv6BeDvbR9y at the existing public alias. No migration, dependency or paid resource was added. Verified entrances and walking-based ranking remain future work.

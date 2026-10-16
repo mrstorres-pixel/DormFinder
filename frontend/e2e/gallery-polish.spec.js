@@ -1,0 +1,125 @@
+import { test, expect } from '@playwright/test'
+
+const campus = { id: 8, name: 'Test University', institution_name: 'Test University', city: 'Manila', slug: 'test-campus', latitude: 14.6, longitude: 120.98 }
+const shared = { id: 21, name: 'Twin room', capacity: 2, monthly_rent_centavos: 400000, monthly_fixed_total_centavos: 425000, move_in_fixed_total_centavos: 800000, price_basis: 'per_person', inventory_type: 'bedspace', available_units: 2, availability_stale: false, fees: [] }
+const rooms = [shared, { ...shared, id: 22, name: 'Solo room', capacity: 1, price_basis: 'per_room' }]
+const photos = [{ id: 1, url: '/test-photo/first.svg', caption: 'Fictional twin room illustration' }, { id: 2, url: '/test-photo/portrait.svg', caption: 'Fictional portrait room illustration' }]
+const property = { id: 1, title: '[DEMO] Gallery residence', description: 'Fictional test property.', is_demo: true, property_type: 'dormitory', address: 'Test address', city: 'Manila', latitude: 14.601, longitude: 120.98, room_options: rooms, distance_from_campus: { campus_id: 8, meters: 200 } }
+async function fixture(page, { failed = false, count = 2 } = {}) {
+  const state = { fresh: false }
+  await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))
+  await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ status: 204 }))
+  await page.route('**/test-photo/**', route => {
+    const url = new URL(route.request().url())
+    if (failed && url.pathname.endsWith('/first.svg') && !url.search) return route.fulfill({ status: 403 })
+    const portrait = url.pathname.includes('portrait')
+    return route.fulfill({ contentType: 'image/svg+xml', body: `<svg xmlns="http://www.w3.org/2000/svg" width="${portrait ? 800 : 1280}" height="${portrait ? 1400 : 900}" viewBox="0 0 ${portrait ? '800 1400' : '1280 900'}"><rect width="100%" height="100%" fill="${portrait ? '#e2dfd6' : '#e1eaf5'}"/><rect x="80" y="100" width="400" height="450" rx="12" fill="#224c8f"/><rect x="105" y="120" width="350" height="120" rx="12" fill="white"/><path d="M0 700h1280v200H0z" fill="#c6a37e"/><rect x="620" y="260" width="500" height="50" fill="#ad8058"/><rect x="640" y="310" width="25" height="350" fill="#ad8058"/></svg>` })
+  })
+  await page.route('**/api/v1/**', route => {
+    const path = new URL(route.request().url()).pathname
+    const listing = { ...property, photos: photos.slice(0, count).map(photo => ({ ...photo, url: photo.url + (state.fresh && photo.id === 1 ? '?fresh=1' : '') })) }
+    const json = data => route.fulfill({ json: { data, meta: { current_page: 1, last_page: 1, total: 1 } } })
+    if (path.endsWith('/me')) return route.fulfill({ status: 401, json: { message: 'Unauthenticated' } })
+    if (path.endsWith('/campuses')) return json([campus])
+    if (path.endsWith('/compare')) return json([{ ...listing, room_options: [rooms.find(room => room.id === route.request().postDataJSON().selections[0].room_option_id)], alternative_room_options: rooms }])
+    if (/\/listings\/1$/.test(path)) return json(listing)
+    return json([listing])
+  })
+  return state
+}
+
+test('listing cover, map-preview and comparison images open the chosen room with campus context', async ({ page }) => {
+  await fixture(page)
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/listings?campus_id=8&q=Gallery')
+  const card = page.locator('.property-card').first()
+  await card.getByRole('combobox').selectOption('22')
+  await card.getByRole('link', { name: 'Open listing: ' + property.title }).click()
+  await expect(page).toHaveURL(/listings\/1\?option=22&campus_id=8/)
+  await expect(page.getByLabel('Choose a room option')).toHaveValue('22')
+  await expect(page.getByRole('link', { name: 'Choose a room →' })).toHaveCount(0)
+  await page.getByRole('link', { name: 'Browse listings' }).click()
+  await expect(page).toHaveURL(/listings\?campus_id=8&q=Gallery/)
+  await card.getByRole('button', { name: 'Show on map' }).click()
+  const preview = page.getByRole('article', { name: 'Selected map listing' })
+  await preview.getByRole('link', { name: 'Open listing: ' + property.title }).click()
+  await expect(page.getByLabel('Choose a room option')).toHaveValue('22')
+  await page.getByRole('link', { name: 'Browse listings' }).click()
+  await card.getByRole('checkbox', { name: /Compare/ }).check()
+  await page.getByRole('link', { name: 'Compare 1 listing', exact: true }).click()
+  await page.getByRole('table').getByRole('link', { name: 'Open listing: ' + property.title }).click()
+  await expect(page.getByLabel('Choose a room option')).toHaveValue('22')
+  await expect(page).toHaveURL(/campus_id=8/)
+})
+
+test('gallery arrows, centered viewer, keyboard focus, backdrop and phone rotation work together', async ({ page }, testInfo) => {
+  await fixture(page)
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/listings/1?option=22&campus_id=8')
+  const gallery = page.getByRole('region', { name: 'Property photo gallery' })
+  const inlineImage = gallery.locator('.gallery-expand img')
+  await expect.poll(() => inlineImage.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true)
+  const small = await inlineImage.boundingBox()
+  await expect(gallery.getByRole('button', { name: 'Next photo' })).toHaveText('')
+  await gallery.locator('.gallery-expand').click()
+  const viewer = page.getByRole('dialog', { name: 'Listing photos' })
+  const large = viewer.locator('.photo-viewer-image img')
+  await expect(viewer).toBeVisible()
+  await expect.poll(async () => (await large.boundingBox()).height).toBeGreaterThan(small.height)
+  expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden')
+  await expect(viewer).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  expect(await viewer.evaluate(node => getComputedStyle(node, '::backdrop').backgroundColor)).toMatch(/^rgba\(7, 16, 34, 0\.9/)
+  await page.screenshot({ path: `../.local/gallery-viewer-${testInfo.project.name}-desktop.png` })
+  await page.keyboard.press('ArrowRight')
+  await expect(viewer.getByRole('status')).toHaveText('Photo 2 of 2')
+  await viewer.getByRole('button', { name: 'Next photo' }).click()
+  await expect(viewer.getByRole('status')).toHaveText('Photo 1 of 2')
+  await page.keyboard.press('Escape')
+  await expect(viewer).toHaveCount(0)
+  await expect(gallery.locator('.gallery-expand')).toBeFocused()
+  await gallery.locator('.gallery-expand').click()
+  await page.mouse.click(4, 300)
+  await expect(viewer).toHaveCount(0)
+  await expect(gallery.locator('.gallery-expand')).toBeFocused()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await gallery.locator('.gallery-expand').click()
+  await page.keyboard.press('ArrowRight')
+  for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }]) {
+    await page.setViewportSize(viewport)
+    const image = await large.boundingBox()
+    expect(image.width).toBeLessThanOrEqual(viewport.width)
+    expect(image.height).toBeLessThanOrEqual(viewport.height - 80)
+    await expect(viewer.getByRole('button', { name: 'Previous photo' })).toBeInViewport()
+    await expect(viewer.getByRole('button', { name: 'Next photo' })).toBeInViewport()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    if (viewport.width === 390) await page.screenshot({ path: `../.local/gallery-viewer-${testInfo.project.name}-mobile.png` })
+  }
+  const close = viewer.getByRole('button', { name: 'Close listing photos' })
+  await close.focus(); await page.keyboard.press('Shift+Tab')
+  await expect(viewer.getByRole('button', { name: 'Next photo' })).toBeFocused()
+  await page.keyboard.press('Tab'); await expect(close).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(gallery.locator('.gallery-expand')).toBeFocused()
+  await expect(page.getByLabel('Choose a room option')).toHaveValue('22')
+})
+
+test('enlarged photo recovery, single-photo and empty galleries remain usable', async ({ page }) => {
+  const state = await fixture(page, { failed: true, count: 1 })
+  await page.goto('/listings/1?option=21&campus_id=8')
+  const gallery = page.getByRole('region', { name: 'Property photo gallery' })
+  await expect(gallery.getByRole('alert')).toContainText('This photo could not load.')
+  await expect(gallery.getByRole('button', { name: 'Next photo' })).toHaveCount(0)
+  await gallery.locator('.gallery-expand').click()
+  const viewer = page.getByRole('dialog', { name: 'Listing photos' })
+  state.fresh = true
+  await viewer.getByRole('button', { name: 'Refresh photo links' }).click()
+  await expect(viewer.getByRole('alert')).toHaveCount(0)
+  await expect.poll(() => viewer.locator('img').evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true)
+  await page.goto('/listings?campus_id=8')
+  expect(await page.evaluate(() => document.documentElement.style.overflow)).toBe('')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await page.unroute('**/api/v1/**')
+  await fixture(page, { count: 0 })
+  await page.goto('/listings/1?campus_id=8')
+  await expect(page.getByText('No listing photos available.')).toBeVisible()
+})
