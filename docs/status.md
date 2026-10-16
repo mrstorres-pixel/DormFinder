@@ -2,7 +2,7 @@
 
 ## Current increment — listing photos and hero finish, October 16
 
-Implemented clickable listing-cover images with retained room/campus context, a centered enlarged-photo viewer over a dark backdrop, arrows within the gallery, and removal of the redundant Choose a room link. The hero's hallway wall now fills the top and left of the frame while retaining the existing entrance animation. Captions, thumbnails, keyboard/focus behavior, signed-image refresh, reduced motion and graphics-failure fallback remain usable. Frontend acceptance passes 78 tests / 22 files, lint and production build. Scoped Chromium/WebKit acceptance and frontend publication are in progress. The deployed walking-route backend, existing data, free services and user certificate are preserved.
+Implemented and deployed clickable listing-cover images with retained room/campus context, a centered enlarged-photo viewer over a dark backdrop, arrows within the gallery, and removal of the redundant Choose a room link. The hero's hallway wall now fills the top and left of the frame while retaining the existing entrance animation. Captions, thumbnails, keyboard/focus behavior, signed-image refresh, reduced motion and graphics-failure fallback remain usable. Frontend acceptance passes 78 tests / 22 files, lint and production build; all 52 scoped live Chromium/WebKit checks pass in one final run, including actual WebGL and walking routes. Frontend source 4519e3f is READY in Vercel dpl_6vXx2SipD91faPUoW2TFf2ghyZTm at the existing public alias. The deployed walking-route backend cef1f6d, existing data, free services and user certificate are preserved.
 
 ## Current increment — walking routes, October 16
 

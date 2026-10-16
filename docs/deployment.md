@@ -2,6 +2,16 @@
 
 Phases 1–4 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data; GitHub CI remains blocked by the account restriction described in validation.md.
 
+## Gallery and hero polish — October 16, 2026
+
+Current frontend source is 4519e3f7a71f94e3f2673f04cc8e955a6591eafc, READY in Vercel dpl_6vXx2SipD91faPUoW2TFf2ghyZTm at https://dormfinder-awq6l9wgw-mrstorres-pixels-projects.vercel.app and https://dormfinder-pink.vercel.app. Entry index-mUnqElb9.js, gallery/map Discovery-Cda3eZec.js, photo CSS Discovery-Bek4b5c9.css and deferred engine dormRoom-By6Gg0dT.js match the tested build; main CSS remains index-DA_MsN22.css. The original wall/camera journey is retained with an extended facade/baseboards, and the photo viewer uses existing native dialog infrastructure with no added dependencies.
+
+The clean committed archive .local/gallery-hero-source-4519e3f was linked after verifying project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1 / team team_lakGFdG84Dlw3s6qfEG8IKQc. Project inspection confirmed frontend root, Node24 and existing npm ci/build:vercel settings. The production deployment was staged with --skip-domain, checked using authenticated Vercel CLI access, then promoted after backend readiness. The gallery/map and 3D assets were SHA256-identical to local tested assets. Deployment protection and all environment values were retained. Thirteen staged source/test/documentation files passed credential/excluded-file scanning.
+
+All 52 scoped live Chromium/WebKit checks pass in a single final run, including actual WebGL, gallery/modal behavior, university/room search, saved-place/viewing drafts, map/comparison synchronization and actual walking routes. Additional real signed demo-image desktop/mobile checks pass. Public JS/CSS credential scanning, fonts/demo assets, 3D/API readiness, 15 campuses, 16 map matches and 16 real tiles with zero failures pass. The user certificate stays untracked and its SHA256 is unchanged. Final evidence and initial validation failures are recorded in validation.md.
+
+Backend remains cef1f6d / Render dep-db8v1urrjlhs73dl7njg on the same free service; no backend deploy, schema/data/storage/permission change or paid resource was needed. The immediately preceding frontend recovery reference is cef1f6d / dpl_83tf9nAnRWs3PBjvzdv6BeDvbR9y with that same backend. Re-inspect current aliases and artifact availability before recovery; no rollback rehearsal occurred. Keep the existing additive Saved places metadata and private notes. The deferred backend rollback rehearsal, historical unverified GitHub CI exception and other roadmap items retain their earlier status.
+
 ## Walking routes and campus label separation — October 16, 2026
 
 Current application source is cef1f6dbc99b822330fda02e45cad26b08d9a64f. The existing free Render service srv-db44ecrbc2fs73aj14q0, in the user-confirmed workspace tea-d7ip6vu7r5hc73ccjjng, is live on dep-db8v1urrjlhs73dl7njg since 09:41:10 UTC. Auto-deploy remains off and the established Docker entrypoint is retained. No schema migration, environment/permission change, dependency or paid resource was required.
