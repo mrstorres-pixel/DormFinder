@@ -149,6 +149,8 @@ Support actual profile-photo upload/removal through the existing private storage
 
 Backend/frontend tests and browser acceptance evidence are recorded in validation.md. Preserve existing accounts, listings, private conversations, free providers and the user's certificate. Saved-place/comparison and deeper operational layouts remain on the plan outside this increment.
 
+Released and verified October 16: frontend 3e808ed / dpl_CxJG68NdCiNoigtV9bjF9VVZhLEE and backend 0263525 / dep-db8f5ie89jmc73d96900. All 46 scoped live Chromium/WebKit cases pass in one clean 4.5-minute run, including real student–owner messages and temporary private-photo upload, session persistence and removal in both browsers. Local gates pass 108 backend tests / 968 assertions, Pint, 69 frontend tests, lint/build and the recorded browser scenarios. No schema, grants, dependency, provider environment or paid-resource change was needed. This increment is complete; retained roadmap items and deferred operational checks remain separate.
+
 ## Part 1: Foundation and university discovery
 
 - Audit the existing functionality and retain completed work, account roles, private inquiries, moderation and audit records.
@@ -218,7 +220,7 @@ Verification: the final backend suite passed 99 tests/830 assertions; the curren
 5. Rehearse guest campus search and all three account roles against the deployed system; verify public listings, private inquiries, storage, maps and responsive navigation.
 6. Record deployed commit/URLs, test evidence, limitations and recovery instructions. Keep the prior deployment available for rollback. Rehearsed October 12: Vercel production rollback-and-return, actual private schema restore into an isolated local database, cold local restart with data/photo preservation and local role/sample workflows with external browser requests blocked. Render rollback and complete S3 bucket restore remain separate coverage.
 
-Production status: frontend source b51af8d is live on the existing free Vercel project, and backend source 5d48f44 remains live on the existing free Render service. Fifteen sourced campuses, private inquiries/shortlists/viewings, moderation, map continuity, form protection and the connected discovery/decision journey remain available. The preceding backed-up migration preserved application records and restricted grants; these frontend-only visual releases required no database changes. Secrets and the user certificate were excluded. See validation.md for acceptance evidence and deployment.md for current recovery references.
+Production status (October 16): frontend source 3e808ed is live on the existing free Vercel project, and backend source 0263525 is live on the existing free Render service. The conversation-first follow-up above supersedes campus-search placement on the personal page. Fifteen sourced campuses, private inquiries/shortlists/viewings, moderation, map continuity and form protection remain available. Private profile photos reuse existing storage; this increment required no schema, grants, dependency or provider environment changes. Secrets and the user certificate were excluded. See validation.md for acceptance evidence and deployment.md for current recovery references.
 
 ## Order, timebox and release criteria
 
