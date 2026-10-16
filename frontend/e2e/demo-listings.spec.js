@@ -30,7 +30,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await page.goto('/login')
     await page.getByLabel('Email address').fill(account.email)
     await page.getByLabel('Password', { exact: true }).fill(account.password)
-    const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/favorites' : '/api/v1/dashboard') && response.status() === 200)
+    const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/saved-places' : '/api/v1/dashboard') && response.status() === 200)
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
     await dashboard
     await expect(page).toHaveURL(role === 'landlord' ? /\/landlord$/ : /\/account$/)
@@ -82,9 +82,9 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
       await expect(student.getByText('Photo 1 of 2', { exact: true })).toBeVisible()
       await student.getByRole('button', { name: '+ Compare', exact: true }).click()
       if (index === 0) {
-        const save = student.getByRole('button', { name: 'Save favorite ' + name, exact: true })
+        const save = student.getByRole('button', { name: 'Save place ' + name, exact: true })
         if (await save.count()) await save.click()
-        await expect(student.getByRole('button', { name: 'Remove favorite ' + name, exact: true })).toBeVisible()
+        await expect(student.getByRole('button', { name: 'Edit saved place ' + name, exact: true })).toBeVisible()
       }
     }
     await student.getByRole('link', { name: 'Compare 3 listings', exact: true }).click()

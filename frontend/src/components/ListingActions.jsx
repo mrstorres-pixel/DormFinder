@@ -8,7 +8,7 @@ import { pesos } from '../lib/money'
 import { signInLink } from '../lib/navigation'
 import { ErrorNotice, Field } from './Feedback'
 import ActionDialog from './ActionDialog'
-import { AddToShortlist } from './Shortlists'
+import SavePlaceButton from './SavePlaceButton'
 import { RequestViewing } from './Viewings'
 
 function MessageOwner({ property, option }) {
@@ -41,6 +41,6 @@ export default function ListingActions({ property, option, campus, onDirtyChange
   const returnTo = '/listings/' + property.id + '?option=' + option.id + (campus ? '&campus_id=' + campus.id : '')
   return <div className="listing-primary-actions">
     {user?.role === 'student' ? <><RequestViewing property={property} option={option} onDirtyChange={onDirtyChange} /><MessageOwner property={property} option={option} /></> : <><Link className="btn btn-primary" to={signInLink(returnTo + '#request-viewing')}>Request a viewing</Link><Link className="btn btn-outline-primary" to={signInLink(returnTo + '#message-owner')}>Message owner</Link><div className="listing-mobile-action"><span><strong>{pesos(option.monthly_rent_centavos).replace(/\.00$/, '')}</strong><small>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</small></span><Link className="btn btn-primary" to={signInLink(returnTo + '#request-viewing')}>Request a viewing</Link></div></>}
-    <div className="listing-small-actions">{user?.role === 'student' && <AddToShortlist property={property} option={option} />}<button type="button" aria-pressed={selected} disabled={!selected && selections.length >= 3} onClick={() => choose(property.id, option.id, !selected)}>{selected ? '✓ Added to compare' : '+ Compare'}</button>{selected && <Link to={'/compare?items=' + comparisonItems(selections) + (campus ? '&campus_id=' + campus.id : '')}>Open comparison</Link>}</div>
+    <div className="listing-small-actions"><SavePlaceButton propertyId={property.id} optionId={option.id} title={property.title} compact /><button type="button" aria-pressed={selected} disabled={!selected && selections.length >= 3} onClick={() => choose(property.id, option.id, !selected)}>{selected ? '✓ Added to compare' : '+ Compare'}</button>{selected && <Link to={'/compare?items=' + comparisonItems(selections) + (campus ? '&campus_id=' + campus.id : '')}>Open comparison</Link>}</div>
   </div>
 }

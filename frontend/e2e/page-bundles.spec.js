@@ -4,7 +4,7 @@ test('built homepage defers page bundles until navigation', async ({ page, baseU
   test.skip(!baseURL.startsWith('https:') && !process.env.E2E_BUILT, 'Checks production asset requests rather than Vite dev modules.')
   test.setTimeout(120_000)
   const chunks = []
-  page.on('request', request => { if (/\/assets\/(ListingPages|ReviewPages|InquiryPages|StudentHome|ProfileSettings)-.*\.js/.test(request.url())) chunks.push(request.url()) })
+  page.on('request', request => { if (/\/assets\/(ListingPages|ReviewPages|InquiryPages|StudentHome|ProfileSettings|SavedPlaces)-.*\.js/.test(request.url())) chunks.push(request.url()) })
   const directory = page.waitForResponse(response => response.url().endsWith('/api/v1/campuses') && response.status() === 200)
   const session = page.waitForResponse(response => response.url().endsWith('/api/v1/me') && response.status() === 401)
   await page.goto('/')
@@ -16,5 +16,5 @@ test('built homepage defers page bundles until navigation', async ({ page, baseU
   await listingCode
   await expect(page.getByRole('heading', { name: 'Places for your student life', exact: true })).toBeVisible()
   expect(chunks.some(url => /ListingPages-/.test(url))).toBe(true)
-  expect(chunks.some(url => /ReviewPages-|InquiryPages-|StudentHome-|ProfileSettings-/.test(url))).toBe(false)
+  expect(chunks.some(url => /ReviewPages-|InquiryPages-|StudentHome-|ProfileSettings-|SavedPlaces-/.test(url))).toBe(false)
 })

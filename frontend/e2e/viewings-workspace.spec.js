@@ -15,6 +15,8 @@ async function fixture(page, role = 'student') {
     const user = { id: 987, name: 'Alex Student', role: role === 'guest' ? 'student' : role, preferred_campus_id: null }
     if (path.endsWith('/auth/login')) { state.signedIn = true; return json(user) }
     if (path.endsWith('/me')) return role === 'guest' && !state.signedIn ? route.fulfill({ status: 401, json: { message: 'Unauthenticated' } }) : json(user)
+    if (path.endsWith('/saved-places/ids')) return json(state.saved ? [21] : [])
+    if (path.endsWith('/saved-places/21') && request.method() === 'PUT') { state.saved = true; return json({ property_id: 21 }) }
     if (path.endsWith('/campuses')) return json([])
     if (path === '/api/v1/listings/21') return json(property)
     if (path.endsWith('/listings/21/viewings')) {
@@ -126,9 +128,9 @@ test('visible listing actions preserve dialog drafts and retry identity and expo
   await expect(page.locator('.listing-visit-action').getByRole('link', { name: 'View request' })).toHaveAttribute('href', '/viewings?group=requests#viewing-6')
   await page.getByRole('button', { name: /Compare$/, exact: true }).click()
   await expect(page.getByRole('button', { name: '✓ Added to compare' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('button', { name: /Save$/ }).click()
-  await expect(page.getByRole('dialog', { name: 'Save to a shortlist' })).toBeVisible()
-  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Save place [DEMO] Near Campus Twin Dorm', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Edit saved place [DEMO] Near Campus Twin Dorm', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('dialog', { name: 'Save to a shortlist' })).toHaveCount(0)
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.listing-mobile-action')).toBeInViewport()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

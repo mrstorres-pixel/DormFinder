@@ -24,7 +24,8 @@ const Listings = lazy(() => import('./components/ListingPages').then(module => (
 const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
 const Comparison = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Comparison })))
 const CampusFinder = lazy(() => import('./components/CampusFinder'))
-const Shortlists = lazy(() => import('./components/Shortlists'))
+const SavedPlaces = lazy(() => import('./components/SavedPlaces'))
+const SavedPlacesRedirect = lazy(() => import('./components/SavedPlaces').then(module => ({ default: module.SavedPlacesRedirect })))
 const Viewings = lazy(() => import('./components/Viewings'))
 const ReviewQueue = lazy(() => import('./components/ReviewPages').then(module => ({ default: module.ReviewQueue })))
 const ReviewDetails = lazy(() => import('./components/ReviewPages').then(module => ({ default: module.ReviewDetails })))
@@ -273,12 +274,13 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />
     <Route path="/find" element={<CampusFinder />} />
-    <Route path="/shortlists" element={<Protected role="student"><Shortlists /></Protected>} />
+    <Route path="/saved" element={<Protected role="student"><SavedPlaces /></Protected>} />
+    <Route path="/shortlists" element={<Protected role="student"><SavedPlacesRedirect /></Protected>} />
     <Route path="/viewings" element={<Protected role={['student', 'landlord']}><Viewings /></Protected>} />
     <Route path="/listings" element={<Listings />} />
     <Route path="/listings/:id" element={<ListingDetails />} />
     <Route path="/compare" element={<Comparison />} />
-    <Route path="/favorites" element={<Protected role="student"><Listings favorites /></Protected>} />
+    <Route path="/favorites" element={<Protected role="student"><SavedPlacesRedirect /></Protected>} />
     <Route path="/admin" element={<Protected role="admin"><ReviewQueue /></Protected>} />
     <Route path="/admin/reports" element={<Protected role="admin"><ReportQueue /></Protected>} />
     <Route path="/admin/users" element={<Protected role="admin"><AccountModeration /></Protected>} />

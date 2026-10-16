@@ -8,7 +8,7 @@ export function useCampuses() {
 
 export function useFavorites() {
   const { data: user } = useCurrentUser()
-  return useQuery({ queryKey: ['favorite-ids', user?.id], enabled: user?.role === 'student', queryFn: async () => (await api.get('/favorites/ids')).data.data, staleTime: 30_000, retry: false })
+  return useQuery({ queryKey: ['favorite-ids', user?.id], enabled: user?.role === 'student', queryFn: async () => (await api.get('/saved-places/ids')).data.data, staleTime: 30_000, retry: false })
 }
 
 export function distanceLabel(distance, campus) {

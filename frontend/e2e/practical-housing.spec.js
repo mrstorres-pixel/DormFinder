@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { apiWrite } from './discovery-flow'
 
-test('campus finder, private shortlist and viewing negotiation form a complete practical flow', async ({ browser, baseURL }, testInfo) => {
+test('campus finder, saved places and viewing negotiation form a complete practical flow', async ({ browser, baseURL }, testInfo) => {
   test.skip(!process.env.E2E_DEMO_MANIFEST, 'Uses the explicitly prepared fictional listings.')
   test.setTimeout(180_000)
   const manifest = JSON.parse(await readFile(process.env.E2E_DEMO_MANIFEST,'utf8'))
@@ -13,7 +13,7 @@ test('campus finder, private shortlist and viewing negotiation form a complete p
   const ownerAccount = JSON.parse(await readFile(join(dir,'demo-landlord-' + environment + '.json'),'utf8'))
   const accounts = JSON.parse(await readFile(join(dir,'discovery-browser-' + environment + '-' + testInfo.project.name + '.json'),'utf8'))
   const contexts = []
-  let student, createdView, createdList
+  let student, createdView, createdList, savedProperty, hadFavorite = true
   const suffix = randomUUID()
   async function open() {
     const context = await browser.newContext({ baseURL }); contexts.push(context)
@@ -26,7 +26,7 @@ test('campus finder, private shortlist and viewing negotiation form a complete p
     await page.goto('/login')
     await page.getByLabel('Email address').fill(account.email)
     await page.getByLabel('Password',{exact:true}).fill(account.password)
-    const dashboard = page.waitForResponse(response => /\/api\/v1\/(dashboard|favorites)$/.test(response.url()) && response.status() === 200)
+    const dashboard = page.waitForResponse(response => /\/api\/v1\/(dashboard|saved-places)$/.test(response.url()) && response.status() === 200)
     await page.getByRole('button',{name:'Sign in',exact:true}).click()
     await dashboard
   }
@@ -53,33 +53,46 @@ test('campus finder, private shortlist and viewing negotiation form a complete p
     for (const old of oldViews.body.data) {
       if (old.student_note.startsWith('Practical demo viewing ') && ['requested','proposed','accepted'].includes(old.status)) expect((await apiWrite(student,'/viewings/' + old.id,{ action:'cancel',revision:old.revision },'PATCH')).status).toBe(200)
     }
-    await student.goto('/shortlists')
-    await student.getByLabel('New shortlist name').fill('Campus choices ' + suffix)
+    savedProperty = demo.id
+    const oldFavorites = await apiWrite(student, '/favorites/ids', undefined, 'GET')
+    expect(oldFavorites.status).toBe(200)
+    hadFavorite = oldFavorites.body.data.includes(demo.id)
+    await student.goto('/saved')
+    await student.getByRole('button', { name: '＋ New collection' }).click()
+    await student.getByLabel('Collection name').fill('Campus choices ' + suffix)
     const newList = student.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/shortlists' && response.request().method() === 'POST' && response.status() === 201)
-    await student.getByRole('button',{name:'Create shortlist',exact:true}).click()
+    await student.getByRole('button', { name: 'Create collection', exact: true }).click()
     createdList = (await (await newList).json()).data.id
+    await expect(student.getByRole('dialog', { name: 'New collection', exact: true })).toBeHidden()
     await student.goto('/listings/' + demo.id + '?option=' + option.id)
-    await student.getByRole('button', { name: /Save$/ }).click()
-    await student.getByLabel('Save this room option to').selectOption(String(createdList))
-    await student.getByRole('button',{name:'Save room to shortlist'}).click()
-    await expect(student.getByRole('status')).toContainText('Room saved')
-    await student.getByRole('link',{name:'Manage shortlists and notes'}).click()
-    const returnLink = student.getByRole('link', { name: 'Return to selected room →' })
-    const roomReturn = new URL(await returnLink.getAttribute('href'), baseURL)
-    expect(roomReturn.pathname).toBe('/listings/' + demo.id)
-    expect(roomReturn.searchParams.get('option')).toBe(String(option.id))
-    const note = student.getByLabel('Private note for ' + demo.title)
-    await student.getByText('Edit your private note', { exact: true }).click()
+    await expect(student.getByRole('button', { name: /^(Save place|Edit saved place) / })).toBeVisible()
+    const save = student.getByRole('button', { name: 'Save place ' + demo.title, exact: true })
+    if (await save.count()) await save.click()
+    await expect(student.getByRole('button', { name: 'Edit saved place ' + demo.title, exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await student.getByRole('button', { name: 'Edit saved place ' + demo.title, exact: true }).click()
+    const editor = student.getByRole('dialog', { name: 'Saved place', exact: true })
+    await expect(editor).toBeVisible()
+    await student.getByLabel('Campus choices ' + suffix, { exact: true }).check()
+    await student.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(editor.getByRole('status')).toHaveText('Saved changes.')
+    await student.getByLabel('Details for').selectOption(String(createdList))
+    await student.getByLabel('Room option', { exact: true }).selectOption(String(option.id))
+    const note = student.getByLabel('Your private note')
     await note.fill('Practical demo note ' + suffix)
-    await student.getByRole('link',{name:'Browse',exact:true}).click()
-    const guard = student.getByRole('dialog',{name:'Keep your changes?'})
+    await student.keyboard.press('Escape')
+    await student.getByRole('link', { name: 'Browse', exact: true }).click()
+    const guard = student.getByRole('dialog', { name: 'Keep your changes?' })
     await expect(guard).toBeVisible()
-    await student.getByRole('button',{name:'Stay and edit'}).click()
+    await student.getByRole('button', { name: 'Stay and edit' }).click()
     await expect(guard).not.toBeVisible()
-    await student.getByRole('button',{name:'Save shortlist notes'}).click()
-    await expect(student.getByRole('button',{name:'Save shortlist notes'})).toBeDisabled()
+    await student.getByRole('article', { name: 'Saved place ' + demo.title, exact: true }).getByRole('button', { name: /(?:Edit saved place|Choose room & edit)/ }).click()
     await expect(note).toHaveValue('Practical demo note ' + suffix)
-    await student.getByRole('link',{name:demo.title,exact:true}).click()
+    await student.getByRole('button', { name: 'Save changes', exact: true }).click()
+    await expect(editor.getByRole('status')).toHaveText('Saved changes.')
+    await student.keyboard.press('Escape')
+    await student.getByRole('button', { name: 'Campus choices ' + suffix, exact: true }).click()
+    await student.getByRole('article', { name: 'Saved place ' + demo.title, exact: true }).getByRole('heading').getByRole('link').click()
+    expect(new URL(student.url()).searchParams.get('option')).toBe(String(option.id))
     await student.getByRole('button',{name:'Request a viewing',exact:true}).click()
     const time = new Date(Date.now() + 3 * 86400000 + 8 * 3600000).toISOString().slice(0,16)
     await student.getByLabel('Preferred viewing time (Philippine time, UTC+8)').fill(time)
@@ -126,6 +139,7 @@ test('campus finder, private shortlist and viewing negotiation form a complete p
       }
     }
     if(student && createdList) expect((await apiWrite(student,'/shortlists/' + createdList,undefined,'DELETE')).status).toBe(200)
+    if (student && savedProperty && !hadFavorite) expect((await apiWrite(student, '/favorites/' + savedProperty, undefined, 'DELETE')).status).toBe(200)
     for (const context of contexts) await context.close()
   }
 })

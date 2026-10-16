@@ -19,6 +19,9 @@ class ShortlistController extends Controller
 
     private function owned(Request $request, int $id, bool $lock = false): object
     {
+        if ($lock) {
+            DB::table('users')->where('id', $this->student($request))->lockForUpdate()->first();
+        }
         $query = DB::table('shortlists')->where('id', $id)->where('student_id', $this->student($request));
         if ($lock) {
             $query->lockForUpdate();
@@ -64,8 +67,10 @@ class ShortlistController extends Controller
 
     public function destroy(Request $request, int $shortlist): JsonResponse
     {
+        $request->validate(['empty_only' => ['nullable', 'boolean']]);
         DB::transaction(function () use ($request, $shortlist): void {
             $this->owned($request, $shortlist, true);
+            abort_if($request->boolean('empty_only') && DB::table('shortlist_items')->where('shortlist_id', $shortlist)->exists(), 409, 'This collection now contains saved places. Reopen it before deleting.');
             DB::table('shortlists')->where('id', $shortlist)->delete();
         });
 

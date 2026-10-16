@@ -1,28 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
-import { useFavorites, distanceLabel } from '../lib/discovery'
+import { distanceLabel } from '../lib/discovery'
 import { useComparison, comparisonItems } from '../lib/comparison'
 import { pesos } from '../lib/money'
-import { ErrorNotice } from './Feedback'
 import { preferredOption } from '../lib/housing'
 import { detailedMatches } from '../lib/practical'
-import { signInLink } from '../lib/navigation'
+import FavoriteButton from './SavePlaceButton'
+export { FavoriteButton }
 import 'leaflet/dist/leaflet.css'
-
-export function FavoriteButton({ propertyId, title = 'listing' }) {
-  const [params] = useSearchParams()
-  const { data: user } = useCurrentUser()
-  const favorites = useFavorites()
-  const client = useQueryClient()
-  const saved = favorites.data?.includes(propertyId) || false
-  const mutation = useMutation({ mutationFn: () => writeApi(saved ? 'delete' : 'put', '/favorites/' + propertyId), onSuccess: async () => { await client.invalidateQueries({ queryKey: ['favorite-ids'] }); await client.invalidateQueries({ queryKey: ['favorites'] }) } })
-  if (!user) return <Link className="btn btn-link btn-sm mt-3" to={signInLink('/listings/' + propertyId + '?save=1')}>Sign in to save</Link>
-  if (user.role !== 'student') return null
-  return <div className="mt-3">{params.get('save') === '1' && !saved && <p className="small">You are signed in. Save this listing to finish adding it to your favorites.</p>}<ErrorNotice error={favorites.error || mutation.error} /><button className="btn btn-outline-primary btn-sm" aria-label={(saved ? 'Remove favorite ' : 'Save favorite ') + title} aria-pressed={saved} disabled={favorites.isPending || !!favorites.error || mutation.isPending} onClick={() => mutation.mutate()}>{mutation.isPending ? 'Saving…' : saved ? '♥ Saved' : '♡ Save favorite'}</button></div>
-}
 
 export function ComparisonTray() {
   const [params] = useSearchParams()
@@ -43,7 +29,7 @@ export function ListingCard({ property, campus, chosenOptionId, selectedId, onSe
   const checked = !!selected
   return <article id={'listing-card-' + property.id} className={'property-card h-100 ' + (selectedId === property.id ? 'is-selected' : '')}><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}{property.is_demo && <span className="status-badge">Synthetic demo</span>}</div><div className="p-4"><p className="small text-secondary text-uppercase">{property.property_type.replaceAll('_', ' ')}</p><h2><Link to={'/listings/' + property.id + '?option=' + (option?.id || '') + (campus ? '&campus_id=' + campus.id : '')} state={{ browse: '/listings?' + params.toString() }}>{property.title}</Link></h2><p>{property.address}, {property.city}</p><p className="small text-secondary">{distanceLabel(property.distance_from_campus, campus)}</p>
     {option && <><label className="form-label" htmlFor={'option-' + property.id}>Room option<span className="visually-hidden"> for {property.title}</span></label><select className="form-select mb-3" id={'option-' + property.id} value={option.id} onChange={event => { setChoice(event.target.value); onOptionChange?.(property.id, Number(event.target.value)); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small">Known monthly charges: {pesos(option.monthly_fixed_total_centavos)}</p><p className="small">{option.available_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p></>}
-    {(!user || user.role === 'student') && option && <label className="d-flex gap-2"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare<span className="visually-hidden"> {property.title}</span></span></label>}{detailedMatches(property,params,option).length > 0 && <ul className="match-reasons">{detailedMatches(property,params,option).map(reason => <li key={reason}>{reason}</li>)}</ul>}{onSelect && <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button>}<FavoriteButton propertyId={property.id} title={property.title} />
+    {(!user || user.role === 'student') && option && <label className="d-flex gap-2"><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare<span className="visually-hidden"> {property.title}</span></span></label>}{detailedMatches(property,params,option).length > 0 && <ul className="match-reasons">{detailedMatches(property,params,option).map(reason => <li key={reason}>{reason}</li>)}</ul>}{onSelect && <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button>}<FavoriteButton propertyId={property.id} optionId={option?.id} title={property.title} />
   </div></article>
 }
 

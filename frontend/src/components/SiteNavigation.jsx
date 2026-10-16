@@ -31,9 +31,7 @@ export default function SiteNavigation({ user, menuOpen, closeMenu, onSignOut, s
   return <nav ref={navigation} id="main-navigation" aria-label="Main navigation" className={'main-navigation ' + (menuOpen ? 'is-open' : '')} onClick={event => { if (event.target.closest('a')) closeMenu() }}>
     <NavLink className={navigationClass} to={user?.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Browse</NavLink>
     {user ? <>
-      {user.role === 'student' && <details className={'navigation-menu saved-menu ' + (['/favorites', '/shortlists', '/compare'].includes(location.pathname) ? 'is-current' : '')}>
-        <summary>Saved places</summary><div className="navigation-popover"><NavLink className={navigationClass} to="/favorites">Favorites</NavLink><NavLink className={navigationClass} to="/shortlists">Shortlists</NavLink></div>
-      </details>}
+      {user.role === 'student' && <NavLink className={({ isActive }) => 'nav-link' + (isActive || ['/compare', '/favorites', '/shortlists'].includes(location.pathname) ? ' is-current' : '')} to="/saved">Saved places</NavLink>}
       {user.role === 'landlord' && <NavLink className={navigationClass} to="/landlord">My space</NavLink>}
       {user.role === 'admin' && <NavLink className={navigationClass} to="/admin">Reviews</NavLink>}
       {['student', 'landlord'].includes(user.role) && <><NavLink className={navigationClass} to="/inquiries">Messages</NavLink><NavLink className={navigationClass} to="/viewings">Viewings</NavLink></>}

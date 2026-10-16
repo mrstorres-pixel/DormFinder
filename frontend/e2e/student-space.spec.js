@@ -21,7 +21,7 @@ async function fixture(page, { populated = true, failed = false } = {}) {
     }
     if (path.endsWith('/campuses')) return json([campus, otherCampus])
     if (path.endsWith('/dashboard')) { state.dashboardRequests++; return json({}) }
-    if (path.endsWith('/favorites')) return state.failed ? route.fulfill({ status: 503, json: { message: 'Synthetic saved-place outage.' } }) : json(populated ? [property] : [])
+    if (path.endsWith('/saved-places')) return state.failed ? route.fulfill({ status: 503, json: { message: 'Synthetic saved-place outage.' } }) : json(populated ? [{ property_id: property.id, room_option_id: room.id, listing: property, contexts: [] }] : [])
     if (path.endsWith('/viewings')) return json(populated ? [url.searchParams.get('status') === 'accepted' ? { ...viewing, id: 12, status: 'accepted' } : viewing] : [])
     if (path.endsWith('/inquiries/7/messages')) return json([])
     if (path.endsWith('/inquiries/7')) return json({ id: 7, ...viewing, can_reply: true, property_status: 'approved' })
@@ -44,7 +44,7 @@ test('student space connects real actions without counters, on desktop and mobil
   await expect(saved.getByRole('heading', { name: property.title })).toBeVisible()
   await expect(saved.getByText('₱4,000', { exact: true })).toBeVisible()
   await expect(saved.getByText('2-person room')).toBeVisible()
-  await expect(saved.locator('h3 a, a:has(h3)').first()).toHaveAttribute('href', '/listings/2?option=21')
+  await expect(saved.locator('h2 a').first()).toHaveAttribute('href', '/listings/2?option=21')
   await expect(saved.getByText('AI demo illustration')).toBeVisible()
   await expect(page.locator('.space-conversation')).toHaveAttribute('href', '/inquiries/7')
   await page.evaluate(() => document.fonts.ready)

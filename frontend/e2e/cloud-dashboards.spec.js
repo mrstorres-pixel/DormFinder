@@ -15,14 +15,14 @@ test('existing cloud accounts read their student space and operational dashboard
       const account = role === 'admin' ? admin : accounts[role]
       await page.getByLabel('Email').fill(account.email)
       await page.getByLabel('Password', { exact: true }).fill(account.password)
-      const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/favorites' : '/api/v1/dashboard') && response.status() === 200)
+      const dashboard = page.waitForResponse(response => new URL(response.url()).pathname.endsWith(role === 'student' ? '/api/v1/saved-places' : '/api/v1/dashboard') && response.status() === 200)
       await page.getByRole('button', { name: 'Sign in', exact: true }).click()
       const counts = (await (await dashboard).json()).data
       await expect(page).toHaveURL(role === 'student' ? /\/account$/ : role === 'landlord' ? /\/landlord$/ : /\/admin$/)
       if (role === 'student') {
         await expect(page.getByRole('heading', { name: 'Your space', exact: true })).toBeVisible()
         await expect(page.locator('.dashboard-counts')).toHaveCount(0)
-        if (counts.length) await expect(page.locator('.space-saved').getByRole('heading', { name: counts[0].title, exact: true })).toBeVisible()
+        if (counts.length) await expect(page.locator('.space-saved').getByRole('heading', { name: counts[0].listing?.title || counts[0].listing_snapshot.title, exact: true })).toBeVisible()
         await page.getByRole('link', { name: 'Edit profile' }).click()
         await expect(page.getByRole('heading', { name: 'Your profile' })).toBeVisible()
         await expect(page.locator('.settings-email')).toHaveText(account.email)

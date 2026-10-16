@@ -43,6 +43,7 @@ class FavoriteController extends Controller
     {
         $student = $this->authorizeStudent($request);
         DB::transaction(function () use ($property, $student): void {
+            DB::table('users')->where('id', $student)->lockForUpdate()->first();
             ListingController::publicQuery()->lockForUpdate()->findOrFail($property);
             DB::table('favorites')->insertOrIgnore(['student_id' => $student, 'property_id' => $property, 'created_at' => now(), 'updated_at' => now()]);
         });
@@ -53,7 +54,10 @@ class FavoriteController extends Controller
     public function destroy(Request $request, int $property): JsonResponse
     {
         $student = $this->authorizeStudent($request);
-        DB::table('favorites')->where('student_id', $student)->where('property_id', $property)->delete();
+        DB::transaction(function () use ($property, $student): void {
+            DB::table('users')->where('id', $student)->lockForUpdate()->first();
+            DB::table('favorites')->where('student_id', $student)->where('property_id', $property)->delete();
+        });
 
         return response()->json(['data' => ['property_id' => $property, 'saved' => false]]);
     }

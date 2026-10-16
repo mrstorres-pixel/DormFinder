@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../lib/api'
-import { browseLink, preferredOption } from '../lib/housing'
+import { browseLink } from '../lib/housing'
 import { viewingLabel } from '../lib/practical'
 import Avatar from './Avatar'
-import HomeListingCard from './HomeListingCard'
+import SavedPlaceCard from './SavedPlaceCard'
 import { ErrorNotice, Loading } from './Feedback'
 import './student-space.css'
 
@@ -43,11 +43,10 @@ function RecentConversations({ userId }) {
 }
 
 function SavedPlaces({ user }) {
-  const query = useHomeCollection(user.id, 'favorites')
+  const query = useHomeCollection(user.id, 'saved-places')
   const rows = query.data?.data || []
-  return <section className="space-saved" aria-labelledby="home-saved"><div className="space-section-heading"><h2 id="home-saved">Saved places</h2><Link to="/favorites">See all<span className="visually-hidden"> saved places</span> →</Link></div>
-    {query.isPending ? <Loading>Loading your saved places…</Loading> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="space-saved-grid">{rows.slice(0, 4).map(property => <HomeListingCard key={property.id} property={property} option={preferredOption(property.room_options)} browse="/favorites" saved />)}</div> : <div className="space-saved-empty"><span aria-hidden="true">♡</span><h3>{query.data?.meta?.unavailable_ids?.length ? 'Your saved listings are currently unavailable.' : 'Found a place you like?'}</h3><p>{query.data?.meta?.unavailable_ids?.length ? 'They remain saved. Browse for other options while their listings are unavailable.' : 'Save it while you browse. Come back here when you’re ready to decide.'}</p><Link className="btn btn-outline-primary" to={user.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Explore places →</Link></div>}
-    {rows.length > 0 && query.data?.meta?.unavailable_ids?.length > 0 && <p className="space-quiet-note">Some other saved listings are currently unavailable. <Link to="/favorites">Check saved places</Link>.</p>}
+  return <section className="space-saved" aria-labelledby="home-saved"><div className="space-section-heading"><h2 id="home-saved">Saved places</h2><Link to="/saved">See all<span className="visually-hidden"> saved places</span> →</Link></div>
+    {query.isPending ? <Loading>Loading your saved places…</Loading> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className="space-saved-grid">{rows.slice(0, 4).map(row => <SavedPlaceCard key={row.property_id} row={row} compact />)}</div> : <div className="space-saved-empty"><span aria-hidden="true">♡</span><h3>Found a place you like?</h3><p>Save it while you browse. Come back here when you’re ready to decide.</p><Link className="btn btn-outline-primary" to={user.preferred_campus_id ? browseLink(user.preferred_campus_id) : '/listings'}>Explore places →</Link></div>}
   </section>
 }
 
