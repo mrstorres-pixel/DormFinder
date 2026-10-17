@@ -160,6 +160,7 @@ test('approval protects other moderation drafts and reviewed listings expose no 
   await acknowledged(page).check()
   await page.getByRole('button', { name: 'Approve listing', exact: true }).click()
   await expect(page).toHaveURL(/\/admin$/)
+  await expect(page.getByRole('heading', { name: 'You’re all caught up.' })).toBeVisible()
   expect(state.writes[0].values).toEqual({ decision: 'approved', reason: '', revision: 7, review_confirmed: true })
   state.property.latitude = null
   await page.goto('/admin/reviews/55')

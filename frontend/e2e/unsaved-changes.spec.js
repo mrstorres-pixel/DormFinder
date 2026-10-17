@@ -52,6 +52,7 @@ test('property and room edits survive cancelled navigation and sign-out', async 
   await expect(page.getByRole('heading', { name: 'Room options and charges' })).toBeVisible()
   await expect(dialog).not.toBeVisible()
   await page.getByLabel('Room option name').fill('Unsaved room')
+  await expect(page.getByLabel('Room option name')).toHaveValue('Unsaved room')
   await page.getByLabel('Room capacity').fill('4')
   await page.getByLabel('Monthly rent (PHP)', { exact: true }).fill('4321.50')
   await page.getByLabel('Utilities and other charge terms').fill('Keep these unsaved terms')

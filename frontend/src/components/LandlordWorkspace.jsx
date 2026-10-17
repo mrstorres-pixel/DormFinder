@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, fieldErrors, writeApi } from '../lib/api'
@@ -59,7 +59,7 @@ function PropertyForm({ property }) {
   const client = useQueryClient()
   const navigate = useNavigate()
   const editable = !property || ['draft', 'rejected', 'approved'].includes(property.status)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (existing && location.hash) document.getElementById('editor-' + step)?.focus({ preventScroll: true })
   }, [existing, location.hash, step])
   const mutation = useMutation({
