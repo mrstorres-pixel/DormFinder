@@ -53,6 +53,18 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   const [dirty, setDirty] = useState(false)
   const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const [inventory, setInventory] = useState(option?.inventory_type || 'bedspace')
+  const [values, setValues] = useState(() => ({
+    name: option?.name ?? '', capacity: option?.capacity ?? 1,
+    total_units: option?.total_units ?? 1, available_units: option?.available_units ?? 1,
+    rent: option ? option.monthly_rent_centavos / 100 : '',
+    deposit: option ? option.deposit_centavos / 100 : 0,
+    advance_months: option?.advance_months ?? 0, utilities_notes: option?.utilities_notes ?? '',
+  }))
+  function editField(event) {
+    const { name, value } = event.target
+    setValues(current => ({ ...current, [name]: value }))
+    setDirty(true)
+  }
   const [fees, setFees] = useState(() => (option?.fees || []).map(fee => ({ ...fee, key: crypto.randomUUID(), amount: String(fee.amount_centavos / 100) })))
   const mutation = useMutation({
     mutationKey: ['property-write', property.id],
@@ -78,12 +90,12 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   function changeFee(key, field, value) { setFees(current => current.map(fee => fee.key === key ? { ...fee, [field]: value } : fee)) }
   return <form onSubmit={submit} onChange={() => setDirty(true)} className="room-form"><fieldset disabled={mutation.isPending}><h3>{option ? 'Edit room option' : 'Add a room option'}</h3>
     <ErrorNotice error={mutation.error} />{amountError && <p role="alert" className="alert alert-danger">{amountError.message}</p>}
-    <Field label="Room option name" name="name" defaultValue={option?.name} maxLength={100} required error={errors} />
+    <Field label="Room option name" name="name" value={values.name} onChange={editField} maxLength={100} required error={errors} />
     <label className="form-label" htmlFor="inventory_type">Inventory and price basis</label><select className="form-select mb-3" id="inventory_type" value={inventory} onChange={event => setInventory(event.target.value)}><option value="bedspace">Bedspace · price per person</option><option value="whole_room">Whole room · price per room</option></select>
-    <div className="row"><div className="col-sm-4"><Field label="Room capacity" name="capacity" type="number" min="1" max="20" defaultValue={option?.capacity || 1} required error={errors} /></div><div className="col-sm-4"><Field label="Total units" name="total_units" type="number" min="1" max="1000" defaultValue={option?.total_units || 1} required error={errors} /></div><div className="col-sm-4"><Field label="Available units" name="available_units" type="number" min="0" max="1000" defaultValue={option?.available_units ?? 1} required error={errors} /></div></div>
-    <div className="row"><div className="col-sm-6"><Field label="Monthly rent (PHP)" name="rent" type="number" min="0.01" max="1000000" step="0.01" defaultValue={option ? option.monthly_rent_centavos / 100 : ''} required error={{ rent: errors.monthly_rent_centavos }} /></div><div className="col-sm-6"><Field label="Deposit (PHP)" name="deposit" type="number" min="0" max="1000000" step="0.01" defaultValue={option ? option.deposit_centavos / 100 : 0} required error={{ deposit: errors.deposit_centavos }} /></div></div>
-    <Field label="Advance rent in months" name="advance_months" type="number" min="0" max="12" defaultValue={option?.advance_months || 0} required error={errors} />
-    <Field label="Utilities and other charge terms" name="utilities_notes" as="textarea" rows={3} defaultValue={option?.utilities_notes} maxLength={2000} hint="State what is included, what varies, and how variable charges are calculated." required error={errors} />
+    <div className="row"><div className="col-sm-4"><Field label="Room capacity" name="capacity" type="number" min="1" max="20" value={values.capacity} onChange={editField} required error={errors} /></div><div className="col-sm-4"><Field label="Total units" name="total_units" type="number" min="1" max="1000" value={values.total_units} onChange={editField} required error={errors} /></div><div className="col-sm-4"><Field label="Available units" name="available_units" type="number" min="0" max="1000" value={values.available_units} onChange={editField} required error={errors} /></div></div>
+    <div className="row"><div className="col-sm-6"><Field label="Monthly rent (PHP)" name="rent" type="number" min="0.01" max="1000000" step="0.01" value={values.rent} onChange={editField} required error={{ rent: errors.monthly_rent_centavos }} /></div><div className="col-sm-6"><Field label="Deposit (PHP)" name="deposit" type="number" min="0" max="1000000" step="0.01" value={values.deposit} onChange={editField} required error={{ deposit: errors.deposit_centavos }} /></div></div>
+    <Field label="Advance rent in months" name="advance_months" type="number" min="0" max="12" value={values.advance_months} onChange={editField} required error={errors} />
+    <Field label="Utilities and other charge terms" name="utilities_notes" as="textarea" rows={3} value={values.utilities_notes} onChange={editField} maxLength={2000} hint="State what is included, what varies, and how variable charges are calculated." required error={errors} />
     <fieldset><legend className="section-title">Additional fixed fees</legend>{fees.map((fee, index) => <div className="fee-row" key={fee.key}>
       <Field label={`Fee ${index + 1} name`} name={'fee-name-' + fee.key} value={fee.name} onChange={event => changeFee(fee.key, 'name', event.target.value)} required maxLength={100} />
       <Field label={`Fee ${index + 1} amount (PHP)`} name={'fee-amount-' + fee.key} type="number" min="0" max="1000000" step="0.01" value={fee.amount} onChange={event => changeFee(fee.key, 'amount', event.target.value)} required />
