@@ -46,6 +46,7 @@ test('campus finder, saved places and viewing negotiation form a complete practi
     const option = demo.room_options.find(room => room.available_units > 0 && !room.availability_stale)
     expect(option).toBeTruthy()
     await student.locator('#listing-card-' + demo.id).getByRole('button',{name:'Show on map'}).click()
+    await student.getByRole('article', { name: 'Selected map listing' }).getByRole('button', { name: 'Room details' }).click()
     await expect(student.getByLabel('Room in map preview')).toHaveValue(String(option.id))
     await login(student,accounts.student)
     const oldViews = await apiWrite(student,'/viewings',undefined,'GET')

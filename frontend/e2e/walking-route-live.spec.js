@@ -18,7 +18,7 @@ test('public listing obtains a real pedestrian estimate through the backend and 
   expect(route.distance_meters).toBeGreaterThan(0)
   expect(route.duration_seconds).toBeGreaterThan(0)
   expect(route.geometry.coordinates.length).toBeGreaterThan(2)
-  await expect(page.getByText(new RegExp('About ' + Math.ceil(route.duration_seconds / 60) + ' min walk'))).toBeVisible()
+  await expect(page.locator('.walking-route-control').getByText(new RegExp('About ' + Math.ceil(route.duration_seconds / 60) + ' min walk'))).toBeVisible()
   await expect(page.locator('.walking-route-path')).toHaveCount(1)
   await expect(page.getByText('Demo route from a fictional listing pin.')).toBeVisible()
   await page.screenshot({ path: `../.local/walking-real-${testInfo.project.name}.png`, fullPage: true })

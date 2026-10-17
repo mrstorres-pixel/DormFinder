@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test'
 test('map preview room changes update the listing card, price marker and comparison together', async ({ page }) => {
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=','base64')
   await page.route('https://tile.openstreetmap.org/**',route => route.fulfill({ contentType:'image/png',body:tile }))
+  const listings = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/api/v1/listings') && response.request().method() === 'GET')
   await page.goto('/listings?q=DEMO')
+  const response = await listings
+  expect(response.status()).toBe(200)
+  await response.finished()
   const card = page.locator('.listing-grid .property-card').first()
   await expect(card).toBeVisible()
   const select = card.getByRole('combobox')
@@ -13,6 +17,7 @@ test('map preview room changes update the listing card, price marker and compari
   await card.getByRole('checkbox',{name:/Compare/}).check()
   await card.getByRole('button',{name:'Show on map'}).click()
   const preview = page.getByRole('article',{name:'Selected map listing'})
+  await preview.getByRole('button', { name: 'Room details' }).click()
   await expect(preview.getByLabel('Room in map preview')).toHaveValue(last)
   await preview.getByLabel('Room in map preview').selectOption(first)
   await expect(select).toHaveValue(first)

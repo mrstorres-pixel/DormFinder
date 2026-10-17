@@ -46,5 +46,8 @@ export function drawWalkingRoute(L, map, route, property, campus, preview = fals
   // Leaflet ignores setView during an active zoom transition. Fit after that transition ends.
   fit()
   map.on('resize', fit)
-  return () => { cancelAnimationFrame(frame); map.off('zoomend', fit); map.off('resize', fit); layer.remove() }
+  const card = preview && map.getContainer().parentElement.querySelector('.map-preview')
+  const observer = card ? new ResizeObserver(fit) : null
+  if (card) observer.observe(card)
+  return () => { observer?.disconnect(); cancelAnimationFrame(frame); map.off('zoomend', fit); map.off('resize', fit); layer.remove() }
 }

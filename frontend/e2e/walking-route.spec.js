@@ -46,7 +46,7 @@ test('campus and clustered labels remain separate, with a selectable walking pat
   await expect(page.getByRole('button', { name: 'Walk to campus', exact: true })).toBeVisible()
   expect(state.calls).toHaveLength(0)
   await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()
-  await expect(page.getByText('About 7 min walk · 522 m')).toBeVisible()
+  await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toBeVisible()
   await expect(map.locator('.walking-route-path')).toHaveCount(1)
   await expect(map.locator('.walking-route-connection')).toHaveCount(2)
   await expect.poll(async () => map.evaluate(node => {
@@ -55,8 +55,17 @@ test('campus and clustered labels remain separate, with a selectable walking pat
   })).toBe(true)
   expect(state.calls[0]).toContain('/listings/1/walking-route?campus_id=8')
   await page.screenshot({ path: `../.local/walking-route-${testInfo.project.name}-desktop.png` })
+  const preview = page.getByRole('article', { name: 'Selected map listing' })
+  await expect(preview.locator('.map-preview-walk')).toHaveText('About 7 min walk · 522 m')
+  await preview.getByRole('button', { name: 'Room details' }).click()
+  await expect(preview.getByLabel('Room in map preview')).toBeVisible()
+  await expect.poll(async () => map.evaluate(node => {
+    const path = node.querySelector('.walking-route-path').getBoundingClientRect(), preview = node.closest('.map-canvas').querySelector('.map-preview').getBoundingClientRect()
+    return path.bottom <= preview.top - 10
+  })).toBe(true)
+  await preview.getByRole('button', { name: 'Less detail' }).click()
   await page.setViewportSize({ width: 390, height: 844 })
-  await expect(page.getByText('About 7 min walk · 522 m')).toBeVisible()
+  await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toBeVisible()
   await expect.poll(() => map.evaluate(node => {
     const caption = node.querySelector('.campus-pin-label').getBoundingClientRect(), preview = node.closest('.map-canvas').querySelector('.map-preview').getBoundingClientRect()
     return caption.bottom < preview.top
@@ -64,7 +73,7 @@ test('campus and clustered labels remain separate, with a selectable walking pat
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: `../.local/walking-route-${testInfo.project.name}-mobile.png`, fullPage: true })
   await page.setViewportSize({ width: 844, height: 390 })
-  await expect(page.getByText('About 7 min walk · 522 m')).toBeVisible()
+  await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.getByRole('button', { name: 'Clear route', exact: true }).click()
   await expect(map.locator('.walking-route-path')).toHaveCount(0)
@@ -83,14 +92,14 @@ test('selection changes remove stale routes and failed requests allow an explici
   await expect.poll(() => state.held !== null).toBe(true)
   await page.getByRole('button', { name: 'Show on map', exact: true }).nth(2).click()
   await state.held.fulfill({ json: { data: response } }).catch(() => {})
-  await expect(page.getByText('About 7 min walk · 522 m')).toHaveCount(0)
+  await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toHaveCount(0)
   await expect(page.locator('.walking-route-path')).toHaveCount(0)
   state.hold = false; state.fail = true
   await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()
   await expect(page.getByText('No mapped walking route was found.')).toBeVisible()
   state.fail = false
   await page.getByRole('button', { name: 'Try walking route again' }).click()
-  await expect(page.getByText('About 7 min walk · 522 m')).toBeVisible()
+  await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toBeVisible()
   await page.getByRole('button', { name: 'Close listing preview' }).click()
   await expect(page.locator('.walking-route-path')).toHaveCount(0)
   await expect(page.getByRole('region', { name: 'Walk to campus', exact: true })).toHaveCount(0)
@@ -103,7 +112,7 @@ test('listing details loads walking directions only after opening the map and re
   expect(state.calls).toHaveLength(0)
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()
-  await expect(page.getByText('About 7 min walk · 522 m')).toBeVisible()
+  await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toBeVisible()
   await expect(page.locator('.walking-route-path')).toHaveCount(1)
   await page.getByRole('button', { name: 'Hide map', exact: true }).click()
   await expect(page.locator('.walking-route-path')).toHaveCount(0)

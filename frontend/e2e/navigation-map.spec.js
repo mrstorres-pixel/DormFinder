@@ -35,7 +35,7 @@ test('navbar bell stays visible on phones and reflects unread notifications beyo
   await expect(page.locator('.account-menu').getByRole('link', { name: 'Notifications' })).toHaveCount(0)
   await page.keyboard.press('Escape')
   await page.setViewportSize({ width: 360, height: 800 })
-  await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeHidden()
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeVisible()
   await expect(bell).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: `../.local/notification-bell-${testInfo.project.name}-mobile.png` })

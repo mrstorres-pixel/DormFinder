@@ -58,7 +58,6 @@ test('grouped navigation and progressive listing actions keep private drafts and
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
   await page.setViewportSize({ width: 360, height: 900 })
-  await page.getByRole('button', { name: 'Menu', exact: true }).click()
   await account.locator('summary').click()
   await expect(account.getByRole('link', { name: 'Profile', exact: true })).toBeVisible()
 })

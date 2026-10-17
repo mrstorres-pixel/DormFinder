@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useId, useMemo } from 'react'
+import { useCallback, useContext, useId, useLayoutEffect, useMemo } from 'react'
 import { UnsavedChangesContext } from './unsavedChangesContext'
 
 export function useDiscardChanges() {
@@ -12,7 +12,7 @@ export function useClearUnsavedChanges() {
 export function useFormChanges(dirty) {
   const guard = useContext(UnsavedChangesContext)
   const id = useId()
-  useEffect(() => {
+  useLayoutEffect(() => {
     guard.setDirty(id, dirty)
     return () => guard.setDirty(id, false)
   }, [guard, id, dirty])

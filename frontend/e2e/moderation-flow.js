@@ -16,6 +16,10 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
   const reason = 'Synthetic Phase 4 moderation verification only.'
   let restricted = false
   async function action(page, name, value) {
+    if (name === 'Archive and restore') {
+      await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Preview & review', exact: true }).click()
+      if (!await page.locator('.owner-listing-settings').evaluate(node => node.open)) await page.locator('.owner-listing-settings > summary').click()
+    }
     await page.getByLabel('Listing action', { exact: true }).selectOption(value)
     await page.getByLabel('Reason for listing action').fill(reason)
     await page.getByLabel('I understand how this listing action affects publication and replies.').check()
@@ -59,6 +63,7 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     await expect(student.getByRole('log', { name: 'Conversation messages' }).getByText('Is this shared room quiet after 10 PM?', { exact: true })).toBeVisible()
     expect((await get(reviewer, '/inquiries/' + inquiryId + '/messages')).status).toBe(404)
     await landlord.goto('/landlord/properties/' + propertyId)
+    await landlord.locator('.owner-listing-settings > summary').click()
     await expect(landlord.getByText('Only an administrator can restore a suspended listing.')).toBeVisible()
     const suspended = await get(landlord, '/landlord/properties/' + propertyId)
     expect((await apiWrite(landlord, '/landlord/properties/' + propertyId + '/lifecycle', { revision: suspended.body.data.revision, action: 'restore', reason })).status).toBe(409)

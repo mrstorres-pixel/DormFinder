@@ -1,0 +1,20 @@
+.mobile-navigation { display: none; }
+@media (max-width: 767px) {
+  .has-mobile-tabs { --mobile-navigation-space: calc(66px + env(safe-area-inset-bottom, 0px)); padding-bottom: var(--mobile-navigation-space); }
+  .mobile-navigation { position: fixed; inset: auto 0 0; z-index: 1030; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: .35rem .5rem max(.35rem, env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid var(--line); min-height: var(--mobile-navigation-space); box-shadow: 0 -4px 20px #14233e08; }
+  .mobile-navigation-link { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: .3rem; min-height: 54px; padding: .3rem .1rem; color: var(--muted); text-decoration: none; border-radius: 10px; font-size: .65rem; font-weight: 500; }
+  .mobile-navigation-link svg { width: 22px; height: 22px; }
+  .mobile-navigation-link.is-current { color: var(--accent); background: #edf3ff; }
+  .has-mobile-tabs .menu-toggle { display: none; }
+  .has-mobile-tabs .site-header-inner { flex-wrap: nowrap; gap: .35rem !important; }
+  .has-mobile-tabs .main-navigation { display: flex; flex: 0 0 auto; order: 1; width: auto; border: 0; padding: 0; margin-left: auto; }
+  .has-mobile-tabs .main-navigation > .mobile-tab-destination { display: none; }
+  .has-mobile-tabs .account-menu { border: 0; margin: 0; padding: 0; }
+  .has-mobile-tabs .account-menu > summary { min-width: 44px; min-height: 44px; padding: .4rem; justify-content: center; }
+  .has-mobile-tabs .account-menu > summary > span:not(.person-avatar) { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .has-mobile-tabs .account-menu .navigation-popover { position: absolute; top: calc(100% + .5rem); right: 0; width: 210px; padding: .5rem; margin: 0; box-shadow: 0 12px 40px #14233e1a; border: 1px solid var(--line); background: #fff; z-index: 1050; }
+  .has-mobile-tabs .notification-bell { order: 2; margin: 0; }
+  .has-mobile-tabs .listing-mobile-action { bottom: var(--mobile-navigation-space); padding-bottom: .8rem; }
+  .has-mobile-tabs.is-messaging { box-sizing: border-box; }
+  .has-mobile-tabs .listing-detail-page { padding-bottom: 120px; }
+}

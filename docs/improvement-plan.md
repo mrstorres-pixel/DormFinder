@@ -1,5 +1,17 @@
 # DormFinder improvement plan
 
+## Guided landlord editor, compact map previews and mobile navigation — October 17, 2026
+
+The user approved this order. The landlord workspace now replaces dashboard statistics with property cards and a short private-draft setup (name, type, city). The existing editor is split into Photos → Rooms & costs → Location & details → Preview & review. Sections stay mounted across hash-based steps and browser Back/Forward, preserving file selections and unsaved form values. Missing saved information links directly to its editor step; review feedback stays actionable. The preview uses saved content and signed owner photos, with full room charges available. Existing submission, revision, availability, archive/restore and private-draft rules remain enforced.
+
+All property-writing mutations share a scoped pending key. Step navigation waits until a save and its cache refresh finish, preventing the next operation from using an earlier revision. Draft creation, photos/order/removal, room options, availability, submission and lifecycle actions retain their existing endpoints, retry identity and unsaved-change guards. Failed saves keep edits; no new autosave or publication shortcut is introduced.
+
+The map preview is compact by default: linked image/title, selected-room rent/basis/name and a requested walking estimate when available. Room selection, known monthly costs, capacity/inventory and comparison expand on demand. Preview state resets for a newly selected property. Walking-route fitting observes preview size so the path stays above the card when it expands; routing remains explicit and bounded.
+
+Phones now have direct Browse, Saved places, Messages and Viewings tabs for students; landlords get Properties in place of Saved places. Account and the existing unread notification bell remain in the header. Guests and administrators retain their role-specific header navigation. Fixed listing actions and the conversation composer reserve space for the tab bar, including rotation and shorter viewports. Native dialogs continue to cover the navigation in the top layer.
+
+Implementation and local validation are complete: 81 frontend tests, lint/build, all 92 distinct scoped production-build Chromium/WebKit cases across the broad/affected runs, six Phase 1 cases and two full three-role Phase 2 cases pass. Actual signed-owner preview and student mobile reads also pass. Publication/live acceptance is pending; final evidence is recorded in validation.md and deployment.md. Other retained roadmap work, including verified walking entrances, deeper administrator review redesign and user-observation studies, remains planned. Live backend rollback stays explicitly deferred. This increment adds no backend endpoint, dependency, migration, provider setting or paid resource.
+
 ## Listing cards, room choices and comparison — October 16, 2026
 
 The user approved this order: simplify browse cards, replace the listing-detail room dropdown with visible choices, then redesign comparison around photos and essential costs. All three are implemented. Browse cards use larger 4:3 covers, title/city, explicitly straight-line campus distance, selected-room rent/basis, capacity and availability. Extra fixed monthly fees remain visible; full addresses and repeated explanations move out of the card. A single room needs no dropdown. Existing card/map/comparison selection synchronization, saving and browse-return state are preserved.

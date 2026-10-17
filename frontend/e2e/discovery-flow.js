@@ -101,6 +101,7 @@ export async function verifyDiscovery({ landlord, reviewer, student, originalId,
     await student.getByRole('link', { name: 'Compare 2 listings', exact: true }).click()
     await expect(student.getByRole('table')).toBeVisible()
     await student.getByLabel('Room option for ' + originalTitle, { exact: true }).selectOption({ label: 'Private whole room' })
+    await student.getByText('Full costs and property details', { exact: true }).click()
     await expect(student.getByRole('row', { name: /Price basis/ })).toContainText('Per room')
     await student.getByLabel('Room option for ' + originalTitle, { exact: true }).selectOption({ label: 'Shared student beds' })
     await expect(student.getByRole('row', { name: /Price basis/ })).not.toContainText('Per room')

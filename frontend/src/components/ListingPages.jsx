@@ -13,13 +13,14 @@ import { ReportForm } from './ModerationPages'
 import CampusMap from './CampusMap'
 import ListingInformation from './ListingInformation'
 import { preferredOption, searchParameters, amenities } from '../lib/housing'
-import { comparisonHighlights, detailedMatches } from '../lib/practical'
+import { comparisonHighlights } from '../lib/practical'
 import ListingActions from './ListingActions'
 import { browseKey, readBrowseState, saveBrowseState } from '../lib/browseState'
 import { ListingSort } from './SearchFilters'
 import CampusResultsSearch from './CampusResultsSearch'
 import FavoriteButton from './SavePlaceButton'
 import RoomChoice from './RoomChoice'
+import MapListingPreview from './MapListingPreview'
 
 export function Listings({ favorites = false }) {
   const [params] = useSearchParams()
@@ -81,7 +82,7 @@ function ListingResults({ favorites, searchKey }) {
       </div>
       {!favorites && campus && <aside className="discovery-map-column" aria-label="Explore listings on the map" hidden={!showMap}>
         {mapQuery.isPending ? <Loading>Preparing map results…</Loading> : mapQuery.error ? <ErrorNotice error={mapQuery.error} retry={() => mapQuery.refetch()} /> : <><div className="map-heading"><span>Explore the neighborhood</span><p>{mapQuery.data?.meta.total || 0} matching listings across all pages{mapQuery.data?.meta.limited ? ' · Showing the first 200; narrow your search for more detail.' : ''}</p></div><CampusMap properties={markers} campus={campus} radius={params.get('radius_km')} bounds={bounds} viewport={viewport} onViewportChange={rememberViewport} selectedId={selectedId} onSelect={select} onAreaSearch={searchArea}>
-          {preview && <article className="map-preview panel" aria-label="Selected map listing"><button className="map-preview-close" aria-label="Close listing preview" onClick={event => { setSelectedId(null); event.currentTarget.closest('.map-workspace').querySelector('[aria-label="Listing map"]').focus() }}>×</button>{preview.photos?.[0] && <Link className="map-preview-image" aria-label={'Open listing: ' + preview.title} to={'/listings/' + preview.id + '?campus_id=' + campus.id + '&option=' + (previewOption?.id || '')} state={{ browse: '/listings?' + params.toString() }}><img src={preview.photos[0].url} alt={preview.photos[0].caption} /></Link>}<div><strong><Link to={'/listings/' + preview.id + '?campus_id=' + campus.id + '&option=' + (previewOption?.id || '')} state={{ browse: '/listings?' + params.toString() }}>{preview.title}</Link></strong><label className="form-label small mt-2" htmlFor="map-preview-room">Room in map preview</label><select className="form-select form-select-sm mb-2" id="map-preview-room" value={previewOption?.id || ''} onChange={event => { const optionId = Number(event.target.value); setChoices(current => ({ ...current, [preview.id]: optionId })); if (compare.selections.some(item => item.property_id === preview.id)) compare.choose(preview.id, optionId) }}>{preview.room_options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select><ul className="match-reasons">{detailedMatches(preview,params,previewOption).map(reason => <li key={reason}>{reason}</li>)}</ul><p className="small mb-1">{previewOption && <>{pesos(previewOption.monthly_fixed_total_centavos)} known monthly · {previewOption.price_basis === 'per_person' ? 'per person' : 'per room'}<br />{previewOption.available_units} available · {previewOption.availability_stale ? 'Needs confirmation' : 'Recently confirmed'}</>}</p><Link to={'/listings/' + preview.id + '?campus_id=' + campus.id + '&option=' + (previewOption?.id || '')} state={{ browse: '/listings?' + params.toString() }}>View listing</Link>{previewOption && <button className="btn btn-link btn-sm" disabled={compare.selections.length >= 3 && !compare.selections.some(item => item.property_id === preview.id)} onClick={() => compare.choose(preview.id, previewOption.id)}>Add to comparison</button>}</div></article>}</CampusMap></>}
+          {walking => preview && <MapListingPreview key={preview.id} property={preview} option={previewOption} campus={campus} browse={'/listings?' + params.toString()} walking={walking} onClose={() => { setSelectedId(null); document.querySelector('.map-workspace [aria-label="Listing map"]')?.focus({ preventScroll: true }) }} onOptionChange={optionId => { setChoices(current => ({ ...current, [preview.id]: optionId })); if (compare.selections.some(item => item.property_id === preview.id)) compare.choose(preview.id, optionId) }} compareDisabled={compare.selections.length >= 3 && !compare.selections.some(item => item.property_id === preview.id)} onCompare={() => previewOption && compare.choose(preview.id, previewOption.id)} />}</CampusMap></>}
       </aside>}
     </div>
   </section>

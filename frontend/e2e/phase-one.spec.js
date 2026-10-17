@@ -49,10 +49,13 @@ test('same-origin sessions, private drafts, image persistence and logout', async
 
   await page.getByRole('link', { name: '+ Add a property' }).click()
   await page.getByLabel('Property name').fill(`Demo Residence ${suffix}`)
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await expect(page).toHaveURL(/\/landlord\/properties\/\d+#photos$/)
+  const propertyId = new URL(page.url()).pathname.split('/').pop()
+  await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Location & details', exact: true }).click()
   await page.getByLabel('Street address').fill('Synthetic address for testing')
   await page.getByRole('button', { name: 'Save draft', exact: true }).click()
-  await expect(page).toHaveURL(/\/landlord\/properties\/\d+$/)
-  const propertyId = page.url().split('/').pop()
+  await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Photos', exact: true }).click()
   const png = await page.evaluate(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 20; canvas.height = 20
@@ -65,7 +68,9 @@ test('same-origin sessions, private drafts, image persistence and logout', async
     buffer: Buffer.from(png, 'base64'),
   })
   await page.getByLabel('Photo description').fill('Synthetic test image')
-  await page.getByRole('button', { name: 'Upload photo', exact: true }).click()
+  const uploadResponsepage0 = page.waitForResponse(response => response.url().endsWith('/photos') && response.request().method() === 'POST')
+    await page.getByRole('button', { name: 'Upload photo', exact: true }).click()
+    expect((await uploadResponsepage0).status()).toBe(201)
   await expect(page.getByRole('img', { name: 'Synthetic test image' })).toBeVisible()
   await page.reload()
   const image = page.getByRole('img', { name: 'Synthetic test image' })

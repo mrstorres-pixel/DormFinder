@@ -133,7 +133,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     </div>
     {failed && <p role="status" className="map-failure">Map imagery is unavailable. Listing addresses and search remain usable.</p>}
     <div className="campus-map" ref={element} role="region" aria-label="Listing map" />
-    {children}
+    {typeof children === 'function' ? children(walking) : children}
     </div>
     <WalkingRouteControl walking={walking} property={selectedProperty} campus={campus} />
     <p className="small map-note">{properties.some(property => property.is_demo) ? 'Demo pins are fictional; other pins are owner-supplied.' : 'Owner-supplied property pins.'} Campus is an approximate reference. Distances are straight lines. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
