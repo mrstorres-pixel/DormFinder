@@ -16,6 +16,7 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
   const reason = 'Synthetic Phase 4 moderation verification only.'
   let restricted = false
   async function action(page, name, value) {
+    if (name === 'Listing moderation') await page.locator('.review-moderation > summary').click()
     if (name === 'Archive and restore') {
       await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Preview & review', exact: true }).click()
       if (!await page.locator('.owner-listing-settings').evaluate(node => node.open)) await page.locator('.owner-listing-settings > summary').click()
@@ -32,7 +33,7 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     expect((await apiWrite(landlord, '/landlord/properties/' + propertyId + '/submit', { revision: current.body.data.revision, inventory_confirmed: true })).status).toBe(200)
     await reviewer.goto('/admin/reviews/' + propertyId)
     await reviewer.getByLabel('I have checked the listing against these review criteria.').check()
-    await reviewer.getByRole('button', { name: 'Save review decision', exact: true }).click()
+    await reviewer.getByRole('button', { name: 'Approve listing', exact: true }).click()
     await expect(reviewer).toHaveURL(/\/admin$/)
   }
   try {
@@ -120,7 +121,7 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     await expect(reviewer.getByRole('heading', { name: 'account reactivate', exact: true }).first()).toBeVisible()
     await expect(reviewer.getByRole('heading', { name: 'report closed', exact: true }).first()).toBeVisible()
     await reviewer.goto('/admin')
-    await expect(reviewer.getByText('Open reports', { exact: true })).toBeVisible({ timeout: 15_000 })
+    await expect(reviewer.getByRole('navigation', { name: 'Administrator sections' }).getByRole('link', { name: 'Reports', exact: true })).toBeVisible({ timeout: 15_000 })
     for (const width of [360, 768, 1440]) {
       await reviewer.setViewportSize({ width, height: 900 })
       expect(await reviewer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

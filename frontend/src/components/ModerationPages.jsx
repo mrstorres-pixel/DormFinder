@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api, writeApi } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { ErrorNotice, Field, Loading } from './Feedback'
 import useUnsavedChanges, { useFormChanges } from '../lib/useUnsavedChanges'
 import DashboardActions from './DashboardActions'
+import './admin-navigation.css'
 
 const labels = { upcoming_viewings: 'Upcoming viewings', pending_viewings: 'Viewing decisions waiting', awaiting_reply: 'Awaiting your reply', shortlists: 'Private shortlists', stale_listings: 'Availability needs updating', older_reviews: 'Reviews waiting over two days', pending_reviews: 'Pending reviews', open_reports: 'Open reports', published_listings: 'Published listings', active_students: 'Active students', active_landlords: 'Active landlords', suspended_accounts: 'Suspended accounts', unread_notifications: 'Unread notifications', inquiries: 'Your inquiries', favorites: 'Saved listings' }
 
@@ -23,7 +24,9 @@ export function DashboardCounts({ actionsFirst = false }) {
 }
 
 export function AdminNavigation() {
-  return <nav aria-label="Administrator sections" className="d-flex gap-3 flex-wrap mb-4"><Link to="/admin">Reviews</Link><Link to="/admin/reports">Reports</Link><Link to="/admin/listings">All listings</Link><Link to="/admin/users">Accounts</Link><Link to="/admin/audit">Audit history</Link></nav>
+  const { pathname } = useLocation()
+  const links = [['/admin', 'Reviews'], ['/admin/reports', 'Reports'], ['/admin/listings', 'All listings'], ['/admin/users', 'Accounts'], ['/admin/audit', 'Audit history']]
+  return <nav aria-label="Administrator sections" className="admin-sections">{links.map(([path, label]) => <Link key={path} to={path} aria-current={(path === '/admin' ? pathname === path || pathname.startsWith('/admin/reviews/') : pathname === path) ? 'page' : undefined}>{label}</Link>)}</nav>
 }
 
 function Pages({ data, page, setPage }) {

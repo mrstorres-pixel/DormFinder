@@ -1,5 +1,13 @@
 # DormFinder improvement plan
 
+## Administrator review workspace and revised priorities — October 17, 2026
+
+Approved now: finish the administrator listing-review experience. Replace the dashboard statistics with a photo-led, paginated queue; show the listing gallery, selectable room costs, address and an optional read-only map in one connected review page. Keep the decision alongside the content on desktop, provide section navigation on phones, and separate other moderation actions. Preserve revision checks, required review confirmation, owner feedback, private access rules and unsaved drafts. Validation and release evidence will be recorded when complete.
+
+User feedback supersedes the earlier next-step ordering: expanded total-monthly/move-in budget filters are not selected for implementation. Verified campus entrances are low priority rather than a required next step; the existing approximate-campus walking estimates remain clearly labeled. Do not undertake gate verification without a demonstrated need or further approval.
+
+Suggested future work, not approved in this increment: room-specific photo galleries so students know which images belong to their selected option; move-in-date and lease-length matching; and observation of real students completing the existing search → compare → message → viewing journey. Vacancy refreshing already exists; further availability work should improve its ease and reliability rather than duplicate that feature.
+
 ## Guided landlord editor, compact map previews and mobile navigation — October 17, 2026
 
 The user approved this order. The landlord workspace now replaces dashboard statistics with property cards and a short private-draft setup (name, type, city). The existing editor is split into Photos → Rooms & costs → Location & details → Preview & review. Sections stay mounted across hash-based steps and browser Back/Forward, preserving file selections and unsaved form values. Missing saved information links directly to its editor step; review feedback stays actionable. The preview uses saved content and signed owner photos, with full room charges available. Existing submission, revision, availability, archive/restore and private-draft rules remain enforced.
@@ -90,7 +98,7 @@ Use persistent campus/search context in discovery, selected property/room contex
 ## Retained functional priorities after the visual phase
 
 1. **Accurate listings and availability:** clearer room differences, complete photos/costs, and dependable availability freshness.
-2. **Full-budget matching:** total known monthly and move-in cost filters, with unknown charges stated clearly.
+2. **Full-budget matching — not selected, October 17:** retain current cost transparency; additional total-monthly and move-in filters are not part of the approved work.
 3. **Better campus recommendations:** clear selected-room reasons based on campus, distance, budget and requirements.
 4. **A smoother decision process:** further connect saving, comparing, private questions and arranging viewings. The visual phase begins improving this experience using existing capabilities.
 5. **Faster landlord responses:** clearer inquiry/viewing queues and practical availability updates.

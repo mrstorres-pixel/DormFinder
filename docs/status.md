@@ -1,5 +1,11 @@
 # Implementation status
 
+## Current increment — administrator listing reviews, October 17
+
+The approved administrator review redesign is implemented: photo-led queue, remembered pagination, enlarged gallery, room-specific cost inspection, optional read-only location map, desktop decision column, phone section shortcuts and separate moderation controls. Feedback and other-form drafts survive failures; changed revisions require a fresh acknowledgement. Frontend 81 tests, lint/build and eight focused browser cases pass. Full regression, final WebKit real-role rerun and release acceptance are in progress. The earlier student/landlord features and existing data remain intact.
+
+User priorities are updated in improvement-plan.md: expanded total-budget filtering is not selected; verified campus entrances are low priority. Room-specific photos and move-in/lease matching are suggestions only, not implemented in this increment.
+
 ## Current increment — landlord workflow, map previews and mobile navigation, October 17
 
 The approved three-part change is implemented and live: short private-draft setup and four guided owner steps with saved preview/readiness; compact map previews with expandable room/cost/comparison details; and direct student/landlord mobile tabs with Account and the notification bell in the header. Save sequencing and hidden room-draft preservation issues found during validation are fixed.

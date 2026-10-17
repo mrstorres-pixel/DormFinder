@@ -1,0 +1,5 @@
+.admin-sections { display: flex; flex-wrap: wrap; gap: .25rem; padding-bottom: .9rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--line); }
+.admin-sections a { display: flex; align-items: center; min-height: 44px; padding: .6rem 1rem; color: var(--muted); text-decoration: none; font-size: .83rem; border-radius: 9px; }
+.admin-sections a[aria-current] { color: var(--accent); background: #edf3ff; font-weight: 600; }
+.admin-sections a:hover { color: var(--accent); background: #f5f8ff; }
+@media (max-width: 575px) { .admin-sections a { padding: .6rem .75rem; font-size: .76rem; } }

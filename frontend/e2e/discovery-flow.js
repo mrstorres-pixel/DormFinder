@@ -68,7 +68,7 @@ export async function verifyDiscovery({ landlord, reviewer, student, originalId,
       expect(submitted.status).toBe(200)
       await reviewer.goto('/admin/reviews/' + id)
       await reviewer.getByLabel('I have checked the listing against these review criteria.').check()
-      await reviewer.getByRole('button', { name: 'Save review decision', exact: true }).click()
+      await reviewer.getByRole('button', { name: 'Approve listing', exact: true }).click()
       await expect(reviewer).toHaveURL(/\/admin$/)
     }
     await student.goto('/listings?q=' + encodeURIComponent(group))
