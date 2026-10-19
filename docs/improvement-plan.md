@@ -1,5 +1,13 @@
 # DormFinder improvement plan
 
+## Campus demo catalog and viewing calendar — October 19, 2026
+
+Approved scope: replace the original seeded listings with three fictional properties for each of the 15 existing campuses, and implement the suggested viewing calendar. The catalog has 45 distinct street-based pins, with traced OpenStreetMap street sources in backend/database/campus-demo-listings.json. The original 19 samples are archived rather than deleted so saved places, messages and viewing history remain available privately. Non-demo properties and all existing campus reference points remain untouched.
+
+Each campus has a studio, twin room and four-person shared dorm, with two separate room options and understandable illustrative rent/deposit terms. Nine original photo-style AI interiors replace the old floor plans throughout normal signed photo storage. These images are reused across the fictional catalog and clearly labeled; they are not real rental photographs or verified addresses.
+
+The viewing calendar complements the existing list and decision flow, with Philippine dates, month navigation, selected-day appointments and distinct confirmed/pending markers. It loads every result page for the selected month and retains existing participant privacy and unsaved-form guards. Room-specific galleries and move-in/lease matching remain suggestions; expanded total-budget filtering remains unselected and gate verification remains low priority. Existing practical and visual work is preserved.
+
 ## Administrator review workspace and revised priorities — October 17, 2026
 
 Approved now: finish the administrator listing-review experience. Replace the dashboard statistics with a photo-led, paginated queue; show the listing gallery, selectable room costs, address and an optional read-only map in one connected review page. Keep the decision alongside the content on desktop, provide section navigation on phones, and separate other moderation actions. Preserve revision checks, required review confirmation, owner feedback, private access rules and unsaved drafts. This increment is released as frontend 873e1f3 / Vercel dpl_96PWJHeVFiRduKcemxHSJytdia5k at the existing public alias. Acceptance passes 81 frontend tests, lint/build, 100 local checks followed by 28 affected cases after the diagnosed editor-focus correction, and 104 live Chromium/WebKit checks in one final run, plus complete actual local role workflows. Validation.md and deployment.md record the evidence and recovery reference.

@@ -38,6 +38,7 @@ async function fixture(page, role = 'student') {
     if (path.endsWith('/viewings')) {
       if (url.searchParams.has('id')) return json(state.rows.filter(row => String(row.id) === url.searchParams.get('id')))
       if (url.searchParams.has('active')) return json(state.active ? [state.rows.at(-1)] : [])
+      if (url.searchParams.has('month')) return json(state.rows.filter(row => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit' }).format(new Date(row.starts_at)) === url.searchParams.get('month')))
       const group = url.searchParams.get('group'), status = url.searchParams.get('status')
       return json(state.rows.filter(row => status ? row.status === status : group === 'upcoming' ? row.status === 'accepted' && !row.time_passed : group === 'requests' ? ['requested', 'proposed'].includes(row.status) : row.time_passed || ['cancelled', 'declined'].includes(row.status)))
     }
@@ -45,6 +46,36 @@ async function fixture(page, role = 'student') {
   })
   return state
 }
+
+test('calendar groups Philippine dates, opens visit details, and keeps month and day through browser navigation', async ({ page }, testInfo) => {
+  const state = await fixture(page)
+  state.rows[0].starts_at = '2026-10-31T16:00:00Z'
+  state.rows[1].starts_at = '2026-11-01T04:00:00Z'
+  state.rows[2].starts_at = '2026-11-02T04:00:00Z'
+  await page.goto('/viewings?mode=calendar&month=2026-11')
+  const calendar = page.getByRole('region', { name: 'Viewing calendar' })
+  await expect(calendar.getByRole('heading', { name: 'November 2026' })).toBeVisible()
+  const first = calendar.getByRole('button', { name: '2026-11-01, 1 confirmed, 1 awaiting confirmation', exact: true })
+  await expect(first).toBeVisible()
+  await first.click()
+  await expect(page.locator('.appointment-card')).toHaveCount(2)
+  await expect(page).toHaveURL(/day=2026-11-01/)
+  await page.screenshot({ path: `../.local/viewing-calendar-${testInfo.project.name}-desktop.png`, fullPage: true })
+  await calendar.getByRole('button', { name: 'Next month' }).click()
+  await expect(page.getByRole('heading', { name: 'No visits on these dates' })).toBeVisible()
+  await page.goBack()
+  await expect(first).toHaveAttribute('aria-pressed', 'true')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.screenshot({ path: `../.local/viewing-calendar-${testInfo.project.name}-mobile.png`, fullPage: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.locator('.appointment-card').first().click()
+  const details = page.getByRole('article', { name: 'Viewing details' })
+  await expect(details).toBeVisible()
+  await expect(calendar).toBeHidden()
+  await details.getByRole('button', { name: 'Back to viewings' }).click()
+  await expect(first).toBeVisible()
+  await expect(first).toHaveAttribute('aria-pressed', 'true')
+})
 
 test('viewings connect appointment sections, decisions, messages and mobile details', async ({ page }, testInfo) => {
   await fixture(page)

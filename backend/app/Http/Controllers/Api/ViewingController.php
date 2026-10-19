@@ -38,7 +38,7 @@ class ViewingController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         abort_unless(in_array($request->user()->role, ['student', 'landlord'], true), 403);
-        $data = $request->validate(['page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'status' => ['nullable', Rule::in([...self::ACTIVE, 'declined', 'cancelled'])], 'group' => ['nullable', Rule::in(['upcoming', 'requests', 'history'])], 'id' => ['nullable', 'integer', 'min:1'], 'property_id' => ['nullable', 'integer', 'min:1'], 'active' => ['nullable', 'boolean']]);
+        $data = $request->validate(['page' => ['nullable', 'integer', 'min:1', 'max:100000'], 'month' => ['nullable', 'date_format:Y-m'], 'status' => ['nullable', Rule::in([...self::ACTIVE, 'declined', 'cancelled'])], 'group' => ['nullable', Rule::in(['upcoming', 'requests', 'history'])], 'id' => ['nullable', 'integer', 'min:1'], 'property_id' => ['nullable', 'integer', 'min:1'], 'active' => ['nullable', 'boolean']]);
         $column = $request->user()->role === 'student' ? 'student_id' : 'landlord_id';
         $query = ViewingRequest::query()->where($column, $request->user()->id)->select('viewing_requests.*')->selectSub(DB::table('inquiries')->select('id')->whereColumn('property_id', 'viewing_requests.property_id')->whereColumn('student_id', 'viewing_requests.student_id')->whereColumn('landlord_id', 'viewing_requests.landlord_id')->limit(1), 'conversation_id')->with(['student', 'landlord', 'property.roomOptions', 'property.photos']);
         if (! empty($data['id'])) {
@@ -46,6 +46,10 @@ class ViewingController extends Controller
         }
         if (! empty($data['property_id'])) {
             $query->where('property_id', $data['property_id']);
+        }
+        if (! empty($data['month'])) {
+            $start = CarbonImmutable::createFromFormat('!Y-m', $data['month'], 'Asia/Manila');
+            $query->where('starts_at', '>=', $start->utc())->where('starts_at', '<', $start->addMonth()->utc());
         }
         if ($request->boolean('active')) {
             $query->whereIn('status', self::ACTIVE)->where(function ($active): void {

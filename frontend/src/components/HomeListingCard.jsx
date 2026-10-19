@@ -16,7 +16,8 @@ function Cover({ photo }) {
 export function ListingCover({ property }) {
   const illustration = property.is_demo && demoCovers[property.title]
   const photo = illustration || property.photos?.[0]
-  return <div className="featured-cover"><Cover key={photo?.url || 'no-photo'} photo={photo} />{property.is_demo && <span className="status-badge" title={illustration ? 'AI-generated interior concept for a fictional demo listing; not a photo of the property.' : undefined}>{illustration ? 'AI demo illustration' : 'Synthetic demo'}</span>}</div>
+  const generated = illustration || (property.is_demo && photo?.caption?.startsWith('AI-generated demo interior'))
+  return <div className="featured-cover"><Cover key={photo?.url || 'no-photo'} photo={photo} />{property.is_demo && <span className="status-badge" title={generated ? 'AI-generated interior concept for a fictional demo listing; not a photo of the property.' : undefined}>{generated ? 'AI demo illustration' : 'Synthetic demo'}</span>}</div>
 }
 
 export default function HomeListingCard({ property, option, campusId, browse = '/listings', saved = false }) {

@@ -1,5 +1,11 @@
 # Deployment runbook — Codex execution
 
+## Campus catalog and viewing calendar — October 19, 2026
+
+The controlled data replacement uses dormfinder:campus-demos, with explicit --apply, the existing administrator and private demo-owner password file, and --production-project=zujrpipjkgwqwlipgpwe. Default execution only prints the catalog. The production target remains the existing DormFinder private schema/bucket/runtime role. A fresh backup at .secrets/dormfinder-before-campus-demos-20261019-033525.dump was verified before applying 45 new samples; only original seeded IDs 25–43 were archived. Existing photos and private-history rows are retained. New image IDs use the separate d0f20000 namespace. Private release manifests and credentials remain excluded from source.
+
+Application release uses the existing free Render service and Vercel project, without schema, environment, account or provider-plan changes. The backend addition is an optional month filter on the participant-scoped viewing list; calendar dates use Asia/Manila boundaries before pagination. Prior compatible recovery artifacts remain backend cef1f6d / dep-db8v1urrjlhs73dl7njg and frontend 873e1f3 / dpl_96PWJHeVFiRduKcemxHSJytdia5k. Application recovery must retain data and signed photo objects; do not drop schema or restore the old public catalog automatically. No live backend rollback rehearsal is performed.
+
 Phases 1–4 are live at [DormFinder](https://dormfinder-pink.vercel.app), using [Render API](https://dormfinder-api.onrender.com) and private Supabase PostgreSQL/Storage. Deployed browser and redeploy-persistence checks pass. Confirmed sleep/cold wake-up returned ready through Vercel in 24.3 seconds and preserved session/draft/photo data. The historical GitHub CI account restriction described in validation.md has not been reverified in this frontend release.
 
 ## Administrator listing-review workspace — October 17, 2026

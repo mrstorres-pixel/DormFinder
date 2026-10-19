@@ -41,6 +41,26 @@ class PracticalHousingTest extends TestCase
         return [$response->json('data'), $payload];
     }
 
+    public function test_calendar_month_uses_philippine_boundaries_before_pagination_and_keeps_participant_privacy(): void
+    {
+        [$owner, $property, $room] = $this->listing();
+        $student = User::factory()->create();
+        $attributes = ['student_id' => $student->id, 'landlord_id' => $owner->id, 'property_id' => $property->id, 'room_option_id' => $room->id, 'status' => 'cancelled'];
+        $first = ViewingRequest::factory()->create([...$attributes, 'starts_at' => '2026-10-31T16:00:00Z']);
+        ViewingRequest::factory()->count(12)->create([...$attributes, 'starts_at' => '2026-11-15T03:00:00Z']);
+        ViewingRequest::factory()->create([...$attributes, 'starts_at' => '2026-10-31T15:59:59Z']);
+        ViewingRequest::factory()->create([...$attributes, 'starts_at' => '2026-11-30T16:00:00Z']);
+        $this->login($student);
+        $this->getJson('/api/v1/viewings?month=2026-11')->assertOk()->assertJsonPath('meta.total', 13)->assertJsonPath('meta.last_page', 2);
+        $this->getJson('/api/v1/viewings?month=2026-11&page=2')->assertOk()->assertJsonPath('data.0.id', $first->id);
+        $this->getJson('/api/v1/viewings?month=2026-13')->assertUnprocessable();
+        $this->getJson('/api/v1/viewings?month=2026-11-01')->assertUnprocessable();
+        $this->login($owner);
+        $this->getJson('/api/v1/viewings?month=2026-11')->assertOk()->assertJsonPath('meta.total', 13);
+        $this->login(User::factory()->create());
+        $this->getJson('/api/v1/viewings?month=2026-11')->assertOk()->assertJsonCount(0, 'data');
+    }
+
     public function test_viewing_sections_filter_before_pagination_and_private_deep_links_keep_history(): void
     {
         [$owner, $property, $room] = $this->listing();
