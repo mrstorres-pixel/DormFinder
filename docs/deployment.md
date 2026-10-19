@@ -1,5 +1,13 @@
 # Deployment runbook — Codex execution
 
+## Released application artifacts — October 19 campus catalog/calendar
+
+Application source f6086bc40babafb1069cc403601f6ed82bd6301d is live on Render in dep-dbap2pei0phs73a1pqp0 (finished 03:42:17 UTC). It remains service srv-db44ecrbc2fs73aj14q0 in the user-confirmed workspace tea-d7ip6vu7r5hc73ccjjng, Singapore/free, Docker entrypoint unchanged and auto-deploy off. No migration or environment change was run.
+
+Frontend dpl_Gkq7WxfCVfPVPAS3TFAPh6WFbddC is READY at https://dormfinder-ny862vaic-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. A clean committed-source archive was staged with --skip-domain under the verified existing project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1 / team team_lakGFdG84Dlw3s6qfEG8IKQc, Node 24, frontend root and existing build workflow. Thirteen protected staged assets matched local SHA256 hashes before promotion. Entry index-Dt5D1ekv.js, Viewings-Dis-pJEk.js and unchanged dormRoom-By6Gg0dT.js identify the release. Deployment Protection and all provider settings remain intact. Subsequent commits record test/data-acceptance notes only; they do not change the deployed application bundles.
+
+Acceptance covers 42 distinct live scenarios across the main and six-case affected rerun, all new image links/campus coverage, actual role calendars, public assets/readiness/tiles and secret exclusion. Recovery references and private backup are retained above. The old public sample set is not resurrected by switching application code, and existing private records/photos must be retained. No live Render rollback rehearsal was performed; the historical GitHub CI exception remains unverified.
+
 ## Campus catalog and viewing calendar — October 19, 2026
 
 The controlled data replacement uses dormfinder:campus-demos, with explicit --apply, the existing administrator and private demo-owner password file, and --production-project=zujrpipjkgwqwlipgpwe. Default execution only prints the catalog. The production target remains the existing DormFinder private schema/bucket/runtime role. A fresh backup at .secrets/dormfinder-before-campus-demos-20261019-033525.dump was verified before applying 45 new samples; only original seeded IDs 25–43 were archived. Existing photos and private-history rows are retained. New image IDs use the separate d0f20000 namespace. Private release manifests and credentials remain excluded from source.

@@ -1,5 +1,9 @@
 # DormFinder improvement plan
 
+## Campus catalog and viewing calendar — released October 19
+
+Completed on the existing production services: 45 fictional listings across all 15 campuses, nine original photo-style AI image variants, street-based map pins, and the participant-only viewing calendar. The calendar is available through Viewings → Calendar; the existing list remains available. Every new listing has a working signed image and two separately priced room options. Original sample listings are archived, with private history preserved. Local acceptance and all 42 distinct scoped live Chromium/WebKit cases have passing evidence across the main run and affected rerun. Broader proposed work retains its previous approval status.
+
 ## Campus demo catalog and viewing calendar — October 19, 2026
 
 Approved scope: replace the original seeded listings with three fictional properties for each of the 15 existing campuses, and implement the suggested viewing calendar. The catalog has 45 distinct street-based pins, with traced OpenStreetMap street sources in backend/database/campus-demo-listings.json. The original 19 samples are archived rather than deleted so saved places, messages and viewing history remain available privately. Non-demo properties and all existing campus reference points remain untouched.

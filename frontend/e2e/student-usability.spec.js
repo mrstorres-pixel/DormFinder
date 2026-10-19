@@ -60,8 +60,14 @@ test('students keep campus, budget and room context through mobile search and co
   await page.getByRole('link', { name: 'DormFinder home' }).click()
   await page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' }).fill('CEU Malolos')
   await page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' }).press('Enter')
+  const malolosId = ceu.find(campus => campus.slug === 'ceu-malolos').id
+  const campusResults = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/listings' && new URL(response.url()).searchParams.get('campus_id') === String(malolosId) && response.status() === 200)
   await page.getByRole('button', { name: 'Find housing near my campus' }).click()
-  await expect(page.getByRole('heading', { name: 'No listings match your search.' })).toBeVisible()
+  const nearby = (await (await campusResults).json()).data
+  await expect(page.locator('.property-card')).toHaveCount(nearby.length)
+  if (nearby.length) await expect(page.getByRole('heading', { name: nearby[0].title, exact: true })).toBeVisible()
   expect(new URL(page.url()).searchParams.get('radius_km')).toBe('2')
-  expect(new URL(page.url()).searchParams.get('campus_id')).toBe(String(ceu.find(campus => campus.slug === 'ceu-malolos').id))
+  expect(new URL(page.url()).searchParams.get('campus_id')).toBe(String(malolosId))
+  await page.goto('/listings?campus_id=' + malolosId + '&radius_km=2&q=NoMatchingPropertyForDiscoveryCheck')
+  await expect(page.getByRole('heading', { name: 'No listings match your search.' })).toBeVisible()
 })

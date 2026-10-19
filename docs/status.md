@@ -1,5 +1,9 @@
 # Implementation status
 
+## Current increment complete — October 19
+
+Live at https://dormfinder-pink.vercel.app: the 45-property campus catalog and the List/Calendar viewing workspace. Application source f6086bc is deployed on both existing free services; Vercel dpl_Gkq7WxfCVfPVPAS3TFAPh6WFbddC and Render dep-dbap2pei0phs73a1pqp0 are ready/live. The original 19 samples are archived and private histories remain intact. Passing checks: 127 backend tests / 1535 assertions, 84 frontend tests, Pint, lint/build, all 34 scoped local browser cases across recorded runs and all 42 scoped live cases across the main run and six-case affected rerun. No scoped implementation or verification failure remains. The historical CI exception and deliberately deferred live backend rollback rehearsal remain outside this increment.
+
 ## Current increment — campus samples and viewing calendar, October 19
 
 Implemented 45 street-based fictional listings (three for every existing campus), nine original photo-style room illustrations, normal signed image storage, and a month/day viewing calendar alongside the existing list. The 19 original seeded samples are archived, preserving their related private history; unrelated listings, rooms, photos, user accounts, campuses and saved data are preserved. Backend 127 tests / 1535 assertions, frontend 84 tests, lint/build, Pint and all 34 scoped local browser scenarios pass across recorded runs. The catalog replacement is applied after a verified private backup; frontend/backend application release and final live acceptance are in progress.

@@ -1,5 +1,41 @@
 import { test, expect } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
+import { dirname, join } from 'node:path'
+
+test('student and owner calendars read actual private viewing data with Philippine month validation', async ({ browser, baseURL }, testInfo) => {
+  test.skip(!process.env.E2E_CAMPUS_DEMO_MANIFEST, 'Uses existing synthetic role accounts.')
+  test.setTimeout(120_000)
+  const directory = dirname(process.env.E2E_CAMPUS_DEMO_MANIFEST)
+  const environment = baseURL.startsWith('https:') ? 'cloud' : 'local'
+  const accounts = JSON.parse(await readFile(join(directory, `discovery-browser-${environment}-${testInfo.project.name}.json`), 'utf8'))
+  const owner = JSON.parse(await readFile(join(directory, `demo-landlord-${environment}.json`), 'utf8'))
+  for (const [role, account] of [['student', accounts.student], ['landlord', owner]]) {
+    const context = await browser.newContext({ baseURL })
+    try {
+      const page = await context.newPage()
+      await page.goto('/login')
+      await page.getByLabel('Email address').fill(account.email)
+      await page.getByLabel('Password', { exact: true }).fill(account.password)
+      await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+      await expect(page).toHaveURL(role === 'student' ? /\/account$/ : /\/landlord$/)
+      await page.goto('/viewings?mode=calendar&month=2026-10')
+      const calendar = page.getByRole('region', { name: 'Viewing calendar' })
+      await expect(calendar).toBeVisible()
+      await expect(calendar).toHaveAttribute('aria-busy', 'false')
+      const data = await page.evaluate(async () => {
+        const valid = await fetch('/api/v1/viewings?month=2026-10')
+        const invalid = await fetch('/api/v1/viewings?month=2026-13')
+        return { status: valid.status, invalid: invalid.status, body: await valid.json() }
+      })
+      expect(data.status).toBe(200)
+      expect(data.invalid).toBe(422)
+      for (const row of data.body.data) expect(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit' }).format(new Date(row.starts_at))).toBe('2026-10')
+      await page.setViewportSize({ width: 390, height: 844 })
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.screenshot({ path: `../.local/calendar-live-${role}-${testInfo.project.name}.png`, fullPage: true })
+    } finally { await context.close() }
+  }
+})
 
 test('campus catalog covers every campus with three street-based listings, working images and selected-room journeys', async ({ page }, testInfo) => {
   test.skip(!process.env.E2E_CAMPUS_DEMO_MANIFEST, 'Run against the explicitly replaced demo catalog.')
@@ -43,6 +79,11 @@ test('campus catalog covers every campus with three street-based listings, worki
   const card = page.locator('.property-card').first()
   await expect(card.locator('img').first()).toBeVisible()
   await expect.poll(() => card.locator('img').first().evaluate(image => image.complete && image.naturalWidth > 500)).toBe(true)
+  for (const image of await page.locator('.property-card img').all()) {
+    await image.scrollIntoViewIfNeeded()
+    await expect.poll(() => image.evaluate(image => image.complete && image.naturalWidth > 500)).toBe(true)
+  }
+  await page.evaluate(() => scrollTo(0, 0))
   await page.screenshot({ path: `../.local/campus-catalog-${testInfo.project.name}-desktop.png`, fullPage: true })
   await card.locator('a:has(img)').first().click()
   await expect(page).toHaveURL(/\/listings\/\d+/)
