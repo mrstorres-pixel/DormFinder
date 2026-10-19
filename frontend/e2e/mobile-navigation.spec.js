@@ -22,7 +22,7 @@ test('mobile student navigation is direct, role-aware and leaves the conversatio
   await expect(nav.getByRole('link')).toHaveCount(4)
   await expect(nav.getByRole('link', { name: 'Messages' })).toHaveAttribute('aria-current', 'page')
   await expect(page.getByRole('button', { name: 'Menu', exact: true })).toBeHidden()
-  const bell = page.getByRole('link', { name: 'Notifications — 1 unread', exact: true })
+  const bell = page.getByRole('button', { name: 'Notifications — 1 unread', exact: true })
   await expect(bell).toBeVisible()
   await expect(page.locator('.account-menu .person-avatar')).toBeVisible()
   await page.locator('.account-menu > summary').click()

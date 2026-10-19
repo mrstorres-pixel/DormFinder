@@ -4,8 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import UnsavedChangesProvider from './UnsavedChangesProvider'
 import { createMemoryRouter, RouterProvider, Outlet, Link } from 'react-router-dom'
 import { beforeEach, describe, it, expect, vi } from 'vitest'
-import { ReportForm, LifecycleControls, Notifications, ReportQueue, AccountModeration } from './ModerationPages'
+import { ReportForm, LifecycleControls, ReportQueue, AccountModeration } from './ModerationPages'
 import { api, writeApi } from '../lib/api'
+import NotificationFeed from './NotificationFeed'
 import { Field } from './Feedback'
 
 vi.mock('../lib/api', async original => ({ ...await original(), api: { get: vi.fn() }, writeApi: vi.fn() }))
@@ -70,10 +71,10 @@ describe('moderation controls', () => {
   it('renders notification errors with retry and never invents message previews', async () => {
     const user = userEvent.setup()
     api.get.mockRejectedValueOnce(new Error('Synthetic request failure')).mockResolvedValue({ data: { data: [{ id: 9, title: 'You have a new private inquiry message.', path: '/inquiries/5', read_at: null, created_at: '2026-10-09T10:00:00Z' }] } })
-    show(<Notifications />)
+    show(<NotificationFeed userId={7} />)
     await user.click(await screen.findByRole('button', { name: 'Try again' }))
-    expect(await screen.findByRole('heading', { name: 'You have a new private inquiry message.' })).toBeVisible()
-    expect(screen.getByRole('link', { name: 'View update' })).toHaveAttribute('href', '/inquiries/5')
+    expect(await screen.findByRole('link', { name: 'You have a new private inquiry message.' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'You have a new private inquiry message.' })).toHaveAttribute('href', '/inquiries/5')
   })
 
   it('sends private resolution notes with the report revision', async () => {
