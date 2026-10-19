@@ -1,8 +1,8 @@
 # Implementation status
 
-## Current increment ready for release - listing maps and walking destinations, October 19
+## Current increment complete - listing maps and walking destinations, October 19
 
-The blank map was reproduced on a public Malolos listing: the no-campus map container was zero pixels tall, while the explicit-campus map measured 340 pixels. Listing and comparison maps now use a standalone canvas with a guaranteed height and resize handling. Walking destination is explicit, defaults only to the search campus, can be changed or cleared, and removes stale directions. Room selection and an unsent viewing request survive destination changes. Missing pins, directory/tile/routing failures have useful states; the map has external OpenStreetMap access and retry. Browse Show results is renamed Fit all places, with a zoom-to-all tooltip. Full frontend tests, lint/build and scoped browser verification pass; staged release and live acceptance follow.
+The blank map was reproduced on a public Malolos listing: the no-campus map container was zero pixels tall, while the explicit-campus map measured 340 pixels. Listing and comparison maps now use a standalone canvas with a guaranteed height and resize handling. Walking destination is explicit, defaults only to the search campus, can be changed or cleared, and removes stale directions. Room selection and an unsent viewing request survive destination changes. Missing pins, directory/tile/routing failures have useful states; the map has external OpenStreetMap access and retry. Browse Show results is renamed Fit all places, with a zoom-to-all tooltip. Frontend 91 tests, lint/build and all thirty scoped local Chromium/WebKit cases pass. Frontend source c8a702d is READY/promoted in Vercel dpl_3HiG96ZdxdMjnM2X8JbM5rZ867EP at the existing public domain. All thirty-two scoped live cases pass, including real map tiles and pedestrian routes to explicitly chosen CEU Malolos in both engines. Thirteen staged and six public entry assets match the tested build. Backend 21cf3fc and all provider/data settings remain unchanged.
 
 ## Current increment complete - notification windows, October 19
 

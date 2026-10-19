@@ -77,6 +77,7 @@ test('a direct listing has a visible map and an explicit destination even for a 
     const route = node.querySelector('.walking-route-path').getBoundingClientRect(), box = node.getBoundingClientRect()
     return route.width > 20 && route.height > 1 && route.left >= box.left && route.right <= box.right && route.top >= box.top && route.bottom <= box.bottom
   })).toBe(true)
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
   await page.screenshot({ path: `../.local/listing-map-destination-${testInfo.project.name}-mobile.png` })
   await page.getByRole('button', { name: 'Hide map', exact: true }).click()
   await expect(map).toHaveCount(0)

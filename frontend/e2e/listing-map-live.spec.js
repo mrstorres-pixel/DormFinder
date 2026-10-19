@@ -40,6 +40,7 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
     const route = node.querySelector('.walking-route-path').getBoundingClientRect(), box = node.getBoundingClientRect()
     return route.width > 1 && route.height > 1 && route.left >= box.left && route.right <= box.right && route.top >= box.top && route.bottom <= box.bottom
   })).toBe(true)
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
   await page.screenshot({ path: `../.local/listing-map-real-${testInfo.project.name}.png` })
   await page.goto('/listings/' + property.id + '?campus_id=' + campus.id)
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
