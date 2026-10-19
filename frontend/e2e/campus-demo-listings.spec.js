@@ -57,7 +57,7 @@ test('campus catalog covers every campus with three street-based listings, worki
     const entries = manifest.catalog.filter(row => row.campus_slug === campus.slug)
     expect(entries).toHaveLength(3)
     const response = await page.request.get('/api/v1/listings-map?campus_id=' + campus.id + '&radius_km=2&sort=recommended')
-    expect(response.ok()).toBe(true)
+    expect(response.status(), campus.name + ' nearby listings').toBe(200)
     const nearby = (await response.json()).data
     for (const entry of entries) {
       const listing = nearby.find(row => row.title === entry.title)

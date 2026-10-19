@@ -1,5 +1,13 @@
 # Deployment runbook — Codex execution
 
+## Released neutral browse and comparison — October 19, 2026
+
+The final bounded Render application-error scan from 04:44:18 through 04:56:57 UTC returned no errors and no additional pages. All 58 distinct scoped live Chromium/WebKit scenarios have passing evidence across the main, affected and isolated catalog-confirmation runs; final asset/API/WebGL/tile and secret-exclusion checks pass.
+
+Backend source 23e765cd263e087f7130e730fa4e793f32da1ebe is live in Render dep-dbapv8nbtjjs7384vq6g (finished 04:43:08 UTC), on the existing service/workspace/free plan with unchanged entrypoint and environment. No data migration or reseeding was performed.
+
+Final frontend source d1ca2e7 is READY at https://dormfinder-85dq2dtg4-mrstorres-pixels-projects.vercel.app, deployment dpl_FUYPMvR2DGXhx6TE1RenN2Yh9yG8, and promoted to https://dormfinder-pink.vercel.app. It replaces the first 23e765c frontend release dpl_6LMUW4dEWJEgK9WG3JbHCVJariG9 with a recommended-sort availability correction. Thirteen staged JS/CSS files match the tested production build before promotion. Entry index-Ckwu289V.js, ListingPages-BAwiLh_M.js, Discovery-DR8MkNwG.js, Discovery-MdLcBXg4.css and unchanged dormRoom-By6Gg0dT.js identify the final build. Existing project/team, frontend root, Node 24, Deployment Protection, build commands and all free services remain unchanged. Later release-note commits do not change the application bundles. Recovery must preserve all catalog, image and private-history data; the compatible pre-increment pair remains f6086bc / dep-dbap2pei0phs73a1pqp0 and dpl_Gkq7WxfCVfPVPAS3TFAPh6WFbddC. No live rollback rehearsal was performed.
+
 ## Browse and comparison fix — October 19, 2026
 
 This application-only release changes optional campus annotation and the existing frontend map/card/comparison flow. It requires no schema, catalog, image, credential, environment or provider-plan change. The prior compatible application pair is f6086bc / Render dep-dbap2pei0phs73a1pqp0 and Vercel dpl_Gkq7WxfCVfPVPAS3TFAPh6WFbddC. The user-confirmed workspace, existing Docker service, verified Vercel project/team, frontend root and Node/build workflow are retained. Keep all current data/photos when recovering application code; live backend rollback remains deliberately deferred.

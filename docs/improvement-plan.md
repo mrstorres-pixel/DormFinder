@@ -1,5 +1,9 @@
 # DormFinder improvement plan
 
+## Browse and comparison fixes released — October 19, 2026
+
+Completed at https://dormfinder-pink.vercel.app: Browse assumes no university, fits the matching listing pins and offers Show results until the student chooses a campus. Campus distances, campus-based sorting and walking controls require that choice. Room selectors align across complete titles in both browse cards and comparison columns. A small floating comparison tray retains the chosen rooms while scrolling and stays above phone navigation and viewing actions. The existing catalog, private history and all other planned work retain their prior status.
+
 ## Explicit campus selection and comparison access — October 19, 2026
 
 Approved fixes: ordinary Browse must not assume TIP Casal, room-option controls must line up across cards/comparison columns, and the comparison action must remain visible while scrolling. Both the backend and frontend default-campus fallback are removed. Unselected browse/detail/compare responses omit campus distances; distance-based sorting requires a chosen campus. The map fits matching property pins, preserves unselected-area viewports, and offers Show results until a campus is explicitly selected. Campus markers, radius and walking actions appear only for an explicit campus.
