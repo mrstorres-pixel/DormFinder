@@ -1,8 +1,8 @@
 # Implementation status
 
-## Current increment ready for release - notification windows, October 19
+## Current increment complete - notification windows, October 19
 
-The notification bell now opens a compact panel below the header, with five recent updates and an Expand notifications action that opens full paginated history in a modal over the current workspace. Read indicators, explicit mark-read actions, failure/retry states, keyboard dismissal, phone rotation containment and profile draft protection are verified. Legacy notification links open the expanded window over the role workspace. Guest Sign in text is centered horizontally and vertically. The existing recipient-scoped APIs, data and service settings remain unchanged. Frontend 91 tests pass; local Chromium/WebKit acceptance covers eighteen scoped scenarios. Final application release and live acceptance follow.
+The notification bell now opens a compact panel below the header, with five recent updates and an Expand notifications action that opens full paginated history in a modal over the current workspace. Read indicators, explicit mark-read actions, failure/retry states, keyboard dismissal, phone rotation containment and profile draft protection are verified. Legacy notification links open the expanded window over the role workspace. Guest Sign in text is centered horizontally and vertically. The existing recipient-scoped APIs, data and service settings remain unchanged. Frontend 91 tests pass; local Chromium/WebKit acceptance covers eighteen scoped scenarios. Live at https://dormfinder-pink.vercel.app from frontend source 237e69a, READY/promoted in Vercel dpl_FAGAMnLZx2K19gtwZSX8XmHtiejT. All twenty scoped live Chromium/WebKit scenarios pass, including the existing student, landlord and admin accounts. The staged assets and six public entry assets match the tested build. Backend 21cf3fc remains unchanged.
 
 ## Current increment complete — availability freshness, October 19
 

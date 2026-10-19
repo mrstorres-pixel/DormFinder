@@ -1,5 +1,10 @@
 # Deployment runbook — Codex execution
 
+## Released notification windows - October 19, 2026
+
+Frontend source 237e69ab9b850dcc80b9d7a870506c36ce46c767 is READY in Vercel dpl_FAGAMnLZx2K19gtwZSX8XmHtiejT at https://dormfinder-11kuvxr77-mrstorres-pixels-projects.vercel.app, promoted to https://dormfinder-pink.vercel.app. The existing team/project, frontend root, Node 24 and build settings were verified before staging a clean committed archive. Thirteen staged assets and six public entry assets match the tested build. Entry index-Cgz9EKZ2.js and stylesheet index-DxLtMM9N.css identify this release. All twenty scoped live browser cases pass, including read-only notification windows for student, landlord and admin accounts. No backend or data change was deployed. The previous frontend 52716e0 / dpl_h1DxpKaKsSwPHGQx4SUQzkupo7R4 remains the recovery reference; backend 21cf3fc / dep-dbas3gmq1p3s73csr9ng is unchanged. Deployment Protection, provider environment and free services are preserved.
+
+
 ## Released availability freshness — October 19, 2026
 
 The final backend rollout finished 07:08:44 UTC. The bounded Render application-error query from 07:01:44 through 07:09:58 UTC returned no errors and no further pages. All 54 live cases and both final actual-account cases pass; public readiness/assets/tiles/WebGL and secret-exclusion checks pass.
