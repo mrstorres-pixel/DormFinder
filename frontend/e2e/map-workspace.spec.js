@@ -8,7 +8,7 @@ test('desktop map stays beside scrolling results and keeps its preview inside th
   await page.setViewportSize({ width: 1440, height: 900 })
   const campuses = (await (await page.request.get('/api/v1/campuses')).json()).data
   const campus = campuses.find(item => item.slug === 'tip-manila-casal')
-  await page.goto('/listings?q=DEMO&campus_id=' + campus.id)
+  await page.goto('/listings?q=DEMO&radius_km=2&campus_id=' + campus.id)
   const cards = page.locator('.listing-grid .property-card')
   await expect(cards.nth(4)).toBeAttached()
   const column = page.getByRole('complementary', { name: 'Explore listings on the map' })

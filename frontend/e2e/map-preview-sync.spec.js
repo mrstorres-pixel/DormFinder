@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { pesos } from '../src/lib/money.js'
 test('map preview room changes update the listing card, price marker and comparison together', async ({ page }) => {
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=','base64')
   await page.route('https://tile.openstreetmap.org/**',route => route.fulfill({ contentType:'image/png',body:tile }))
@@ -7,6 +8,7 @@ test('map preview room changes update the listing card, price marker and compari
   const response = await listings
   expect(response.status()).toBe(200)
   await response.finished()
+  const properties = (await response.json()).data
   const card = page.locator('.listing-grid .property-card').first()
   await expect(card).toBeVisible()
   const select = card.getByRole('combobox')
@@ -24,7 +26,8 @@ test('map preview room changes update the listing card, price marker and compari
   const comparison = page.getByRole('region',{name:'Your comparison selection'}).getByRole('link')
   await expect(comparison).toHaveAttribute('href',new RegExp('items=\\d+:' + first + '(?:&|$)'))
   const price = (await card.locator('.room-price').innerText()).split(' ')[0]
-  const monthly = (await card.locator('.card-monthly-total').getAttribute('aria-label')).replace('Known monthly charges: ', '')
+  const selectedRoom = properties[0].room_options.find(room => String(room.id) === first)
+  const monthly = pesos(selectedRoom.monthly_fixed_total_centavos)
   await expect(preview).toContainText(monthly + ' known monthly')
   await expect(page.locator('.price-marker.is-selected')).toContainText(price)
   await comparison.click()
