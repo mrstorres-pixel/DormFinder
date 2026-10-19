@@ -29,6 +29,13 @@ test('student and owner calendars read actual private viewing data with Philippi
       })
       expect(data.status).toBe(200)
       expect(data.invalid).toBe(422)
+      if (role === 'landlord') {
+        const properties = await page.evaluate(async () => (await (await fetch('/api/v1/landlord/properties')).json()).data)
+        for (const property of properties.filter(item => item.status === 'approved')) {
+          expect(property.availability).toMatchObject({ status: 'current', rooms_needing_confirmation: 0, hidden_rooms: 0 })
+          expect(Number.isFinite(Date.parse(property.availability.hides_at))).toBe(true)
+        }
+      }
       for (const row of data.body.data) expect(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila', year: 'numeric', month: '2-digit' }).format(new Date(row.starts_at))).toBe('2026-10')
       await page.setViewportSize({ width: 390, height: 844 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -50,6 +57,12 @@ test('campus catalog covers every campus with three street-based listings, worki
   const mapped = await mapResponse.json()
   expect(mapped.meta.total).toBe(45)
   expect(mapped.data.every(row => !Object.hasOwn(row, 'distance_from_campus'))).toBe(true)
+  for (const room of mapped.data.flatMap(row => row.room_options)) {
+    expect(room.availability_expired).toBe(false)
+    expect(room.availability_age_days).toBeGreaterThanOrEqual(0)
+    expect(room.availability_age_days).toBeLessThan(30)
+    expect(Date.parse(room.availability_expires_at) - Date.parse(room.availability_confirmed_at)).toBe(30 * 86400000)
+  }
   const unselectedDetail = await (await page.request.get('/api/v1/listings/' + mapped.data[0].id)).json()
   expect(unselectedDetail.data).not.toHaveProperty('distance_from_campus')
   expect(new Set(mapped.data.map(row => row.latitude + ',' + row.longitude)).size).toBe(45)
@@ -83,6 +96,7 @@ test('campus catalog covers every campus with three street-based listings, worki
   await expect(unselectedMap.locator('.campus-marker')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Back to campus', exact: true })).toHaveCount(0)
   const unselectedCards = page.locator('.property-card')
+  await expect(unselectedCards.first().locator('.availability-freshness')).toContainText(/Confirmed today|Confirmed yesterday|Confirmed \d+ days ago|Last confirmed/)
   await unselectedCards.nth(0).getByRole('checkbox', { name: /Compare/ }).check()
   await unselectedCards.nth(1).getByRole('checkbox', { name: /Compare/ }).check()
   const tray = page.getByRole('region', { name: 'Your comparison selection' })
