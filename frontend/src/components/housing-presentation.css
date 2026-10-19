@@ -8,7 +8,7 @@
 .listing-card-heading, .listing-card-options { display: flex; flex-direction: column; gap: .7rem; padding: 1.1rem; }
 .listing-card-heading { padding-bottom: .7rem; }
 .listing-card-options { padding-top: 0; }
-.comparison-tray { position: fixed; z-index: 1025; left: 50%; transform: translateX(-50%); bottom: calc(var(--mobile-navigation-space, env(safe-area-inset-bottom, 0px)) + 16px); width: min(540px, calc(100% - 24px)); margin: 0; padding: .75rem 1rem; flex-wrap: nowrap; justify-content: space-between; gap: .75rem; background: #fff !important; border: 1px solid #c8d7f7; box-shadow: 0 8px 36px #14233e26; border-radius: 16px; }
+.comparison-tray { position: fixed; z-index: 1025; left: 50%; transform: translateX(-50%); bottom: calc(var(--mobile-navigation-space, env(safe-area-inset-bottom, 0px)) + 16px); width: max-content; max-width: calc(100% - 24px); margin: 0; padding: .6rem .75rem; flex-wrap: nowrap; justify-content: center; gap: .75rem; background: #fff !important; border: 1px solid #c8d7f7; box-shadow: 0 8px 36px #14233e26; border-radius: 16px; }
 .comparison-tray > span { font-size: .8rem; font-weight: 600; white-space: nowrap; }
 .comparison-tray .btn { white-space: nowrap; min-height: 44px; }
 .comparison-clear { display: grid; place-items: center; border: 0; border-radius: 50%; min-width: 44px; min-height: 44px; font-size: 1.6rem; color: var(--muted); background: var(--theme-soft); }
@@ -18,6 +18,11 @@ html:has(.comparison-tray) { scroll-padding-bottom: 190px; }
   .comparison-tray { gap: .5rem; padding: .6rem .75rem; bottom: calc(var(--mobile-navigation-space, env(safe-area-inset-bottom, 0px)) + 10px); }
   .comparison-tray .btn { font-size: .8rem; padding-inline: .75rem; }
   .listing-detail-page .comparison-tray { bottom: calc(var(--mobile-navigation-space, env(safe-area-inset-bottom, 0px)) + 96px); }
+}
+@media (max-width: 359px) {
+  .comparison-tray { gap: .375rem; padding: .5rem; }
+  .comparison-tray > span { font-size: .75rem; }
+  .comparison-tray .btn { font-size: .75rem; padding-inline: .5rem; }
 }
 .property-card .card-location { color: var(--muted); font-size: .78rem; }
 .property-card .card-room-picker .form-label { margin-bottom: .3rem; color: var(--muted); }
