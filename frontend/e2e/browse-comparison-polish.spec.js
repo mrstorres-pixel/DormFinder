@@ -32,7 +32,7 @@ test('unselected browsing has no campus reference and clearing an explicit campu
   await expect(map.locator('.leaflet-marker-icon').first()).toBeVisible()
   await expect(map.locator('.campus-marker')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Back to campus', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Show results', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Fit all places', exact: true })).toBeVisible()
   await page.locator('.property-card').first().getByRole('button', { name: 'Show on map' }).click()
   const preview = page.getByRole('article', { name: 'Selected map listing' })
   await expect(preview).toBeVisible()

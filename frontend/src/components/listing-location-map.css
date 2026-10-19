@@ -1,0 +1,13 @@
+.listing-location-heading {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
+.listing-location-heading h2 {margin:0}
+.listing-map-destination {margin-bottom:1rem;max-width:100%}
+.listing-map-destination .form-label {font-size:.85rem;font-weight:600}
+.listing-map-destination .form-text {font-size:.78rem}
+.listing-location-canvas {position:relative;min-width:0}
+.listing-location-canvas .listing-map {height:clamp(320px,40vw,420px);min-height:320px;width:100%;border-radius:14px;background:var(--theme-soft);z-index:0}
+.listing-map-loading {position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;font-size:.85rem;color:var(--muted)}
+.listing-map-reset {position:absolute;top:12px;right:12px;z-index:500;border-radius:24px;border:1px solid var(--theme-line);box-shadow:0 2px 8px #14233e22}
+.listing-location-note {font-size:.75rem;color:var(--muted);margin:.85rem 0 .5rem}
+.listing-location-links {display:flex;flex-wrap:wrap;gap:.4rem 1rem;font-size:.75rem;margin:0}
+.listing-map-error {font-size:.8rem;padding:.85rem 0}
+.listing-map-error p {margin:0 0 .5rem}

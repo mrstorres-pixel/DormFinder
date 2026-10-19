@@ -1,0 +1,50 @@
+import { test, expect } from '@playwright/test'
+
+test('a public listing renders real tiles and routes to the campus explicitly chosen in its map', async ({ page, baseURL }, testInfo) => {
+  test.skip(!baseURL.startsWith('https:'), 'Read-only acceptance against the existing public catalog and walking provider.')
+  test.setTimeout(120_000)
+  const directory = await page.request.get('/api/v1/campuses')
+  expect(directory.ok()).toBe(true)
+  const campus = (await directory.json()).data.find(item => item.slug === 'ceu-malolos')
+  expect(campus).toBeTruthy()
+  const listings = await page.request.get('/api/v1/listings', { params: { campus_id: campus.id, radius_km: 2, sort: 'distance' } })
+  expect(listings.ok()).toBe(true)
+  const property = (await listings.json()).data[0]
+  expect(property).toBeTruthy()
+  const tiles = { ok: 0, failed: 0 }, errors = []
+  page.on('pageerror', error => errors.push(error.message))
+  page.on('response', response => { if (response.url().startsWith('https://tile.openstreetmap.org/')) tiles[response.ok() ? 'ok' : 'failed']++ })
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.goto('/listings/' + property.id)
+  await page.getByRole('button', { name: 'Show map', exact: true }).click()
+  const map = page.getByRole('region', { name: 'Listing map', exact: true })
+  await expect(map.locator('.listing-marker')).toHaveCount(1)
+  expect((await map.boundingBox()).height).toBeGreaterThanOrEqual(320)
+  await expect(page.getByRole('combobox', { name: 'Walking destination' })).toHaveValue('')
+  await expect(map.locator('.campus-marker')).toHaveCount(0)
+  await expect.poll(() => tiles.ok).toBeGreaterThan(0)
+  await page.getByRole('combobox', { name: 'Walking destination' }).selectOption(String(campus.id))
+  const reply = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/walking-route'))
+  await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()
+  const response = await reply
+  expect(response.status()).toBe(200)
+  expect(new URL(response.url()).searchParams.get('campus_id')).toBe(String(campus.id))
+  const route = (await response.json()).data
+  expect(route.provider).toBe('FOSSGIS / OSRM (foot)')
+  expect(route.distance_meters).toBeGreaterThan(0)
+  expect(route.duration_seconds).toBeGreaterThan(0)
+  await expect(page.getByText(new RegExp('About ' + Math.ceil(route.duration_seconds / 60) + ' min walk'))).toBeVisible()
+  await expect(map.locator('.walking-route-path')).toHaveCount(1)
+  await map.scrollIntoViewIfNeeded()
+  await expect.poll(() => map.evaluate(node => {
+    const route = node.querySelector('.walking-route-path').getBoundingClientRect(), box = node.getBoundingClientRect()
+    return route.width > 1 && route.height > 1 && route.left >= box.left && route.right <= box.right && route.top >= box.top && route.bottom <= box.bottom
+  })).toBe(true)
+  await page.screenshot({ path: `../.local/listing-map-real-${testInfo.project.name}.png` })
+  await page.goto('/listings/' + property.id + '?campus_id=' + campus.id)
+  await page.getByRole('button', { name: 'Show map', exact: true }).click()
+  await expect(page.getByRole('combobox', { name: 'Walking destination' })).toHaveValue(String(campus.id))
+  await expect(map.locator('.campus-marker')).toHaveAttribute('title', new RegExp(campus.name))
+  expect(tiles.failed).toBe(0)
+  expect(errors).toEqual([])
+})

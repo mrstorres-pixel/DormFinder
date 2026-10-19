@@ -1,5 +1,9 @@
 # Implementation status
 
+## Current increment ready for release - listing maps and walking destinations, October 19
+
+The blank map was reproduced on a public Malolos listing: the no-campus map container was zero pixels tall, while the explicit-campus map measured 340 pixels. Listing and comparison maps now use a standalone canvas with a guaranteed height and resize handling. Walking destination is explicit, defaults only to the search campus, can be changed or cleared, and removes stale directions. Room selection and an unsent viewing request survive destination changes. Missing pins, directory/tile/routing failures have useful states; the map has external OpenStreetMap access and retry. Browse Show results is renamed Fit all places, with a zoom-to-all tooltip. Full frontend tests, lint/build and scoped browser verification pass; staged release and live acceptance follow.
+
 ## Current increment complete - notification windows, October 19
 
 The notification bell now opens a compact panel below the header, with five recent updates and an Expand notifications action that opens full paginated history in a modal over the current workspace. Read indicators, explicit mark-read actions, failure/retry states, keyboard dismissal, phone rotation containment and profile draft protection are verified. Legacy notification links open the expanded window over the role workspace. Guest Sign in text is centered horizontally and vertically. The existing recipient-scoped APIs, data and service settings remain unchanged. Frontend 91 tests pass; local Chromium/WebKit acceptance covers eighteen scoped scenarios. Live at https://dormfinder-pink.vercel.app from frontend source 237e69a, READY/promoted in Vercel dpl_FAGAMnLZx2K19gtwZSX8XmHtiejT. All twenty scoped live Chromium/WebKit scenarios pass, including the existing student, landlord and admin accounts. The staged assets and six public entry assets match the tested build. Backend 21cf3fc remains unchanged.

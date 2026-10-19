@@ -129,3 +129,6 @@ Phase 4 API additions:
 - GET /admin/audit?property_id=...&user_id=...: administrator-only immutable history.
 
 New query-builder collections use the paginator's data/current_page/last_page/total envelope; existing resource collections retain data/links/meta. Both are bounded and ordered by ID. No Phase 4 schema changes require a dependency, paid resource or credential rotation.
+
+
+Listing and comparison location maps have their own intrinsic canvas sizing, independent of the browse flex workspace. Their Walking destination selector starts from the explicit search campus only; direct links do not infer one from proximity, profile preferences or demo metadata. Changing it is local map state so the room and private viewing draft remain intact. Every pedestrian request carries the selected campus_id; destination changes cancel stale requests and remove their geometry/estimate. Browse Fit all places resets the viewport without modifying search filters or fetching results.

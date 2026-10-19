@@ -141,7 +141,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     <div className="map-canvas">
     <div className="map-tools">
       {onAreaSearch && moved && engine && <button className="btn btn-primary btn-sm" onClick={searchArea}>Search this area</button>}
-      {engine && (campusId != null ? <button className="btn btn-light btn-sm" onClick={() => engine.map.setView([latitude, longitude], 15)}>Back to campus</button> : properties.some(p => p.latitude != null && p.longitude != null) && <button className="btn btn-light btn-sm" onClick={() => engine.map.fitBounds(properties.filter(p => p.latitude != null && p.longitude != null).map(p => [p.latitude, p.longitude]), { padding: [40, 40], maxZoom: 15 })}>Show results</button>)}
+      {engine && (campusId != null ? <button className="btn btn-light btn-sm" onClick={() => engine.map.setView([latitude, longitude], 15)}>Back to campus</button> : properties.some(p => p.latitude != null && p.longitude != null) && <button className="btn btn-light btn-sm" title="Zoom to all matching places" onClick={() => engine.map.fitBounds(properties.filter(p => p.latitude != null && p.longitude != null).map(p => [p.latitude, p.longitude]), { padding: [40, 40], maxZoom: 15 })}>Fit all places</button>)}
     </div>
     {failed && <p role="status" className="map-failure">Map imagery is unavailable. Listing addresses and search remain usable.</p>}
     <div className="campus-map" ref={element} role="region" aria-label="Listing map" />
