@@ -1,5 +1,9 @@
 # Deployment runbook — Codex execution
 
+## Compact comparison tray — October 19, 2026
+
+Frontend source ad79182 is READY/promoted in Vercel dpl_9kqTmCb3UE5X697PJcGZ78sbQuJU at the existing public domain. This CSS-only update fits the tray to its controls, replacing the 540 px desktop width with approximately 331 px and 12 px gaps. Thirteen staged assets match the tested build; entry index-BIDKhWNc.js and Discovery-BCaC-X4l.css identify this release. Backend 23e765c, data, dependencies and provider settings are unchanged.
+
 ## Released neutral browse and comparison — October 19, 2026
 
 The final bounded Render application-error scan from 04:44:18 through 04:56:57 UTC returned no errors and no additional pages. All 58 distinct scoped live Chromium/WebKit scenarios have passing evidence across the main, affected and isolated catalog-confirmation runs; final asset/API/WebGL/tile and secret-exclusion checks pass.

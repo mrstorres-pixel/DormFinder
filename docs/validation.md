@@ -1,5 +1,9 @@
 # Validation evidence — October 9, 2026
 
+## Compact comparison tray — October 19, 2026
+
+Lint and production build pass for the CSS refinement. All four existing browse/comparison Chromium/WebKit checks pass locally. Final measurements in both engines cover 1440, 390 and 320 px viewport widths: tray widths are approximately 331, 319 and 286 px, with 12, 8 and 6 px gaps respectively. Controls fit within the tray, no horizontal overflow occurs, and 44 px button heights remain. Local screenshots were inspected; public release measurements also pass in both engines. Thirteen protected staged JS/CSS assets are byte-identical to the tested build before promotion. No backend or data checks were repeated for this visual-only change.
+
 ## Final acceptance — neutral browse and floating comparison, October 19
 
 Backend acceptance passes 128 tests / 1553 assertions and Pint; final frontend passes 86 tests / 25 files, lint and the production build. All 52 distinct scoped local Chromium/WebKit scenarios have passing evidence across the main and affected runs; the final eight affected local cases also pass after the recommended-sort correction. All 58 distinct scoped live cases have passing evidence across the main run (54 passed), final 12-case affected run (11 passed), and isolated Chromium catalog confirmation, with no unresolved scoped failure. The final affected checks cover neutral campus behavior, recommended/distance option availability, aligned selectors, floating selection/room URLs and mobile spacing, map-preview/card/marker/comparison synchronization, campus-local cluster exploration, and both actual catalog/calendar journeys. The affected run's single unsuccessful catalog HTTP response did not reproduce in the isolated confirmation; the assertion now identifies the campus and HTTP status. Bounded Render application-error queries found no matching errors.
