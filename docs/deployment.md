@@ -1,5 +1,13 @@
 # Deployment runbook — Codex execution
 
+## Released availability freshness — October 19, 2026
+
+The final backend rollout finished 07:08:44 UTC. The bounded Render application-error query from 07:01:44 through 07:09:58 UTC returned no errors and no further pages. All 54 live cases and both final actual-account cases pass; public readiness/assets/tiles/WebGL and secret-exclusion checks pass.
+
+Frontend source 52716e0df74cac55fb4d714ac02ab6ed81a4dfa2 is READY at https://dormfinder-8qeewry9b-mrstorres-pixels-projects.vercel.app, deployment dpl_h1DxpKaKsSwPHGQx4SUQzkupo7R4, promoted to the existing public domain. Thirteen staged assets match the tested build byte for byte. Entry index-BzRlnflY.js, stylesheet index-CLBzGTqk.css and unchanged dormRoom-By6Gg0dT.js identify the frontend. Backend source 21cf3fc35a873bd6a5257c753db4021cf7e453c9 is live in Render dep-dbas3gmq1p3s73csr9ng, superseding the initial 52716e0 / dep-dbas07mq1p3s73cseih0 release with matching user-before-property lock order and transaction retries for reminder generation.
+
+The verified existing Vercel project/team/frontend root/Node/build workflow and Render workspace/service/free plan/Docker entrypoint/environment/auto-deploy setting are unchanged. No migration, reseeding, mass confirmation or deletion was performed. Reminders are generated on authenticated owner property/notification reads and surfaced by the existing bell polling; overdue owners catch up to the current stage without a burst of past-stage notices. There is no email/push delivery or new scheduled service. Public room/listing expiry is applied at query time, independently of owner activity and sleeping instances. Restoring availability preserves moderation approval; suspended/archived/draft states cannot use reconfirmation to bypass review. Recovery references remain backend 23e765c / dep-dbapv8nbtjjs7384vq6g and frontend ad79182 / dpl_9kqTmCb3UE5X697PJcGZ78sbQuJU. Preserve all catalog, photo and private-history data when recovering application code. No live rollback rehearsal was performed.
+
 ## Compact comparison tray — October 19, 2026
 
 Frontend source ad79182 is READY/promoted in Vercel dpl_9kqTmCb3UE5X697PJcGZ78sbQuJU at the existing public domain. This CSS-only update fits the tray to its controls, replacing the 540 px desktop width with approximately 331 px and 12 px gaps. Thirteen staged assets match the tested build; entry index-BIDKhWNc.js and Discovery-BCaC-X4l.css identify this release. Backend 23e765c, data, dependencies and provider settings are unchanged.

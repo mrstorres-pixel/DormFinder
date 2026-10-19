@@ -1,5 +1,9 @@
 # DormFinder improvement plan
 
+## Availability freshness — released October 19, 2026
+
+Completed on the existing services: prominent room-level confirmation dates, student availability questions, private owner reminders at 14 days and a 27-day warning, plus automatic 30-day expiry. Expired room options are hidden; a listing disappears when it has no current options. Approved inventory can be restored by explicitly confirming vacancies. Private saved notes, messages and viewing histories remain intact. All 54 scoped live browser cases pass, with final owner/calendar acceptance after backend concurrency hardening. Other roadmap items keep their prior approval status.
+
 ## Availability freshness — October 19, 2026
 
 Approved next priority: make the last actual vacancy confirmation visible, ask owners to keep it current, and hide inactive listings after 30 days. Implementation uses room-specific confirmation timestamps: in-app reminders start at day 14, warn again at day 27, and explain hidden availability at day 30. Expired options stop supplying public prices or appearing in discovery; listings disappear once no current options remain. Title edits, login and routine listing edits do not extend the deadline. Existing approved listings return when the owner explicitly confirms actual vacancies; other moderation states retain their review requirements.
