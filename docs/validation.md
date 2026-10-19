@@ -1,5 +1,13 @@
 # Validation evidence — October 9, 2026
 
+## Browse campus context, aligned rooms and floating comparison — October 19
+
+Local checks pass: 128 backend tests / 1553 assertions, Pint, 85 frontend tests, lint and production build. The API regression covers unselected listing/map/detail/comparison responses without distance metadata, explicitly selected comparison distances, rejection of distance/recommended sorting without a campus, and browsing with no active campuses. Map label placement no longer reserves a nonexistent campus icon.
+
+All 52 distinct scoped local Chromium/WebKit scenarios have passing evidence across the main run and six-case affected rerun. The new checks exercise neutral map initialization, selection/clearing of DLSU, unselected map previews without walking controls, full-title card/compare selector alignment, floating action persistence during scroll, selected-room comparison URLs, clear selection, and spacing above mobile navigation and viewing actions. Existing card, table, gallery, map/room/price synchronization, walking, saved-place, filter, browse-continuity, campus/budget and deferred-bundle checks are retained. Screenshots are ignored under .local/browse-tray-*, comparison-alignment-* and housing-*.
+
+Initial new-test corrections use the actual Mobile navigation accessible label, inspect the native option disabled property, and close the intentionally restored mobile map before selecting a result card. Older map tests now explicitly choose their campus; clearing secondary filters correctly retains that independently selected campus. No product behavior was weakened to satisfy those fixtures. Production release/live acceptance is recorded in the following update when complete.
+
 ## Final live acceptance — campus catalog and calendar, October 19
 
 The bounded Render application-error query from 03:43:14 through 03:50:16 UTC returned no errors and no further log pages.

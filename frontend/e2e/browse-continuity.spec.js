@@ -4,7 +4,9 @@ test('listing round trips restore unsubmitted map movement, room choice and disp
   test.setTimeout(120_000)
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
-  await page.goto('/listings?q=DEMO')
+  const campuses = (await (await page.request.get('/api/v1/campuses')).json()).data
+  const campus = campuses.find(item => item.slug === 'tip-manila-casal')
+  await page.goto('/listings?q=DEMO&campus_id=' + campus.id)
   const card = page.locator('.listing-grid .property-card').first()
   await expect(card).toBeVisible({ timeout: 90_000 })
   const option = card.getByRole('combobox')

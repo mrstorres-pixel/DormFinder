@@ -1,5 +1,9 @@
 # Deployment runbook — Codex execution
 
+## Browse and comparison fix — October 19, 2026
+
+This application-only release changes optional campus annotation and the existing frontend map/card/comparison flow. It requires no schema, catalog, image, credential, environment or provider-plan change. The prior compatible application pair is f6086bc / Render dep-dbap2pei0phs73a1pqp0 and Vercel dpl_Gkq7WxfCVfPVPAS3TFAPh6WFbddC. The user-confirmed workspace, existing Docker service, verified Vercel project/team, frontend root and Node/build workflow are retained. Keep all current data/photos when recovering application code; live backend rollback remains deliberately deferred.
+
 ## Released application artifacts — October 19 campus catalog/calendar
 
 Application source f6086bc40babafb1069cc403601f6ed82bd6301d is live on Render in dep-dbap2pei0phs73a1pqp0 (finished 03:42:17 UTC). It remains service srv-db44ecrbc2fs73aj14q0 in the user-confirmed workspace tea-d7ip6vu7r5hc73ccjjng, Singapore/free, Docker entrypoint unchanged and auto-deploy off. No migration or environment change was run.

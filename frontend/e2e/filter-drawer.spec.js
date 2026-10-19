@@ -7,7 +7,9 @@ test('filter drawer preserves layout and drafts, then applies refinements withou
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/listings?q=DEMO')
+  const campuses = (await (await page.request.get('/api/v1/campuses')).json()).data
+  const campus = campuses.find(item => item.slug === 'tip-manila-casal')
+  await page.goto('/listings?q=DEMO&campus_id=' + campus.id)
   const card = page.locator('.listing-grid .property-card').first()
   await expect(card).toBeVisible({ timeout: 30_000 })
   const map = page.getByRole('region', { name: 'Listing map', exact: true })
@@ -67,7 +69,7 @@ test('filter drawer preserves layout and drafts, then applies refinements withou
   await trigger.click()
   await expect(drawer.getByLabel('Maximum monthly rent (PHP)')).toHaveValue('')
   await drawer.getByRole('button', { name: 'Apply filters' }).click()
-  await expect(page).toHaveURL(/\/listings\?sort=newest$/)
+  await expect(page).toHaveURL(new RegExp('/listings\\?sort=newest&campus_id=' + campus.id + '$'))
   await expect(trigger).toHaveText('Filters')
 
   await page.setViewportSize({ width: 360, height: 800 })

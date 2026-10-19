@@ -14,12 +14,13 @@ import FavoriteButton from './SavePlaceButton'
 export { FavoriteButton }
 import 'leaflet/dist/leaflet.css'
 import './housing-presentation.css'
+import CampusMap from './CampusMap'
 
 export function ComparisonTray() {
   const [params] = useSearchParams()
   const { selections, clear } = useComparison()
   if (!selections.length) return null
-  return <div className="comparison-tray" role="region" aria-label="Your comparison selection"><span>{selections.length} of 3 selected</span><Link className="btn btn-primary" to={'/compare?items=' + comparisonItems(selections) + (params.get('campus_id') ? '&campus_id=' + encodeURIComponent(params.get('campus_id')) : '')}>Compare {selections.length} {selections.length === 1 ? 'listing' : 'listings'}</Link><button className="btn btn-link" onClick={clear}>Clear selection</button></div>
+  return <div className="comparison-tray" role="region" aria-label="Your comparison selection"><span aria-live="polite" aria-atomic="true">{selections.length} of 3 selected</span><Link className="btn btn-primary" to={'/compare?items=' + comparisonItems(selections) + (params.get('campus_id') ? '&campus_id=' + encodeURIComponent(params.get('campus_id')) : '')}>Compare {selections.length} {selections.length === 1 ? 'listing' : 'listings'}</Link><button className="comparison-clear" aria-label="Clear selection" title="Clear selection" onClick={clear}><span aria-hidden="true">×</span></button></div>
 }
 
 export { default as SearchFilters } from './SearchFilters'
@@ -34,15 +35,15 @@ export function ListingCard({ property, campus, chosenOptionId, selectedId, onSe
   const option = property.room_options.find(item => item.id === Number(chosenOptionId || choice || selected?.room_option_id)) || preferredOption(property.room_options)
   const checked = !!selected
   const destination = '/listings/' + property.id + '?option=' + (option?.id || '') + (campus ? '&campus_id=' + campus.id : '')
-  const distance = property.distance_from_campus?.meters
+  const distance = campus ? property.distance_from_campus?.meters : null
   const shortDistance = Number.isFinite(distance) ? (distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(2)} km`) + ' · straight line to campus' : null
   const match = detailedMatches(property, params, option).find(reason => reason.startsWith('Base rent') || reason.startsWith('Required amenities'))
   return <article id={'listing-card-' + property.id} className={'property-card h-100 ' + (selectedId === property.id ? 'is-selected' : '')}>
     <Link className="property-cover-link" aria-label={'Open listing: ' + property.title} to={destination} state={{ browse: '/listings?' + params.toString() }}><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}{property.is_demo && <span className="status-badge">Synthetic demo</span>}</div></Link>
     <div className="listing-card-body">
-      <h2><Link to={destination} state={{ browse: '/listings?' + params.toString() }}>{property.title}</Link></h2>
-      <p className="card-location" title={distanceLabel(property.distance_from_campus, campus)}>{property.city}{shortDistance && <> · {shortDistance}</>}</p>
-      {option && <>
+      <div className="listing-card-heading"><h2><Link to={destination} state={{ browse: '/listings?' + params.toString() }}>{property.title}</Link></h2>
+      <p className="card-location" title={campus ? distanceLabel(property.distance_from_campus, campus) : undefined}>{property.city}{shortDistance && <> · {shortDistance}</>}</p>
+      </div><div className="listing-card-options">{option && <>
         {property.room_options.length > 1 ? <div className="card-room-picker"><label className="form-label" htmlFor={'option-' + property.id}>Room option<span className="visually-hidden"> for {property.title}</span></label><select className="form-select" id={'option-' + property.id} value={option.id} onChange={event => { setChoice(event.target.value); onOptionChange?.(property.id, Number(event.target.value)); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div> : <p className="small text-secondary">{option.name}</p>}
         <div className="card-price-line"><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p></div>
         {option.monthly_fixed_total_centavos !== option.monthly_rent_centavos && <p className="card-monthly-total" aria-label={'Known monthly charges: ' + pesos(option.monthly_fixed_total_centavos)}>{pesos(option.monthly_fixed_total_centavos)} incl. fixed monthly fees</p>}
@@ -50,14 +51,14 @@ export function ListingCard({ property, campus, chosenOptionId, selectedId, onSe
       </>}
       {match && <p className="card-match">{match}</p>}
       <div className="card-actions">{(!user || user.role === 'student') && option && <label><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare<span className="visually-hidden"> {property.title}</span></span></label>}{onSelect && <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button>}<FavoriteButton compact propertyId={property.id} optionId={option?.id} title={property.title} /></div>
-    </div>
+    </div></div>
   </article>
 }
 
 export function ListingMap({ properties, campus }) {
   const [shown, setShown] = useState(false)
   const pinned = properties.filter(property => property.latitude != null && property.longitude != null)
-  if (!campus) return <p className="small text-secondary">Campus reference is unavailable. Listing addresses remain visible.</p>
+  if (!campus) return <section className="panel mb-4"><h2>Location</h2><button className="btn btn-outline-primary mb-3" onClick={() => setShown(value => !value)}>{shown ? 'Hide map' : 'Show map'}</button>{shown && <CampusMap properties={pinned} />}</section>
   return <section className="panel mb-4"><h2>Location and campus</h2><p className="small">Campus pins are approximate references; demo locations are fictional. Search distances are straight lines. {properties.length === 1 ? 'Open the map to estimate a walking route for this listing.' : 'Open a listing to estimate its walking route.'}</p><p className="small">{campus.name} · {campus.address} · <a href={campus.source_url} target="_blank" rel="noreferrer">Campus reference source</a></p>
     <button className="btn btn-outline-primary mb-3" onClick={() => setShown(value => !value)}>{shown ? 'Hide map' : 'Show map'}</button>{shown && <LoadedMap properties={pinned} campus={campus} />}
     {properties.length !== pinned.length && <p className="small">{properties.length - pinned.length} listing(s) have no location pin and are not shown on the map.</p>}

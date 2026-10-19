@@ -1,5 +1,9 @@
 # Implementation status
 
+## Current increment — neutral browse map and accessible comparison, October 19
+
+Implemented the requested explicit-campus behavior across API and UI, aligned room selectors in browse cards and comparison columns, and a floating comparison action visible after selection. Existing catalog and private data are untouched. Backend 128 tests / 1553 assertions, frontend 85 tests, Pint, lint/build and all 52 scoped local browser cases have passing evidence across recorded runs. Application staging and live acceptance are next, using the existing free services and unchanged settings.
+
 ## Current increment complete — October 19
 
 Live at https://dormfinder-pink.vercel.app: the 45-property campus catalog and the List/Calendar viewing workspace. Application source f6086bc is deployed on both existing free services; Vercel dpl_Gkq7WxfCVfPVPAS3TFAPh6WFbddC and Render dep-dbap2pei0phs73a1pqp0 are ready/live. The original 19 samples are archived and private histories remain intact. Passing checks: 127 backend tests / 1535 assertions, 84 frontend tests, Pint, lint/build, all 34 scoped local browser cases across recorded runs and all 42 scoped live cases across the main run and six-case affected rerun. No scoped implementation or verification failure remains. The historical CI exception and deliberately deferred live backend rollback rehearsal remain outside this increment.

@@ -1,5 +1,11 @@
 # DormFinder improvement plan
 
+## Explicit campus selection and comparison access — October 19, 2026
+
+Approved fixes: ordinary Browse must not assume TIP Casal, room-option controls must line up across cards/comparison columns, and the comparison action must remain visible while scrolling. Both the backend and frontend default-campus fallback are removed. Unselected browse/detail/compare responses omit campus distances; distance-based sorting requires a chosen campus. The map fits matching property pins, preserves unselected-area viewports, and offers Show results until a campus is explicitly selected. Campus markers, radius and walking actions appear only for an explicit campus.
+
+Full property titles remain visible. Browse cards share title/location layout rows; comparison room selectors occupy their own aligned table row. A compact floating comparison tray appears after selection, preserves exact room IDs and optional campus, clears explicitly, and stays above mobile navigation and listing viewing actions. Existing catalog, messages, viewings, saved notes and other approved work remain intact. No schema, data, image, dependency or provider-setting change is part of this increment.
+
 ## Campus catalog and viewing calendar — released October 19
 
 Completed on the existing production services: 45 fictional listings across all 15 campuses, nine original photo-style AI image variants, street-based map pins, and the participant-only viewing calendar. The calendar is available through Viewings → Calendar; the existing list remains available. Every new listing has a working signed image and two separately priced room options. Original sample listings are archived, with private history preserved. Local acceptance and all 42 distinct scoped live Chromium/WebKit cases have passing evidence across the main run and affected rerun. Broader proposed work retains its previous approval status.

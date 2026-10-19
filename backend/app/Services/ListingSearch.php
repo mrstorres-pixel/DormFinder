@@ -39,8 +39,8 @@ class ListingSearch
             throw ValidationException::withMessages(['price_basis' => 'Choose per person or per room before sorting prices.']);
         }
 
-        if (isset($data['radius_km']) && empty($data['campus_id'])) {
-            throw ValidationException::withMessages(['campus_id' => 'Select a campus before filtering by distance.']);
+        if ((isset($data['radius_km']) || in_array($data['sort'] ?? '', ['distance', 'recommended'], true)) && empty($data['campus_id'])) {
+            throw ValidationException::withMessages(['campus_id' => 'Select a campus before filtering or sorting by campus distance.']);
         }
 
         return $data;

@@ -6,7 +6,9 @@ test('desktop map stays beside scrolling results and keeps its preview inside th
   const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/listings?q=DEMO')
+  const campuses = (await (await page.request.get('/api/v1/campuses')).json()).data
+  const campus = campuses.find(item => item.slug === 'tip-manila-casal')
+  await page.goto('/listings?q=DEMO&campus_id=' + campus.id)
   const cards = page.locator('.listing-grid .property-card')
   await expect(cards.nth(4)).toBeAttached()
   const column = page.getByRole('complementary', { name: 'Explore listings on the map' })

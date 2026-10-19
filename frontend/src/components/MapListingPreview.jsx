@@ -7,7 +7,7 @@ import './map-preview.css'
 export default function MapListingPreview({ property, option, campus, browse, walking, onClose, onOptionChange, onCompare, compareDisabled }) {
   const [expanded, setExpanded] = useState(false)
   const details = useId()
-  const destination = '/listings/' + property.id + '?campus_id=' + campus.id + '&option=' + (option?.id || '')
+  const destination = '/listings/' + property.id + '?' + (campus ? 'campus_id=' + campus.id + '&' : '') + 'option=' + (option?.id || '')
   return <article className={'map-preview panel compact-map-preview' + (expanded ? ' is-expanded' : '')} aria-label="Selected map listing" onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); onClose() } }}>
     <button className="map-preview-close" aria-label="Close listing preview" onClick={onClose}>×</button>
     <div className="map-preview-summary">

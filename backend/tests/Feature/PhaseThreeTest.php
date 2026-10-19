@@ -93,7 +93,8 @@ class PhaseThreeTest extends TestCase
         $near = $this->listing();
         $far = $this->listing(['latitude' => 14.6053363]);
         $unknown = $this->listing(['latitude' => null, 'longitude' => null]);
-        $result = $this->getJson('/api/v1/listings?sort=distance')->assertOk();
+        $reference = Campus::query()->firstOrFail();
+        $result = $this->getJson('/api/v1/listings?sort=distance&campus_id='.$reference->id)->assertOk();
         $this->assertSame([$near->id, $far->id, $unknown->id], array_column($result->json('data'), 'id'));
         $this->assertSame(0, $result->json('data.0.distance_from_campus.meters'));
         $this->assertEqualsWithDelta(1112, $result->json('data.1.distance_from_campus.meters'), 2);
@@ -153,9 +154,26 @@ class PhaseThreeTest extends TestCase
         $this->become(User::factory()->create());
         $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $alternative->id]]])
             ->assertOk()->assertJsonPath('data.0.room_options.0.id', $alternative->id)->assertJsonCount(2, 'data.0.alternative_room_options')
-            ->assertJsonPath('data.0.distance_from_campus.meters', 0)->assertJsonMissingPath('data.0.landlord_id');
+            ->assertJsonMissingPath('data.0.distance_from_campus')->assertJsonMissingPath('data.0.landlord_id');
         $property->forceFill(['status' => 'suspended'])->save();
         $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $alternative->id]]])->assertUnprocessable();
+    }
+
+    public function test_unselected_browse_detail_map_and_comparison_do_not_assume_a_campus(): void
+    {
+        $property = $this->listing();
+        $room = $property->roomOptions()->firstOrFail();
+        $this->getJson('/api/v1/listings')->assertOk()->assertJsonMissingPath('data.0.distance_from_campus');
+        $this->getJson('/api/v1/listings-map')->assertOk()->assertJsonMissingPath('data.0.distance_from_campus');
+        $this->getJson('/api/v1/listings/'.$property->id)->assertOk()->assertJsonMissingPath('data.distance_from_campus');
+        $selections = [['property_id' => $property->id, 'room_option_id' => $room->id]];
+        $this->postJson('/api/v1/compare', ['selections' => $selections])->assertOk()->assertJsonMissingPath('data.0.distance_from_campus');
+        $campus = Campus::query()->firstOrFail();
+        $this->postJson('/api/v1/compare', ['selections' => $selections, 'campus_id' => $campus->id])->assertOk()->assertJsonPath('data.0.distance_from_campus.campus_id', $campus->id);
+        $this->getJson('/api/v1/listings?sort=distance')->assertUnprocessable()->assertJsonValidationErrors('campus_id');
+        $this->getJson('/api/v1/listings?sort=recommended')->assertUnprocessable()->assertJsonValidationErrors('campus_id');
+        Campus::query()->update(['active' => false]);
+        $this->getJson('/api/v1/listings')->assertOk()->assertJsonPath('data.0.id', $property->id);
     }
 
     public function test_readiness_requires_the_phase_three_migration(): void

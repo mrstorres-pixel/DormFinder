@@ -1,6 +1,6 @@
 // Move labels, never their geographic anchors. Leader lines show displaced labels' locations.
 export function mapLabelLayout(labels, campus) {
-  const occupied = [{ x: campus.x, y: campus.y + 12, width: 76, height: 100 }]
+  const occupied = campus ? [{ x: campus.x, y: campus.y + 12, width: 76, height: 100 }] : []
   return labels.map(label => {
     const choices = [[0, 0]]
     for (let distance = 80; distance <= 640; distance += 80) choices.push([0, -distance], [0, distance], [-distance, 0], [distance, 0])

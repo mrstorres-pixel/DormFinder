@@ -15,7 +15,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   const [failed, setFailed] = useState(false)
   const [moved, setMoved] = useState(false)
   const pins = JSON.stringify(properties.filter(p => p.latitude != null && p.longitude != null))
-  const campusId = campus?.id
+  const campusId = campus?.id ?? null
   const latitude = campus?.latitude
   const longitude = campus?.longitude
   const campusName = campus?.name
@@ -25,26 +25,30 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   const walking = useWalkingRoute(selectedProperty, campus)
   const initialBounds = useRef({ bounds, viewport, campusId:campus?.id })
   const previousSelection = useRef(viewport?.campusId === campusId ? selectedId : null)
+  const fitResults = useRef(false)
   useEffect(() => { callbacks.current = { onSelect, onAreaSearch, onViewportChange } }, [onSelect, onAreaSearch, onViewportChange])
   useEffect(() => {
-    if (latitude == null || longitude == null) return
     let cancelled = false
     let map
     let observer
     async function load() {
       const L = await import('leaflet')
       if (cancelled) return
-      map = L.map(element.current, { scrollWheelZoom: false }).setView([latitude, longitude], 15)
+      const hasCampus = latitude != null && longitude != null
+      map = L.map(element.current, { scrollWheelZoom: false }).setView(hasCampus ? [latitude, longitude] : [14.63, 121.04], hasCampus ? 15 : 10)
       const remembered = initialBounds.current.viewport
-      const restore = remembered?.campusId === campusId
+      const restore = remembered && (remembered.campusId ?? null) === campusId
       if (restore) map.setView(remembered.center, remembered.zoom)
-      else if (initialBounds.current.bounds && initialBounds.current.campusId === campusId) map.fitBounds(initialBounds.current.bounds)
+      else if (initialBounds.current.bounds && (initialBounds.current.campusId ?? null) === campusId) map.fitBounds(initialBounds.current.bounds)
+      fitResults.current = !hasCampus && !restore && !initialBounds.current.bounds
       setMoved(restore && remembered.needsSearch)
       setFailed(false)
       const tile = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' })
       tile.on('tileerror', () => { if (!cancelled) setFailed(true) }).addTo(map)
-      const label = document.createElement('span'); label.textContent = campusName + ' — approximate campus reference'
-      L.marker([latitude, longitude], { icon: campusIcon(L), title: campusName + ' — selected campus', zIndexOffset: 2000 }).addTo(map).bindPopup(label)
+      if (hasCampus) {
+        const label = document.createElement('span'); label.textContent = campusName + ' — approximate campus reference'
+        L.marker([latitude, longitude], { icon: campusIcon(L), title: campusName + ' — selected campus', zIndexOffset: 2000 }).addTo(map).bindPopup(label)
+      }
       map.on('moveend', () => {
         if (cancelled) return
         setMoved(true)
@@ -61,6 +65,14 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   useEffect(() => {
     if (!engine || engine.campusId !== campusId) return
     const { L, map } = engine
+    const points = JSON.parse(pins)
+    if (fitResults.current && points.length) {
+      map.fitBounds(points.map(p => [p.latitude, p.longitude]), { padding: [40, 40], maxZoom: 15 })
+      fitResults.current = false
+      setMoved(false)
+      const center = map.getCenter()
+      callbacks.current.onViewportChange?.({ center: [center.lat, center.lng], zoom: map.getZoom(), campusId, needsSearch: false })
+    }
     const layer = L.layerGroup().addTo(map)
     function draw() {
       layer.clearLayers()
@@ -69,7 +81,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
         const center = [group.reduce((sum, p) => sum + p.latitude, 0) / group.length, group.reduce((sum, p) => sum + p.longitude, 0) / group.length]
         return { center, ...map.project(center, map.getZoom()), width: group.some(p => p.id === selectedId) && group.length > 1 ? 120 : group.length > 1 ? 84 : 104, height: 42 }
       })
-      const offsets = mapLabelLayout(positions, map.project([latitude, longitude], map.getZoom()))
+      const offsets = mapLabelLayout(positions, campusId == null ? null : map.project([latitude, longitude], map.getZoom()))
       for (const [index, group] of groups.entries()) {
         const [dx, dy] = offsets[index]
         const position = positions[index]
@@ -113,7 +125,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     return drawWalkingRoute(engine.L, engine.map, walking.route, { latitude: selectedLatitude, longitude: selectedLongitude }, { latitude, longitude }, true)
   }, [engine, campusId, walking.route, selectedLatitude, selectedLongitude, latitude, longitude])
   useEffect(() => {
-    if (!engine || engine.campusId !== campusId || !radius) return
+    if (!engine || engine.campusId !== campusId || campusId == null || !radius) return
     const color = getComputedStyle(element.current).getPropertyValue('--accent').trim() || '#2558e5'
     const circle = engine.L.circle([latitude, longitude], { radius: Number(radius) * 1000, color, fillOpacity: 0.04, weight: 1 }).addTo(engine.map)
     return () => circle.remove()
@@ -129,13 +141,13 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     <div className="map-canvas">
     <div className="map-tools">
       {onAreaSearch && moved && engine && <button className="btn btn-primary btn-sm" onClick={searchArea}>Search this area</button>}
-      {engine && <button className="btn btn-light btn-sm" onClick={() => engine.map.setView([latitude, longitude], 15)}>Back to campus</button>}
+      {engine && (campusId != null ? <button className="btn btn-light btn-sm" onClick={() => engine.map.setView([latitude, longitude], 15)}>Back to campus</button> : properties.some(p => p.latitude != null && p.longitude != null) && <button className="btn btn-light btn-sm" onClick={() => engine.map.fitBounds(properties.filter(p => p.latitude != null && p.longitude != null).map(p => [p.latitude, p.longitude]), { padding: [40, 40], maxZoom: 15 })}>Show results</button>)}
     </div>
     {failed && <p role="status" className="map-failure">Map imagery is unavailable. Listing addresses and search remain usable.</p>}
     <div className="campus-map" ref={element} role="region" aria-label="Listing map" />
     {typeof children === 'function' ? children(walking) : children}
     </div>
     <WalkingRouteControl walking={walking} property={selectedProperty} campus={campus} />
-    <p className="small map-note">{properties.some(property => property.is_demo) ? 'Demo pins are fictional; other pins are owner-supplied.' : 'Owner-supplied property pins.'} Campus is an approximate reference. Distances are straight lines. <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
+    <p className="small map-note">{properties.some(property => property.is_demo) ? 'Demo pins are fictional; other pins are owner-supplied.' : 'Owner-supplied property pins.'} {campus ? 'Campus is an approximate reference. Distances are straight lines.' : 'Choose a campus for distances and walking routes.'} <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
   </section>
 }
