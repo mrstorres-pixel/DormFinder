@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PropertyRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
+use App\Services\AvailabilityFreshness;
 use App\Services\ListingWorkflow;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ class PropertyController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         Gate::authorize('viewAny', Property::class);
+        app(AvailabilityFreshness::class)->remind($request->user());
 
         return PropertyResource::collection(
             $request->user()->properties()->with(ListingController::relations())

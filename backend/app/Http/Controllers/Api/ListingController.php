@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PublicPropertyResource;
 use App\Models\Campus;
 use App\Models\Property;
+use App\Services\AvailabilityFreshness;
 use App\Services\CampusDistance;
 use App\Services\ListingSearch;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,7 +20,8 @@ class ListingController extends Controller
 {
     public static function publicQuery(): Builder
     {
-        return Property::query()->where('status', 'approved')->whereHas('landlord', fn ($query) => $query->where('status', 'active'));
+        return Property::query()->where('status', 'approved')->whereHas('landlord', fn ($query) => $query->where('status', 'active'))
+            ->whereHas('roomOptions', fn ($query) => AvailabilityFreshness::visibleOptions($query));
     }
 
     public static function relations(): array
@@ -36,7 +38,7 @@ class ListingController extends Controller
     {
         $data = $request->validate(['campus_id' => ['nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)]]);
 
-        return new PublicPropertyResource(CampusDistance::annotate(self::publicQuery(), CampusDistance::reference($data['campus_id'] ?? null))->with(self::relations())->findOrFail($property));
+        return new PublicPropertyResource(CampusDistance::annotate(self::publicQuery(), CampusDistance::reference($data['campus_id'] ?? null))->with(self::relations())->with(['roomOptions' => fn ($query) => AvailabilityFreshness::visibleOptions($query)])->findOrFail($property));
     }
 
     public function compare(Request $request): AnonymousResourceCollection
@@ -49,7 +51,7 @@ class ListingController extends Controller
             'selections.*.property_id' => ['required', 'integer', 'distinct', 'min:1'],
             'selections.*.room_option_id' => ['required', 'integer', 'min:1'],
         ]);
-        $properties = CampusDistance::annotate(self::publicQuery(), CampusDistance::reference($data['campus_id'] ?? null))->with(self::relations())->whereIn('id', array_column($data['selections'], 'property_id'))->get()->keyBy('id');
+        $properties = CampusDistance::annotate(self::publicQuery(), CampusDistance::reference($data['campus_id'] ?? null))->with(self::relations())->with(['roomOptions' => fn ($query) => AvailabilityFreshness::visibleOptions($query)])->whereIn('id', array_column($data['selections'], 'property_id'))->get()->keyBy('id');
         $ordered = collect();
         foreach ($data['selections'] as $selection) {
             $property = $properties->get($selection['property_id']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\AvailabilityFreshness;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,6 +16,7 @@ class InquiryResource extends JsonResource
             'id' => $this->id, 'property_id' => $this->property_id,
             'listing_snapshot' => $this->listing_snapshot,
             'property_status' => $this->property->status,
+            'listing_available' => $this->property->status === 'approved' && $this->landlord->status === 'active' && $this->property->roomOptions->contains(fn ($option) => AvailabilityFreshness::current($option->availability_confirmed_at)),
             'participant_name' => $participant->name,
             'participant_role' => $participant->role,
             'participant_avatar_url' => $participant->avatarUrl(),

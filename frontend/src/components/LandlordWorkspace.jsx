@@ -14,6 +14,7 @@ import PhotoGallery from './PhotoGallery'
 import { pesos } from '../lib/money'
 import { editorSteps, nextEditorStep } from '../lib/listingReadiness'
 import './landlord-workspace.css'
+import { OwnerAvailability } from './AvailabilityStatus'
 
 export function Landlord() {
   const [page, setPage] = useState(1)
@@ -23,8 +24,8 @@ export function Landlord() {
     {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> :
       query.data.data.length ? <div className="row g-4 mt-1">{query.data.data.map((property) => <div className="col-md-6 col-xl-4" key={property.id}>
         <article className="property-card">
-          <div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} /> : <span aria-hidden="true">⌂</span>}<span className="status-badge">{property.status.replaceAll('_', ' ')}</span></div>
-          <div className="p-4"><p className="small text-secondary text-uppercase mb-2">{property.property_type.replaceAll('_', ' ')}</p><h2>{property.title}</h2><p className="text-secondary">{property.address || property.city}</p><p className="small mb-3">{property.status === 'draft' ? 'Finish details, photos and room options, then submit for review.' : property.status === 'rejected' ? 'Read the review feedback and update your draft before resubmitting.' : property.status === 'pending_review' ? 'Awaiting administrator review. Editing is paused.' : property.status === 'approved' ? 'Public listing. Confirm vacancies at least every 14 days.' : 'Open the listing to check its status and available actions.'}</p><Link className="stretched-link" to={'/landlord/properties/' + property.id + '#' + nextEditorStep(property)}>Manage property <span aria-hidden="true">→</span></Link></div>
+          <div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} /> : <span aria-hidden="true">⌂</span>}<span className="status-badge">{property.status === 'approved' && property.availability?.status === 'hidden' ? 'Hidden: confirm availability' : property.status.replaceAll('_', ' ')}</span></div>
+          <div className="p-4"><p className="small text-secondary text-uppercase mb-2">{property.property_type.replaceAll('_', ' ')}</p><h2>{property.title}</h2><p className="text-secondary">{property.address || property.city}</p><p className="small mb-3">{property.status === 'draft' ? 'Finish details, photos and room options, then submit for review.' : property.status === 'rejected' ? 'Read the review feedback and update your draft before resubmitting.' : property.status === 'pending_review' ? 'Awaiting administrator review. Editing is paused.' : property.status === 'approved' ? '' : 'Open the listing to check its status and available actions.'}</p><OwnerAvailability property={property} compact /><Link className="stretched-link" to={'/landlord/properties/' + property.id + '#' + (property.availability?.status && property.availability.status !== 'current' ? 'rooms' : nextEditorStep(property))}>{property.availability?.status && property.availability.status !== 'current' ? 'Refresh availability' : 'Manage property'} <span aria-hidden="true">→</span></Link></div>
         </article>
       </div>)}</div> : <div className="panel empty-state"><span className="empty-icon" aria-hidden="true">⌂</span><h2>Make a little room for possibility.</h2><p>Add your first property and prepare it for students looking near their campus.</p><Link className="btn btn-outline-primary" to="/landlord/properties/new">Create your first draft</Link></div>}
     {query.data?.meta.last_page > 1 && <nav aria-label="Property pages" className="d-flex align-items-center gap-3 mt-4">
@@ -98,9 +99,9 @@ function PropertyForm({ property }) {
   </section>
   return <section className="container page-space owner-editor">
     <Link className="back-link" to="/landlord">← Your properties</Link>
-    <div className="page-heading mt-4"><div><span className="eyebrow">YOUR LISTING</span><h1>{property.title}</h1></div><span className="status-badge position-static">{property.status.replaceAll('_', ' ')} · {property.status === 'approved' ? 'public' : 'private'}</span></div>
-    {property.status === 'approved' && <p className="owner-fine-print">Availability updates keep your listing public. Changes to photos, room terms or property details return it to draft for review.</p>}
-    <nav className="editor-steps" aria-label="Listing editor steps">{editorSteps.map(([key, label], index) => <button type="button" key={key} disabled={busy} aria-current={step === key ? 'step' : undefined} onClick={() => go(key)}><span aria-hidden="true">{index + 1}</span>{label}</button>)}</nav>
+    <div className="page-heading mt-4"><div><span className="eyebrow">YOUR LISTING</span><h1>{property.title}</h1></div><span className="status-badge position-static">{property.status.replaceAll("_", " ")} · {property.status === "approved" ? (property.availability?.status === "hidden" ? "hidden" : "public") : "private"}</span></div>
+    {property.status === 'approved' && <p className="owner-fine-print">Confirm vacancies to keep or restore public visibility. Changes to photos, room terms or property details return it to draft for review.</p>}
+    <OwnerAvailability property={property} /><nav className="editor-steps" aria-label="Listing editor steps">{editorSteps.map(([key, label], index) => <button type="button" key={key} disabled={busy} aria-current={step === key ? 'step' : undefined} onClick={() => go(key)}><span aria-hidden="true">{index + 1}</span>{label}</button>)}</nav>
     <div className="editor-stage" id="editor-photos" tabIndex={-1} hidden={step !== 'photos'}><PhotoManager property={property} /></div>
     <div className="editor-stage" id="editor-rooms" tabIndex={-1} hidden={step !== 'rooms'}><RoomManager property={property} /></div>
     <div className="editor-stage" id="editor-location" tabIndex={-1} hidden={step !== 'location'}><section className="panel"><h2>Location and property details</h2><ErrorNotice error={mutation.error} />{mutation.isSuccess && <p className="alert alert-success" role="status">Your draft has been saved.</p>}
@@ -130,7 +131,7 @@ function PropertyForm({ property }) {
 function OwnerPreview({ property, refresh }) {
   const [chosen, setChosen] = useState('')
   const room = property.room_options.find(option => option.id === Number(chosen)) || property.room_options[0]
-  return <section className="owner-preview" aria-label="Saved listing preview"><div className="section-heading"><h2>Student preview</h2><span className="owner-fine-print">Saved content · {property.status === 'approved' ? 'public' : 'private'}</span></div>
+  return <section className="owner-preview" aria-label="Saved listing preview"><div className="section-heading"><h2>Student preview</h2><span className="owner-fine-print">Saved content · {property.status === 'approved' ? (property.availability?.status === 'hidden' ? 'hidden: confirm availability' : 'public') : 'private'}</span></div>
     <h3>{property.title}</h3><p>{[property.address, property.city].filter(Boolean).join(', ')}</p>
     <PhotoGallery photos={property.photos} refresh={refresh} />
     <div className="owner-preview-details"><div><h3>About this property</h3><p className="preserve-lines">{property.description || 'Add a description in Location & details.'}</p><ListingInformation property={property} /></div><section className="panel"><h3>Rooms and costs</h3>{room ? <><label className="form-label" htmlFor="owner-preview-room">Preview room option</label><select className="form-select" id="owner-preview-room" value={room.id} onChange={event => setChosen(event.target.value)}>{property.room_options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select><p className="room-price mt-3">{pesos(room.monthly_rent_centavos)} <span>/ month · {room.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><details><summary>Costs and room terms</summary><RoomCharges option={room} /></details></> : <p>Add a room option in Rooms & costs.</p>}</section></div>

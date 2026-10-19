@@ -4,6 +4,7 @@ import { writeApi, fieldErrors } from '../lib/api'
 import { pesos, toCentavos } from '../lib/money'
 import { ErrorNotice, Field } from './Feedback'
 import VacancyForm from './VacancyForm'
+import AvailabilityStatus from './AvailabilityStatus'
 import { listingReadiness } from '../lib/listingReadiness'
 import { useRequireSavedChanges, useFormChanges } from '../lib/useUnsavedChanges'
 
@@ -21,7 +22,7 @@ export function RoomCharges({ option }) {
       <div><dt>Deposit, advance and one-time fees</dt><dd>{pesos(option.move_in_fixed_total_centavos)}</dd></div>
     </dl>
     <p className="small text-secondary">{option.utilities_notes}</p>
-    <p className={'small ' + (option.availability_stale ? 'text-danger' : 'text-secondary')}>Availability confirmed {new Date(option.availability_confirmed_at).toLocaleDateString('en-PH')}{option.availability_stale ? ' · More than 14 days old. Ask the owner to confirm.' : ''}</p>
+    <AvailabilityStatus option={option} />
     <p className="small text-secondary">Totals cover the stated pricing basis. Variable utilities and rent not covered by the advance are additional. This is an inquiry service; no booking or payment is made here.</p>
   </div>
 }
@@ -35,8 +36,7 @@ export function RoomManager({ property }) {
   const editable = ['draft', 'rejected', 'approved'].includes(property.status)
   async function saved(data) {
     client.setQueryData(['property', String(property.id)], data)
-    await client.invalidateQueries({ queryKey: ['properties'] })
-    await client.invalidateQueries({ queryKey: ['listings'] })
+    await Promise.all(['properties', 'listings', 'listing', 'listings-map', 'saved-places', 'favorites', 'featured-homes', 'comparison', 'notification-unread', 'notifications', 'dashboard'].map(key => client.invalidateQueries({ queryKey: [key] })))
     setEditing(null)
     setFormVersion(version => version + 1)
   }

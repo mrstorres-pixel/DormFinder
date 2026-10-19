@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { pesos } from '../lib/money'
 import { walkingLabel } from '../lib/walking'
 import './map-preview.css'
+import AvailabilityStatus from './AvailabilityStatus'
 
 export default function MapListingPreview({ property, option, campus, browse, walking, onClose, onOptionChange, onCompare, compareDisabled }) {
   const [expanded, setExpanded] = useState(false)
@@ -12,7 +13,7 @@ export default function MapListingPreview({ property, option, campus, browse, wa
     <button className="map-preview-close" aria-label="Close listing preview" onClick={onClose}>×</button>
     <div className="map-preview-summary">
       {property.photos?.[0] && <Link className="map-preview-image" aria-label={'Open listing: ' + property.title} to={destination} state={{ browse }}><img src={property.photos[0].url} alt={property.photos[0].caption} /></Link>}
-      <div className="map-preview-copy"><strong><Link to={destination} state={{ browse }}>{property.title}</Link></strong>{option && <><p className="map-preview-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="map-preview-room-name">{option.name}</p></>}{walking?.route && <p className="map-preview-walk">{walkingLabel(walking.route)}</p>}</div>
+      <div className="map-preview-copy"><strong><Link to={destination} state={{ browse }}>{property.title}</Link></strong>{option && <><p className="map-preview-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="map-preview-room-name">{option.name}</p><AvailabilityStatus option={option} /></>}{walking?.route && <p className="map-preview-walk">{walkingLabel(walking.route)}</p>}</div>
     </div>
     <div className="map-preview-links"><button type="button" aria-expanded={expanded} aria-controls={details} onClick={() => setExpanded(value => !value)}>{expanded ? 'Less detail' : 'Room details'} <span aria-hidden="true">{expanded ? '⌃' : '⌄'}</span></button><Link to={destination} state={{ browse }}>View listing →</Link></div>
     <div id={details} hidden={!expanded} className="map-preview-expanded">{option && <>

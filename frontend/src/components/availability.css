@@ -1,0 +1,10 @@
+.availability-freshness { display: flex; align-items: center; flex-wrap: wrap; gap: .35rem; margin: .35rem 0 0; color: #22634f; font-size: .76rem; line-height: 1.5; }
+.availability-freshness svg { flex: 0 0 15px; }
+.availability-freshness.needs-confirmation { color: #8a531a; }
+.freshness-caution { font-size: .7rem; padding: .1rem .4rem; border-radius: 5px; background: #fff1d8; }
+.availability-freshness a { color: var(--theme-accent); margin-left: .2rem; font-weight: 600; text-underline-offset: 3px; }
+.owner-availability { padding: .9rem 1rem; border: 1px solid #c9dfd6; border-radius: 12px; background: #f3faf6; margin: 1rem 0; font-size: .84rem; color: #205641; }
+.owner-availability p { margin: .3rem 0 0; }
+.owner-availability.needs-confirmation { background: #fff8eb; border-color: #ead4ad; color: #744719; }
+.owner-availability-policy { color: var(--muted); font-size: .8rem; max-width: 80ch; }
+.vacancy-form .availability-freshness { margin-bottom: .75rem; }

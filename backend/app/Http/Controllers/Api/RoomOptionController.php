@@ -8,6 +8,7 @@ use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\RoomOption;
 use App\Services\ActivityRecorder;
+use App\Services\AvailabilityFreshness;
 use App\Services\ListingWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,7 @@ class RoomOptionController extends Controller
             }
             $locked->increment('revision');
             app(ActivityRecorder::class)->audit($request->user()->id, 'availability_update', 'approved', 'approved', $locked->revision, implode('; ', $changes), $locked->id);
+            app(AvailabilityFreshness::class)->resolveReminders($locked);
 
             return $locked;
         });

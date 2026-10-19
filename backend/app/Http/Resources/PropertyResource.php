@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\AvailabilityFreshness;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,7 @@ class PropertyResource extends JsonResource
             'property_type' => $this->property_type, 'address' => $this->address, 'city' => $this->city,
             'latitude' => $this->latitude, 'longitude' => $this->longitude,
             'status' => $this->status, 'revision' => $this->revision,
+            'availability' => $this->when($this->status === 'approved', fn () => AvailabilityFreshness::summary($this->resource)),
             'landlord_id' => $this->when($request->user()?->role === 'admin', $this->landlord_id),
             'moderation_reason' => $this->moderation_reason, 'is_demo' => $this->is_demo,
             'submitted_at' => $this->submitted_at, 'approved_at' => $this->approved_at, 'amenities' => $this->amenities, 'house_rules' => $this->house_rules,

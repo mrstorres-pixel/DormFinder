@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\AvailabilityFreshness;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -16,7 +17,7 @@ class PublicPropertyResource extends JsonResource
             'approved_at' => $this->approved_at, 'amenities' => $this->amenities, 'house_rules' => $this->house_rules,
             'distance_from_campus' => $this->when(isset($this->distance_campus_id), fn () => ['campus_id' => (int) $this->distance_campus_id, 'meters' => $this->latitude === null || $this->longitude === null ? null : (int) round($this->distance_meters), 'method' => 'approximate_straight_line']),
             'photos' => PhotoResource::collection($this->whenLoaded('photos')),
-            'room_options' => RoomOptionResource::collection($this->whenLoaded('roomOptions')),
+            'room_options' => RoomOptionResource::collection($this->whenLoaded('roomOptions', fn () => $this->roomOptions->filter(fn ($option) => AvailabilityFreshness::current($option->availability_confirmed_at))->values())),
             'alternative_room_options' => RoomOptionResource::collection($this->whenLoaded('comparisonOptions')),
         ];
     }

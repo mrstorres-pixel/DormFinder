@@ -1,5 +1,11 @@
 # Validation evidence — October 9, 2026
 
+## Availability freshness — local acceptance, October 19
+
+Backend: all 134 tests / 1633 assertions pass, including six new time-boundary, visibility, mixed-room pricing, reminder privacy/idempotency, long-title, restoration/revision and private-history scenarios. The public walking fixture now contains a genuinely current room option; all seven routing checks pass under the new public-visibility rule. Pint passes. Reminder generation and confirmation share property-row locking, and generated notification titles stay within the existing 160-character column. The 14/27/30-day stages use the vacancy confirmation timestamp, and moderation approval timestamps remain intact.
+
+Frontend: 91 tests / 27 files, lint and production build pass. All 50 distinct scoped local Chromium/WebKit scenarios have passing evidence across the 40-case listing/owner/saved/map run and 16-case guard/bundle run; the six availability cases pass again after final screenshot polish. Coverage includes visible owner-reported age, exact room/campus/budget context in the inquiry shortcut, explicit send and retained failed-message identity, guest sign-in return, expired-owner notices, vacancy retry, approval preservation and immediate notification-bell refresh. Screenshots for desktop freshness, hidden-owner recovery, phone questions and phone owner forms are retained under ignored .local/availability-* paths. No new dependency or database migration is required.
+
 ## Compact comparison tray — October 19, 2026
 
 Lint and production build pass for the CSS refinement. All four existing browse/comparison Chromium/WebKit checks pass locally. Final measurements in both engines cover 1440, 390 and 320 px viewport widths: tray widths are approximately 331, 319 and 286 px, with 12, 8 and 6 px gaps respectively. Controls fit within the tray, no horizontal overflow occurs, and 44 px button heights remain. Local screenshots were inspected; public release measurements also pass in both engines. Thirteen protected staged JS/CSS assets are byte-identical to the tested build before promotion. No backend or data checks were repeated for this visual-only change.

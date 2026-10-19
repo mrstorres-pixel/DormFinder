@@ -48,6 +48,7 @@ class ListingSearch
 
     public static function options(Builder|Relation $query, array $data): void
     {
+        AvailabilityFreshness::visibleOptions($query);
         if (! empty($data['inventory_type'])) {
             $query->where('inventory_type', $data['inventory_type']);
         }
@@ -61,13 +62,13 @@ class ListingSearch
             $query->where('monthly_rent_centavos', '<=', $data['max_rent_centavos']);
         }
         if ($data['available_only'] ?? false) {
-            $query->where('available_units', '>', 0)->where('availability_confirmed_at', '>=', $data['availability_cutoff']);
+            $query->where('available_units', '>', 0)->where('availability_confirmed_at', '>', $data['availability_cutoff']);
         }
     }
 
     public static function query(array $data): Builder
     {
-        $data['availability_cutoff'] = now()->subDays(14);
+        $data['availability_cutoff'] = now()->subDays(AvailabilityFreshness::REMIND_DAYS);
         $campus = CampusDistance::reference($data['campus_id'] ?? null);
         $query = CampusDistance::annotate(ListingController::publicQuery(), $campus);
         if (isset($data['radius_km'])) {
@@ -98,7 +99,7 @@ class ListingSearch
         $query->addSelect(['matching_rent_centavos' => $rent]);
         $sort = $data['sort'] ?? 'newest';
         if ($sort === 'recommended') {
-            $fresh = RoomOption::query()->selectRaw('count(*)')->whereColumn('property_id', 'properties.id')->where('available_units', '>', 0)->where('availability_confirmed_at', '>=', $data['availability_cutoff']);
+            $fresh = RoomOption::query()->selectRaw('count(*)')->whereColumn('property_id', 'properties.id')->where('available_units', '>', 0)->where('availability_confirmed_at', '>', $data['availability_cutoff']);
             self::options($fresh, $data);
             $query->addSelect(['fresh_available_options' => $fresh])->orderByRaw('(('.$fresh->toSql().') > 0) DESC', $fresh->getBindings())->orderByDesc('has_coordinates')->orderBy('distance_meters');
         } elseif ($sort === 'distance') {

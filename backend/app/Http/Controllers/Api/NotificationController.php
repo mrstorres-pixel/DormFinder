@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\AvailabilityFreshness;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,12 +12,15 @@ class NotificationController extends Controller
 {
     public function unreadCount(Request $request): JsonResponse
     {
+        app(AvailabilityFreshness::class)->remind($request->user());
+
         return response()->json(['data' => ['unread_count' => DB::table('user_notifications')->where('recipient_id', $request->user()->id)->whereNull('read_at')->count()]]);
     }
 
     public function index(Request $request): JsonResponse
     {
         $request->validate(['page' => ['nullable', 'integer', 'between:1,100000']]);
+        app(AvailabilityFreshness::class)->remind($request->user());
 
         return response()->json(DB::table('user_notifications')->where('recipient_id', $request->user()->id)
             ->select(['id', 'kind', 'title', 'path', 'read_at', 'created_at'])->orderByDesc('id')->paginate(20));

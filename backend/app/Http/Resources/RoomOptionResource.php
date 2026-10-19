@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\AvailabilityFreshness;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -24,7 +25,10 @@ class RoomOptionResource extends JsonResource
             'monthly_fixed_total_centavos' => $this->monthly_rent_centavos + $monthlyFees,
             'move_in_fixed_total_centavos' => $this->deposit_centavos + $this->advance_months * $this->monthly_rent_centavos + $oneTimeFees,
             'availability_confirmed_at' => $this->availability_confirmed_at,
-            'availability_stale' => $this->availability_confirmed_at->lt(now()->subDays(14)),
+            'availability_stale' => ! $this->availability_confirmed_at || $this->availability_confirmed_at->lte(now()->subDays(AvailabilityFreshness::REMIND_DAYS)),
+            'availability_age_days' => $this->availability_confirmed_at ? max(0, (int) $this->availability_confirmed_at->diffInDays(now())) : null,
+            'availability_expires_at' => $this->availability_confirmed_at?->copy()->addDays(AvailabilityFreshness::HIDE_DAYS)->toIso8601String(),
+            'availability_expired' => ! AvailabilityFreshness::current($this->availability_confirmed_at),
         ];
     }
 }

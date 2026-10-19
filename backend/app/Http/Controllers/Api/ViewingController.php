@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\User;
 use App\Models\ViewingRequest;
 use App\Services\ActivityRecorder;
+use App\Services\AvailabilityFreshness;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -92,6 +93,7 @@ class ViewingController extends Controller
             $time = $this->time($data['starts_at']);
             abort_unless($locked->status === 'approved' && $locked->landlord->status === 'active', 404);
             $option = $locked->roomOptions()->findOrFail($data['room_option_id']);
+            abort_unless(AvailabilityFreshness::current($option->availability_confirmed_at), 404);
             abort_unless($option->available_units > 0, 409, 'This room option is sold out.');
             abort_if(ViewingRequest::query()->where('student_id', $request->user()->id)->where('property_id', $property->id)->whereIn('status', self::ACTIVE)->where(function ($query): void {
                 $query->where('starts_at', '>', now())->orWhereIn('status', ['requested', 'proposed']);
@@ -124,7 +126,7 @@ class ViewingController extends Controller
                 $locked->status = 'declined';
             } else {
                 abort_unless($property->status === 'approved' && $locked->student->status === 'active' && $locked->landlord->status === 'active', 409, 'Scheduling is paused because the listing or a participant is unavailable.');
-                abort_unless($locked->room_option_id && $property->roomOptions()->whereKey($locked->room_option_id)->where('available_units', '>', 0)->exists(), 409, 'This room option is unavailable.');
+                abort_unless($locked->room_option_id && $property->roomOptions()->whereKey($locked->room_option_id)->where('available_units', '>', 0)->where('availability_confirmed_at', '>', now()->subDays(AvailabilityFreshness::HIDE_DAYS))->exists(), 409, 'This room option is unavailable.');
                 if ($action === 'propose') {
                     abort_unless(! $student && in_array($locked->status, ['requested', 'proposed'], true), 403);
                     $locked->starts_at = $this->time($data['starts_at']);

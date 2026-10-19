@@ -11,6 +11,7 @@ import { mapLabelLayout } from '../lib/mapLabelLayout'
 import { useWalkingRoute, drawWalkingRoute } from '../lib/walking'
 import WalkingRouteControl from './WalkingRouteControl'
 import FavoriteButton from './SavePlaceButton'
+import AvailabilityStatus from './AvailabilityStatus'
 export { FavoriteButton }
 import 'leaflet/dist/leaflet.css'
 import './housing-presentation.css'
@@ -47,7 +48,7 @@ export function ListingCard({ property, campus, chosenOptionId, selectedId, onSe
         {property.room_options.length > 1 ? <div className="card-room-picker"><label className="form-label" htmlFor={'option-' + property.id}>Room option<span className="visually-hidden"> for {property.title}</span></label><select className="form-select" id={'option-' + property.id} value={option.id} onChange={event => { setChoice(event.target.value); onOptionChange?.(property.id, Number(event.target.value)); if (checked) choose(property.id, event.target.value) }}>{property.room_options.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div> : <p className="small text-secondary">{option.name}</p>}
         <div className="card-price-line"><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p></div>
         {option.monthly_fixed_total_centavos !== option.monthly_rent_centavos && <p className="card-monthly-total" aria-label={'Known monthly charges: ' + pesos(option.monthly_fixed_total_centavos)}>{pesos(option.monthly_fixed_total_centavos)} incl. fixed monthly fees</p>}
-        <p className="card-room-meta"><span>{option.capacity}-person room</span><span className={option.available_units === 0 || option.availability_stale ? 'room-caution' : ''}>{option.available_units} {option.inventory_type === 'bedspace' ? (option.available_units === 1 ? 'bed' : 'beds') : (option.available_units === 1 ? 'room' : 'rooms')} available{option.availability_stale ? ' · Needs confirmation' : ''}</span></p>
+        <AvailabilityStatus option={option} askHref={destination + "#confirm-availability"} browse={"/listings?" + params.toString()} /><p className="card-room-meta"><span>{option.capacity}-person room</span><span className={option.available_units === 0 || option.availability_stale ? 'room-caution' : ''}>{option.available_units} {option.inventory_type === 'bedspace' ? (option.available_units === 1 ? 'bed' : 'beds') : (option.available_units === 1 ? 'room' : 'rooms')} available</span></p>
       </>}
       {match && <p className="card-match">{match}</p>}
       <div className="card-actions">{(!user || user.role === 'student') && option && <label><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare<span className="visually-hidden"> {property.title}</span></span></label>}{onSelect && <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button>}<FavoriteButton compact propertyId={property.id} optionId={option?.id} title={property.title} /></div>

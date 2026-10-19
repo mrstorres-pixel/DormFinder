@@ -10,6 +10,7 @@ import { ErrorNotice, Field } from './Feedback'
 import ActionDialog from './ActionDialog'
 import SavePlaceButton from './SavePlaceButton'
 import { RequestViewing } from './Viewings'
+import { confirmationQuestion } from '../lib/availability'
 
 function MessageOwner({ property, option }) {
   const trigger = useRef(null)
@@ -17,8 +18,8 @@ function MessageOwner({ property, option }) {
   const navigate = useNavigate()
   const { hash } = useLocation()
   const draftKey = 'dormfinder-inquiry-' + user.id + '-' + property.id + '-' + option.id
-  const [body, setBody] = useState(() => { try { return sessionStorage.getItem(draftKey) || '' } catch { return '' } })
-  const [open, setOpen] = useState(() => (!!body && hash !== '#request-viewing') || hash === '#message-owner')
+  const [body, setBody] = useState(() => { try { return sessionStorage.getItem(draftKey) || (hash === '#confirm-availability' ? confirmationQuestion(option) : '') } catch { return hash === '#confirm-availability' ? confirmationQuestion(option) : '' } })
+  const [open, setOpen] = useState(() => (!!body && hash !== '#request-viewing') || hash === '#message-owner' || hash === '#confirm-availability')
   const [identity, setIdentity] = useState({ body: '', id: '' })
   const mutation = useMutation({ mutationFn: data => writeApi('post', '/listings/' + property.id + '/inquiries', data), onSuccess: data => { try { sessionStorage.removeItem(draftKey) } catch { /* Storage is optional. */ } navigate('/inquiries/' + data.id) } })
   function send(event) {
@@ -26,7 +27,7 @@ function MessageOwner({ property, option }) {
     const id = identity.body === body && identity.id ? identity.id : crypto.randomUUID()
     setIdentity({ body, id }); mutation.mutate({ room_option_id: option.id, body, client_id: id })
   }
-  return <><button ref={trigger} type="button" className="btn btn-outline-primary listing-message-button" onClick={() => setOpen(true)}>Message owner</button>
+  return <><button ref={trigger} type="button" className="btn btn-outline-primary listing-message-button" onClick={() => { if (!body.trim() && option.availability_stale) setBody(confirmationQuestion(option)); setOpen(true) }}>{option.availability_stale ? 'Ask owner to confirm' : 'Message owner'}</button>
     <ActionDialog returnFocus={trigger} open={open} title="Message owner" onClose={() => setOpen(false)}><p className="action-room-context"><strong>{property.title}</strong><span>{option.name}</span></p>
       <form onSubmit={send}><ErrorNotice error={mutation.error} />{[401, 419].includes(mutation.error?.response?.status) && <Link to={signInLink('/listings/' + property.id + '?option=' + option.id + '#message-owner')}>Sign in again to continue</Link>}
         <Field name="inquiry-body" label="Your question" as="textarea" rows={4} maxLength={3000} required disabled={mutation.isPending} value={body} onChange={event => { setBody(event.target.value); try { sessionStorage.setItem(draftKey, event.target.value) } catch { /* Storage is optional. */ } }} />
@@ -40,7 +41,7 @@ export default function ListingActions({ property, option, campus, onDirtyChange
   const selected = selections.some(row => row.property_id === property.id)
   const returnTo = '/listings/' + property.id + '?option=' + option.id + (campus ? '&campus_id=' + campus.id : '')
   return <div className="listing-primary-actions">
-    {user?.role === 'student' ? <><RequestViewing property={property} option={option} onDirtyChange={onDirtyChange} /><MessageOwner property={property} option={option} /></> : <><Link className="btn btn-primary" to={signInLink(returnTo + '#request-viewing')}>Request a viewing</Link><Link className="btn btn-outline-primary" to={signInLink(returnTo + '#message-owner')}>Message owner</Link><div className="listing-mobile-action"><span><strong>{pesos(option.monthly_rent_centavos).replace(/\.00$/, '')}</strong><small>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</small></span><Link className="btn btn-primary" to={signInLink(returnTo + '#request-viewing')}>Request a viewing</Link></div></>}
+    {user?.role === 'student' ? <><RequestViewing property={property} option={option} onDirtyChange={onDirtyChange} /><MessageOwner property={property} option={option} /></> : <><Link className="btn btn-primary" to={signInLink(returnTo + '#request-viewing')}>Request a viewing</Link><Link className="btn btn-outline-primary" to={signInLink(returnTo + (option.availability_stale ? '#confirm-availability' : '#message-owner'))}>{option.availability_stale ? 'Ask owner to confirm' : 'Message owner'}</Link><div className="listing-mobile-action"><span><strong>{pesos(option.monthly_rent_centavos).replace(/\.00$/, '')}</strong><small>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</small></span><Link className="btn btn-primary" to={signInLink(returnTo + '#request-viewing')}>Request a viewing</Link></div></>}
     <div className="listing-small-actions"><SavePlaceButton propertyId={property.id} optionId={option.id} title={property.title} compact /><button type="button" aria-pressed={selected} disabled={!selected && selections.length >= 3} onClick={() => choose(property.id, option.id, !selected)}>{selected ? '✓ Added to compare' : '+ Compare'}</button>{selected && <Link to={'/compare?items=' + comparisonItems(selections) + (campus ? '&campus_id=' + campus.id : '')}>Open comparison</Link>}</div>
   </div>
 }

@@ -1,5 +1,11 @@
 # DormFinder improvement plan
 
+## Availability freshness — October 19, 2026
+
+Approved next priority: make the last actual vacancy confirmation visible, ask owners to keep it current, and hide inactive listings after 30 days. Implementation uses room-specific confirmation timestamps: in-app reminders start at day 14, warn again at day 27, and explain hidden availability at day 30. Expired options stop supplying public prices or appearing in discovery; listings disappear once no current options remain. Title edits, login and routine listing edits do not extend the deadline. Existing approved listings return when the owner explicitly confirms actual vacancies; other moderation states retain their review requirements.
+
+Students see dated freshness near prices and can send an editable, room-specific availability question through Messages. Owners see visible due/hidden notices and use the existing revision-protected vacancy form, including zero vacancies. Reminder events are private and deduplicated; they appear on owner property/notification reads and are surfaced by the existing bell polling. No email, push service, paid scheduler, schema change, reseeding or deletion is introduced. Query-time expiry works even while the free backend sleeps. Saved notes, messages and viewing history remain available; expired listings cannot receive new contact or scheduling requests. Release and final evidence follow in deployment.md and validation.md.
+
 ## Browse and comparison fixes released — October 19, 2026
 
 Completed at https://dormfinder-pink.vercel.app: Browse assumes no university, fits the matching listing pins and offers Show results until the student chooses a campus. Campus distances, campus-based sorting and walking controls require that choice. Room selectors align across complete titles in both browse cards and comparison columns. A small floating comparison tray retains the chosen rooms while scrolling and stays above phone navigation and viewing actions. The existing catalog, private history and all other planned work retain their prior status.

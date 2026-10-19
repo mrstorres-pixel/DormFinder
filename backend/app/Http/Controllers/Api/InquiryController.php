@@ -10,6 +10,7 @@ use App\Models\Inquiry;
 use App\Models\InquiryMessage;
 use App\Models\Property;
 use App\Services\ActivityRecorder;
+use App\Services\AvailabilityFreshness;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,7 +23,7 @@ class InquiryController extends Controller
         abort_unless(in_array($request->user()->role, ['student', 'landlord'], true), 403);
         $column = $request->user()->role === 'student' ? 'student_id' : 'landlord_id';
 
-        return InquiryResource::collection(Inquiry::query()->where($column, $request->user()->id)->select('inquiries.*')->selectSub(DB::table('inquiry_messages')->select('sender_id')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_sender_id')->selectSub(DB::table('inquiry_messages')->select('body')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_message_body')->with(['property', 'student', 'landlord'])->latest('last_message_at')->orderByDesc('id')->paginate(12));
+        return InquiryResource::collection(Inquiry::query()->where($column, $request->user()->id)->select('inquiries.*')->selectSub(DB::table('inquiry_messages')->select('sender_id')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_sender_id')->selectSub(DB::table('inquiry_messages')->select('body')->whereColumn('inquiry_id', 'inquiries.id')->orderByDesc('id')->limit(1), 'last_message_body')->with(['property.roomOptions', 'student', 'landlord'])->latest('last_message_at')->orderByDesc('id')->paginate(12));
     }
 
     private function authorizeParticipant(Request $request, Inquiry $inquiry): void
@@ -37,7 +38,7 @@ class InquiryController extends Controller
 
         $inquiry->last_sender_id = $inquiry->messages()->reorder()->latest('id')->value('sender_id');
 
-        return new InquiryResource($inquiry->load(['property', 'student', 'landlord']));
+        return new InquiryResource($inquiry->load(['property.roomOptions', 'student', 'landlord']));
     }
 
     public function messages(Request $request, Inquiry $inquiry): AnonymousResourceCollection
@@ -67,7 +68,9 @@ class InquiryController extends Controller
                 }
             }
             abort_unless($locked->status === 'approved' && $locked->landlord->status === 'active', 404);
+            abort_unless(ListingController::publicQuery()->whereKey($locked->id)->exists(), 404);
             $option = $locked->roomOptions()->with('fees')->findOrFail($data['room_option_id']);
+            abort_unless(AvailabilityFreshness::current($option->availability_confirmed_at), 404);
             if (! $thread) {
                 $thread = $locked->inquiries()->create([
                     'student_id' => $request->user()->id, 'landlord_id' => $locked->landlord_id,
@@ -83,7 +86,7 @@ class InquiryController extends Controller
             return $thread;
         });
 
-        return (new InquiryResource($inquiry->load(['property', 'student', 'landlord'])))->response()->setStatusCode(201);
+        return (new InquiryResource($inquiry->load(['property.roomOptions', 'student', 'landlord'])))->response()->setStatusCode(201);
     }
 
     public function reply(Request $request, Inquiry $inquiry): JsonResponse

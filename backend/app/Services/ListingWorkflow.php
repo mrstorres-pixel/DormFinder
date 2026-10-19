@@ -28,7 +28,7 @@ class ListingWorkflow
         if (! $property->roomOptions()->exists()) {
             $errors['room_options'] = 'Add at least one room option with understandable charges.';
         }
-        if ($property->roomOptions()->where('availability_confirmed_at', '<', now()->subDays(14))->exists()) {
+        if ($property->roomOptions()->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS))->exists()) {
             $errors['availability'] = 'Confirm current room availability before submission.';
         }
         if ($errors !== []) {

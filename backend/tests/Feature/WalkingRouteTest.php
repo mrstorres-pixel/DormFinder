@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Campus;
 use App\Models\Property;
+use App\Models\RoomOption;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -15,7 +16,10 @@ class WalkingRouteTest extends TestCase
 
     private function listing(array $attributes = []): Property
     {
-        return Property::factory()->create([...['status' => 'approved', 'latitude' => 14.6, 'longitude' => 121.001], ...$attributes]);
+        $property = Property::factory()->create([...['status' => 'approved', 'latitude' => 14.6, 'longitude' => 121.001], ...$attributes]);
+        RoomOption::factory()->for($property)->create();
+
+        return $property;
     }
 
     private function payload(): array

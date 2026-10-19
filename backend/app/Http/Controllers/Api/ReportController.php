@@ -37,6 +37,7 @@ class ReportController extends Controller
                 return $existing->id;
             }
             abort_unless($locked->status === 'approved' && $locked->landlord->status === 'active', 404);
+            abort_unless(ListingController::publicQuery()->whereKey($locked->id)->exists(), 404);
             abort_if(DB::table('listing_reports')->where('student_id', $request->user()->id)->where('property_id', $locked->id)->where('status', 'open')->exists(), 409, 'You already have an open report for this listing.');
             $id = DB::table('listing_reports')->insertGetId(['student_id' => $request->user()->id, 'property_id' => $locked->id, 'listing_title' => $locked->title, 'client_id' => $data['client_id'], 'category' => $data['category'], 'body' => $data['body'], 'created_at' => now(), 'updated_at' => now()]);
             foreach (DB::table('users')->where('role', 'admin')->where('status', 'active')->pluck('id') as $admin) {
