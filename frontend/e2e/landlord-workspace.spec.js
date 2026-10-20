@@ -18,7 +18,13 @@ async function owner(page, overrides = {}) {
     }
     if (path.endsWith('/campuses')) return json([{ id: 8, name: 'West University', institution_name: 'West University', city: 'Manila', latitude: 14.6, longitude: 120.99 }])
     if (path.endsWith('/photos') && request.method() === 'POST') { state.property.photos = [{ id: 1, url: '/images/demo/twin-room.webp', caption: 'Fictional twin room', status: 'ready' }]; state.property.revision++; return json(state.property.photos[0]) }
-    if (path.endsWith('/room-options') && request.method() === 'POST') { state.property.room_options = [{ ...room, ...request.postDataJSON() }]; state.property.revision++; return json(state.property) }
+    if (path.includes('/room-options') && ['POST', 'PATCH'].includes(request.method())) {
+      if (state.roomDelay) await new Promise(resolve => setTimeout(resolve, state.roomDelay))
+      if (state.failRoom) return route.fulfill({ status: 422, json: { message: 'Check your room details.', errors: { utilities_notes: ['Explain how electricity is charged.'] } } })
+      const saved = { ...room, ...request.postDataJSON() }
+      state.property.room_options = request.method() === 'PATCH' ? state.property.room_options.map(option => option.id === room.id ? saved : option) : [...state.property.room_options, saved]
+      state.property.revision++; return json(state.property)
+    }
     if (path.endsWith('/submit')) {
       if (state.failSubmit) return route.fulfill({ status: 409, json: { message: 'The listing changed. Review it before retrying.' } })
       state.property.status = 'pending_review'; state.property.revision++
@@ -64,10 +70,9 @@ test('creation guides required photos, rooms, location and review instead of a d
   await page.getByLabel('Room option name').fill('Twin beds')
   await page.getByLabel('Monthly rent (PHP)').fill('4000')
   await page.getByLabel('Utilities and other charge terms').fill('Water is included. Electricity is metered.')
-  await page.getByRole('button', { name: 'Add room option', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Twin beds', exact: true })).toBeVisible()
-  await page.getByRole('button', { name: 'Continue', exact: true }).click()
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
   await expect(page).toHaveURL(/#location$/)
+  expect(state.property.room_options[0].name).toBe('Twin beds')
   await page.getByRole('button', { name: 'Save and continue' }).click()
   await expect(page.getByRole('alert')).toContainText('required fields')
   await expect(page.getByLabel('About the property')).toBeFocused()
@@ -107,6 +112,39 @@ test('creation guides required photos, rooms, location and review instead of a d
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: `../.local/owner-polished-${testInfo.project.name}-${width}.png`, fullPage: true })
   }
+})
+
+test('Continue saves a valid room once, retains failed edits and focuses missing requirements', async ({ page }) => {
+  const state = await owner(page, { room_options: [] })
+  await page.goto('/landlord/properties/55#rooms')
+  await page.getByLabel('Room option name').fill('Whole student room')
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
+  await expect(page.getByLabel('Monthly rent (PHP)')).toBeFocused()
+  await expect(page).toHaveURL(/#rooms$/)
+  expect(state.writes).toHaveLength(0)
+  await page.getByLabel('Inventory and price basis').selectOption('whole_room')
+  await page.getByLabel('Monthly rent (PHP)').fill('8500')
+  await page.getByLabel('Utilities and other charge terms').fill('Water included, electricity metered.')
+  state.failRoom = true
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('Explain how electricity is charged.')
+  await expect(page.getByLabel('Room option name')).toHaveValue('Whole student room')
+  await expect(page).toHaveURL(/#rooms$/)
+  state.failRoom = false
+  state.roomDelay = 500
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Save and continue', exact: true })).toBeDisabled()
+  await expect(page).toHaveURL(/#location$/)
+  expect(state.writes.filter(write => write.path.endsWith('/room-options'))).toHaveLength(2)
+  expect(state.property.room_options).toHaveLength(1)
+  expect(state.property.room_options[0]).toMatchObject({ name: 'Whole student room', price_basis: 'per_room', monthly_rent_centavos: 850000 })
+  await step(page, 'Rooms & costs')
+  await page.getByRole('button', { name: 'Edit Whole student room', exact: true }).click()
+  await page.getByLabel('Monthly rent (PHP)').fill('9000')
+  await page.getByRole('button', { name: 'Save and continue', exact: true }).click()
+  await expect(page).toHaveURL(/#location$/)
+  expect(state.property.room_options).toHaveLength(1)
+  expect(state.property.room_options[0].monthly_rent_centavos).toBe(900000)
 })
 
 test('partial draft save returns to My space; failed save retains details and pin', async ({ page }) => {

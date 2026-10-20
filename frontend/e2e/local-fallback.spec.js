@@ -14,7 +14,7 @@ test('local fallback policy refuses cloud targets and blocks an external request
     const blocked = await page.evaluate(() => fetch('https://example.invalid/blocked-rehearsal-request').then(() => false).catch(() => true))
     expect(blocked).toBe(true)
     expect((await failed).failure()?.errorText).toBe(testInfo.project.name === 'webkit' ? 'Blocked by Web Inspector' : 'net::ERR_INTERNET_DISCONNECTED')
-    await expect(page.getByRole('button', { name: 'Find housing near my campus' })).toBeEnabled()
+    await expect(page.getByRole('button', { name: 'Find housing' })).toBeEnabled()
   } finally {
     if (previousMode === undefined) delete process.env.E2E_LOCAL_ONLY
     else process.env.E2E_LOCAL_ONLY = previousMode

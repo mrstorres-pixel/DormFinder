@@ -51,7 +51,10 @@ test('landlord, administrator and student complete the listing and private inqui
     await page.getByLabel('Password', { exact: true }).fill(password)
     await page.getByLabel('Confirm password', { exact: true }).fill(password)
     await page.getByRole('button', { name: 'Create account', exact: true }).click()
-    await expect(page).toHaveURL(role === 'landlord' ? /\/landlord$/ : /\/account$/)
+    await expect(page).toHaveURL(/\/profile\/setup$/)
+    await page.getByRole('button', { name: 'Finish profile setup' }).click()
+    await expect(page).toHaveURL(role === 'landlord' ? /\/landlord$/ : /\/listings$/)
+    await page.getByRole('button', { name: 'Dismiss getting started guide' }).click()
     accounts[role] = { email: `${role}-${suffix}@example.test`, password }
     await writeFile(accountFile, JSON.stringify(accounts), { mode: 0o600 })
   }

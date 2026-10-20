@@ -6,7 +6,7 @@
 .review-queue-order, .review-property-type, .review-queue-facts, .review-queue-copy time { font-size: .76rem; color: var(--muted); }
 .review-queue-order { margin-bottom: .8rem; }
 .review-queue-list { display: grid; gap: 1rem; }
-.review-queue-row { display: flex; align-items: center; gap: 1.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.review-queue-row { display: flex; align-items: center; gap: 1.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: 16px; background:var(--theme-surface); }
 .review-queue-image { flex: 0 0 200px; aspect-ratio: 4 / 3; background: var(--theme-soft); border-radius: 10px; overflow: hidden; display: grid; place-items: center; font-size: 2.5rem; color: var(--muted); }
 .review-queue-image img { width: 100%; height: 100%; object-fit: cover; }
 .review-queue-copy { flex: 1; min-width: 0; }

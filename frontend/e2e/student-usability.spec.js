@@ -11,10 +11,10 @@ test('students keep campus, budget and room context through mobile search and co
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
   await page.setViewportSize({ width: 360, height: 900 })
   await page.goto('/')
-  const university = page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' })
+  const university = page.locator('.home-campus-form').getByRole('combobox', { name: 'Campus, location or listing' })
   await university.fill('CEU Manila')
-  await university.press('Enter')
-  await page.getByRole('button', { name: 'Find housing near my campus' }).click()
+  await university.press('ArrowDown'); await university.press('ArrowDown'); await university.press('Enter')
+  await page.getByRole('button', { name: 'Find housing' }).click()
   const campusId = ceu.find(campus => campus.slug === 'ceu-manila-mendiola').id
   await expect(page).toHaveURL(new RegExp('campus_id=' + campusId + '&radius_km=2&sort=recommended'))
   await page.getByRole('button', { name: /^Filters/ }).click()
@@ -58,11 +58,11 @@ test('students keep campus, budget and room context through mobile search and co
     await page.screenshot({ path: '../.local/student-usability-' + test.info().project.name + '-' + width + '.png', fullPage: true })
   }
   await page.getByRole('link', { name: 'DormFinder home' }).click()
-  await page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' }).fill('CEU Malolos')
-  await page.locator('.home-campus-form').getByRole('combobox', { name: 'College or university' }).press('Enter')
+  await page.locator('.home-campus-form').getByRole('combobox', { name: 'Campus, location or listing' }).fill('CEU Malolos')
+  await page.locator('.home-campus-form').getByRole('combobox', { name: 'Campus, location or listing' }).press('ArrowDown'); await page.locator('.home-campus-form').getByRole('combobox', { name: 'Campus, location or listing' }).press('ArrowDown'); await page.locator('.home-campus-form').getByRole('combobox', { name: 'Campus, location or listing' }).press('Enter')
   const malolosId = ceu.find(campus => campus.slug === 'ceu-malolos').id
   const campusResults = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/listings' && new URL(response.url()).searchParams.get('campus_id') === String(malolosId) && response.status() === 200)
-  await page.getByRole('button', { name: 'Find housing near my campus' }).click()
+  await page.getByRole('button', { name: 'Find housing' }).click()
   const nearby = (await (await campusResults).json()).data
   await expect(page.locator('.property-card')).toHaveCount(nearby.length)
   if (nearby.length) await expect(page.getByRole('heading', { name: nearby[0].title, exact: true })).toBeVisible()

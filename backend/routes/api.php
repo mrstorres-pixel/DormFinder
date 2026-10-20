@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function (): void {
     Route::get('health', HealthController::class);
     Route::get('campuses', [ListingController::class, 'campuses'])->middleware('throttle:api');
+    Route::get('search-suggestions', [ListingController::class, 'suggestions'])->middleware('throttle:api');
     Route::get('listings', [ListingController::class, 'index'])->middleware('throttle:api');
     Route::get('listings-map', [ListingController::class, 'map'])->middleware('throttle:api');
     Route::get('listings/{property}/walking-route', WalkingRouteController::class)->whereNumber('property')->middleware(['throttle:api', 'throttle:walking']);

@@ -9,7 +9,7 @@ test('built homepage defers page bundles until navigation', async ({ page, baseU
   const session = page.waitForResponse(response => response.url().endsWith('/api/v1/me') && response.status() === 401)
   await page.goto('/')
   await Promise.all([(await directory).finished(), (await session).finished()])
-  await expect(page.getByRole('button', { name: 'Find housing near my campus' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Find housing' })).toBeEnabled()
   expect(chunks).toEqual([])
   const listingCode = page.waitForResponse(response => /\/assets\/ListingPages-.*\.js/.test(response.url()) && response.status() === 200)
   await page.getByRole('link', { name: 'Browse', exact: true }).click()

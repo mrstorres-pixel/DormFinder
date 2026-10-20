@@ -44,7 +44,7 @@ html:has(.comparison-tray) { scroll-padding-bottom: 190px; }
 .room-caution { color: #935b0b; }
 .room-choices { min-width: 0; margin: .9rem 0 1.25rem; padding: 0; }
 .room-choices legend { float: none; font-size: .85rem; font-weight: 600; margin-bottom: .65rem; }
-.room-choice { position: relative; display: flex; align-items: start; gap: .7rem; padding: .9rem; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; margin-bottom: .6rem; background: #fff; }
+.room-choice { position: relative; display: flex; align-items: start; gap: .7rem; padding: .9rem; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; margin-bottom: .6rem; background:var(--theme-surface); }
 .room-choice.is-chosen { border-color: var(--accent); background: var(--theme-soft); box-shadow: inset 0 0 0 1px var(--accent); }
 .room-choice:focus-within { outline: 3px solid var(--accent); outline-offset: 3px; }
 .room-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
@@ -58,10 +58,10 @@ html:has(.comparison-tray) { scroll-padding-bottom: 190px; }
 .comparison-page { max-width: 1480px; }
 .comparison-intro { color: var(--muted); max-width: 65ch; }
 .comparison-essential { margin: 1.5rem 0; }
-.comparison-page .comparison-scroll { position: relative; max-width: calc(150px + var(--comparison-count) * 410px); margin: 0; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.comparison-page .comparison-scroll { position: relative; max-width: calc(150px + var(--comparison-count) * 410px); margin: 0; border: 1px solid var(--line); border-radius: 16px; background:var(--theme-surface); }
 .comparison-page .comparison-table { margin: 0; min-width: calc(150px + var(--comparison-count) * 270px); }
 .comparison-page .comparison-table th:first-child { width: 150px; }
-.comparison-page .comparison-table thead th { font-weight: 400; background: #fff; }
+.comparison-page .comparison-table thead th { font-weight: 400; background:var(--theme-surface); }
 .comparison-page .comparison-table th, .comparison-page .comparison-table td { padding: 1rem; border-color: var(--line); }
 .comparison-page .comparison-table tbody th { font-size: .8rem; font-weight: 550; color: var(--muted); background: var(--theme-soft); }
 .comparison-page .comparison-table tbody td { font-size: .88rem; }

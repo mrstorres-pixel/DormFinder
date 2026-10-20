@@ -1,5 +1,15 @@
 # Validation evidence — October 9, 2026
 
+## Group feedback and completed-room navigation - October 20, 2026
+
+Backend: 150 tests / 1741 assertions pass; Pint passes. New checks cover bounded public search suggestions, hidden/draft/expired/suspended-owner exclusion, literal wildcard handling, title/address/city searches without campus inference, and ownership-protected removal with active/archived directory filters and retained inventory. The final suggestions checks pass again after restricting selected columns and trimming input.
+
+Frontend: all 92 tests / 27 files, lint and production build pass. Twenty-eight production-build Chromium/WebKit cases cover required room saving, edits, missing-field focus, failed writes and retained drafts, profile setup, role guides, explicit campus selection, unified text search, filter preservation, heart toggles with note protection, owner removal, messaging refresh recovery, admin directories, name validation and phone layouts. Six additional production-build campus/map/comparison cases pass. Saved-place and messaging suites pass in both engines. Screenshots show the colored desktop/phone surfaces, stronger table rows and dividers, and the navy administrator navigation.
+
+Both real local owner/admin browser workflows pass, including Save and continue persisting a room option through the API before navigation, photo retrieval, partial draft recovery, review submission, approval and audit history. Local write tests use the configured 5173 origin; 4173 build acceptance uses mocked session/write APIs because that preview port is intentionally absent from the local Sanctum allowlist. No production authentication setting was changed for testing.
+
+The complete real local Chromium owner/admin/student regression passes, including inquiry creation/replies and subsequent moderation. Real public-data title/city search checks pass in Chromium and WebKit. The initial rapid-follow-up search revealed a route transition replacing the next input; synchronous search navigation corrects it, and both engine checks pass afterward.
+
 ## Owner creation and admin workspace - October 20, 2026
 
 Backend: 148 tests / 1712 assertions pass. New coverage validates international names and whitespace normalization, rejects digits/symbols/emoji, applies admin filters before pagination, escapes literal search wildcards, rejects unapproved sort/page sizes, excludes admin credentials from directories, enforces admin-only access, handles report filters and Philippine audit-day boundaries, and rejects outdated inventory at submission. The final affected admin tests and Pint also pass after adding action-name search.

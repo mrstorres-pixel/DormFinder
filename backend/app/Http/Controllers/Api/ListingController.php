@@ -34,6 +34,20 @@ class ListingController extends Controller
         return PublicPropertyResource::collection(ListingSearch::query(ListingSearch::parameters($request))->paginate(12)->withQueryString());
     }
 
+    public function suggestions(Request $request): JsonResponse
+    {
+        $request->merge(['q' => is_string($request->input('q')) ? trim($request->input('q')) : $request->input('q')]);
+        $data = $request->validate(['q' => ['required', 'string', 'min:2', 'max:100']]);
+        $query = ListingSearch::query(['q' => $data['q']])->setEagerLoads([]);
+        $pattern = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $data['q']).'%';
+        $cities = (clone $query)->where('city', 'ilike', $pattern)->reorder()->select('city')->distinct()->orderBy('city')->limit(3)->pluck('city')
+            ->map(fn (string $city): array => ['kind' => 'Location', 'label' => $city, 'detail' => 'Search available places in this city']);
+        $listings = $query->select(['properties.id', 'properties.title', 'properties.city'])->limit(5)->get()
+            ->map(fn (Property $property): array => ['kind' => 'Listing', 'id' => $property->id, 'label' => $property->title, 'detail' => $property->city]);
+
+        return response()->json(['data' => $cities->concat($listings)->values()]);
+    }
+
     public function show(Request $request, int $property): PublicPropertyResource
     {
         $data = $request->validate(['campus_id' => ['nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)]]);

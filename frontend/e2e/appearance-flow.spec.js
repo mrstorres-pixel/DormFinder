@@ -33,7 +33,7 @@ test('grouped navigation and progressive listing actions keep private drafts and
   const rooms = page.getByRole('group', { name: 'Choose a room option' }); const room = rooms.locator('input:checked')
   await expect(room).toHaveValue(String(property.room_options[0].id))
   await expect(page.getByLabel('Your question')).toBeHidden()
-  await expect(page.getByRole('button', { name: /(?:Save place|Edit saved place)/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /(?:Save place|Unsave place)/ })).toBeVisible()
   await expect(page.getByLabel('Preferred viewing time (Philippine time, UTC+8)')).toBeHidden()
   await page.getByRole('button', { name: 'Message owner', exact: true }).click()
   const draft = 'Synthetic retained visual-flow question ' + randomUUID()

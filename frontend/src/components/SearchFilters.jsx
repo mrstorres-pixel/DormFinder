@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { amenities } from '../lib/housing'
 import { pesos, toCentavos } from '../lib/money'
 
-const visibleFilters = params => [...params.entries()].filter(([key]) => !['campus_id', 'page', 'sort', 'south', 'north', 'east', 'west'].includes(key))
+const visibleFilters = params => [...params.entries()].filter(([key]) => !['q', 'campus_id', 'page', 'sort', 'south', 'north', 'east', 'west'].includes(key))
 
 export default function SearchFilters({ params, onSearch }) {
   const [error, setError] = useState('')
@@ -39,7 +39,8 @@ export default function SearchFilters({ params, onSearch }) {
     const values = Object.fromEntries(data)
     const next = { sort: resetSort ? 'newest' : params.get('sort') || 'newest' }
     if (params.has('campus_id')) next.campus_id = params.get('campus_id')
-    for (const key of ['q', 'property_type', 'price_basis', 'available_only', 'inventory_type', 'radius_km']) if (values[key]) next[key] = values[key]
+    if (params.get('q')) next.q = params.get('q')
+    for (const key of ['property_type', 'price_basis', 'available_only', 'inventory_type', 'radius_km']) if (values[key]) next[key] = values[key]
     if (next.radius_km && !next.campus_id) { fail('Choose a campus before filtering by distance.', 'radius_km'); return }
     for (const name of ['min', 'max']) {
       if (values[name + '_rent']?.trim()) {
@@ -69,7 +70,7 @@ export default function SearchFilters({ params, onSearch }) {
       else if (['text', 'hidden', 'select-one'].includes(field.type)) field.value = ''
     }
   }
-  function clearApplied() { onSearch(params.has('campus_id') ? { campus_id: params.get('campus_id'), sort: 'newest' } : {}) }
+  function clearApplied() { const next = new URLSearchParams(); for (const key of ['campus_id', 'q']) if (params.has(key)) next.set(key, params.get(key)); onSearch(next) }
   function remove(key, value) {
     const next = new URLSearchParams(params)
     if (key === 'amenities[]') { const keep = next.getAll(key).filter(item => item !== value); next.delete(key); keep.forEach(item => next.append(key, item)) }
@@ -96,7 +97,6 @@ export default function SearchFilters({ params, onSearch }) {
         <div className="filter-drawer-body">
           <fieldset><legend>Location</legend>
             <label>Distance from campus<select className="form-select" name="radius_km" defaultValue={params.get('radius_km') || ''}><option value="">No distance limit</option>{[0.5, 1, 2, 5].map(radius => <option key={radius} value={radius}>Within {radius} km</option>)}</select></label>
-            <label>Search property or city<input className="form-control" name="q" defaultValue={params.get('q') || ''} placeholder="Property, address or city" maxLength={100} /></label>
           </fieldset>
           <fieldset><legend>Your budget</legend>
             <label>Price basis<select aria-label="Price basis" className="form-select" name="price_basis" defaultValue={params.get('price_basis') || ''}><option value="">Choose when filtering rent</option><option value="per_person">Per person</option><option value="per_room">Per room</option></select></label>

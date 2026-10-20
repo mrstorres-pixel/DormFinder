@@ -71,7 +71,7 @@ describe('discovery controls', () => {
     expect(screen.getByLabelText('Maximum monthly rent (PHP)')).toHaveValue('')
     expect(screen.getByLabelText('Wi-Fi')).not.toBeChecked()
     await user.click(screen.getByRole('button', { name: 'Apply filters' }))
-    expect(onSearch).toHaveBeenCalledWith({ campus_id: '1', sort: 'newest' })
+    expect(onSearch).toHaveBeenCalledWith({ campus_id: '1', q: 'DEMO', sort: 'newest' })
   })
 
   it('offers keyboard and button gallery navigation and refresh for failed photos', async () => {

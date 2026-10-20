@@ -160,7 +160,7 @@ test('visible listing actions preserve dialog drafts and retry identity and expo
   await page.getByRole('button', { name: /Compare$/, exact: true }).click()
   await expect(page.getByRole('button', { name: '✓ Added to compare' })).toHaveAttribute('aria-pressed', 'true')
   await page.getByRole('button', { name: 'Save place [DEMO] Near Campus Twin Dorm', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Edit saved place [DEMO] Near Campus Twin Dorm', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Unsave place [DEMO] Near Campus Twin Dorm', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByRole('dialog', { name: 'Save to a shortlist' })).toHaveCount(0)
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.listing-mobile-action')).toBeInViewport()

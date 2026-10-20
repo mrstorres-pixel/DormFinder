@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class PropertyController extends Controller
 {
@@ -20,10 +21,16 @@ class PropertyController extends Controller
     {
         Gate::authorize('viewAny', Property::class);
         app(AvailabilityFreshness::class)->remind($request->user());
+        $data = $request->validate(['view' => ['nullable', Rule::in(['active', 'archived', 'all'])]]);
+        $query = $request->user()->properties()->with(ListingController::relations());
+        if (($data['view'] ?? 'all') === 'active') {
+            $query->where('status', '!=', 'archived');
+        } elseif (($data['view'] ?? 'all') === 'archived') {
+            $query->where('status', 'archived');
+        }
 
         return PropertyResource::collection(
-            $request->user()->properties()->with(ListingController::relations())
-                ->latest('id')->paginate(12)
+            $query->latest('id')->paginate(12)->withQueryString()
         );
     }
 

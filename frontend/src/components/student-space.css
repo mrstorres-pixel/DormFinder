@@ -10,7 +10,7 @@
 .space-conversation .inbox-reply-needed { display: block; margin-top: .5rem; color: var(--accent); font-size: .7rem; }
 .space-settings-link { font-size: .82rem; color: var(--muted); padding: .6rem 0; }
 .space-campus { margin-bottom: 2.75rem; }
-.space-campus .home-campus-form { max-width: none; margin: 0; background: white; padding: 1.5rem; border: 1px solid var(--line); box-shadow: none; }
+.space-campus .home-campus-form { max-width: none; margin: 0; background:var(--theme-surface); padding: 1.5rem; border: 1px solid var(--line); box-shadow: none; }
 .space-campus .search-entry { grid-template-columns: minmax(0, 1fr) auto; }
 .space-campus .search-preferences { margin-top: 1rem; }
 .space-campus .search-footnote { display: none; }

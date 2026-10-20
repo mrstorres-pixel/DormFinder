@@ -14,11 +14,11 @@
 .owner-editor .form-text {font-size:.76rem;line-height:1.5}
 .owner-editor .room-form {padding:1.4rem;background:#f7f9fd;border:1px solid var(--line);border-radius:14px;margin-top:1.25rem}
 .owner-editor .room-form h3 {font-size:1.1rem;margin-bottom:1.25rem}
-.owner-editor .room-option {background:#fff;border:1px solid var(--line);border-radius:12px}
+.owner-editor .room-option {background:var(--theme-surface);border:1px solid var(--line);border-radius:12px}
 .owner-editor .room-option .room-price {margin:.6rem 0}
 .owner-editor .review-missing-summary {font-size:.88rem;color:var(--muted);line-height:1.6}
 .review-preparation .completion-list {gap:.5rem}
-.review-preparation .completion-list button {background:white;border-left:3px solid #dca144;color:var(--ink)}
+.review-preparation .completion-list button {background:var(--theme-surface);border-left:3px solid #dca144;color:var(--ink)}
 .review-preparation .completion-list button:hover {background:var(--theme-soft);border-color:var(--accent)}
 .owner-pin-picker {padding:1.1rem;border:1px solid var(--line);border-radius:12px;background:#f9fbff}
 .owner-pin-search {margin-top:1rem}

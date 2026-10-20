@@ -84,7 +84,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
       if (index === 0) {
         const save = student.getByRole('button', { name: 'Save place ' + name, exact: true })
         if (await save.count()) await save.click()
-        await expect(student.getByRole('button', { name: 'Edit saved place ' + name, exact: true })).toBeVisible()
+        await expect(student.getByRole('button', { name: 'Unsave place ' + name, exact: true })).toBeVisible()
       }
     }
     await student.getByRole('link', { name: 'Compare 3 listings', exact: true }).click()

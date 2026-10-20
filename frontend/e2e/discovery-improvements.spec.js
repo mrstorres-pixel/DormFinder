@@ -7,9 +7,9 @@ test('university discovery, guest comparison, map search and mobile navigation w
   const tile=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=','base64')
   await page.route('https://tile.openstreetmap.org/**',route=>route.fulfill({contentType:'image/png',body:tile}))
   await page.goto('/')
-  await page.getByRole('combobox',{name:'College or university'}).fill('UE Manila')
+  await page.getByRole('combobox',{name:'Campus, location or listing'}).fill('UE Manila')
   await page.getByRole('button',{name:/UE — Manila/}).click()
-  await page.getByRole('button',{name:'Find housing near my campus'}).click()
+  await page.getByRole('button',{name:'Find housing'}).click()
   await expect(page).toHaveURL(/campus_id=\d+&radius_km=2&sort=recommended/)
   await expect(page.locator('.listing-grid .property-card').first()).toBeVisible()
   await expect(page.getByRole('region',{name:'Listing map'})).toBeVisible()
@@ -43,7 +43,7 @@ test('university discovery, guest comparison, map search and mobile navigation w
     if(width===360) {
       await page.getByRole('button',{name:'Menu',exact:true}).click()
       await expect(page.getByRole('link',{name:'Sign in',exact:true})).toBeVisible()
-      await expect(page.getByRole('combobox', { name: 'College or university' })).toBeVisible()
+      await expect(page.getByRole('combobox', { name: 'Campus, location or listing' })).toBeVisible()
       await page.screenshot({path:'test-results/campus-mobile-'+test.info().project.name+'.png',fullPage:true})
     }
   }

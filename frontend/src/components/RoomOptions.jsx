@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { writeApi, fieldErrors } from '../lib/api'
 import { pesos, toCentavos } from '../lib/money'
@@ -27,7 +27,7 @@ export function RoomCharges({ option }) {
   </div>
 }
 
-export function RoomManager({ property, onDirtyChange }) {
+export function RoomManager({ property, onDirtyChange, saveRef }) {
   const client = useQueryClient()
   const requireSaved = useRequireSavedChanges()
   const confirmRoomReplacement = useRef(() => true)
@@ -45,11 +45,14 @@ export function RoomManager({ property, onDirtyChange }) {
     <p className="text-secondary small">Describe separate groups of equivalent beds or whole rooms. Do not count the same inventory twice. Saving an option confirms today’s availability and returns a published listing to draft.</p>
     <ErrorNotice error={remove.error} />
     {(property.room_options || []).map(option => <article className="room-option mb-4" key={option.id}><h3>{option.name}</h3><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small text-secondary">{option.capacity}-person room · {option.available_units} of {option.total_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p><details className="owner-room-terms"><summary>Costs and room terms</summary><RoomCharges option={option} /></details>{property.status === 'approved' && <VacancyForm confirmSave={() => confirmRoomReplacement.current()} key={option.id} property={property} option={option} onSaved={saved} />}{editable && <div className="d-flex gap-2"><button className="btn btn-sm btn-outline-primary" onClick={() => { if (editing?.id !== option.id && confirmRoomReplacement.current()) setEditing(option) }}>Edit {option.name}</button><button className="btn btn-sm btn-outline-danger" disabled={remove.isPending} onClick={() => { if (property.status === 'approved' && !requireSaved()) return; if (confirmRoomReplacement.current() && window.confirm(`Remove ${option.name}? Existing inquiries will be kept.`)) remove.mutate(option.id) }}>Remove option</button></div>}</article>)}
-    {editable ? <RoomOptionForm confirmReplacementRef={confirmRoomReplacement} key={editing ? 'edit-' + editing.id : 'new-' + formVersion} property={property} option={editing} onSaved={saved} onDirtyChange={onDirtyChange} onCancel={() => { setEditing(null); setFormVersion(value => value + 1) }} /> : <p className="alert alert-info">Room edits are locked while this listing is {property.status.replaceAll('_', ' ')}.</p>}
+    {editable ? <RoomOptionForm saveRef={saveRef} confirmReplacementRef={confirmRoomReplacement} key={editing ? 'edit-' + editing.id : 'new-' + formVersion} property={property} option={editing} onSaved={saved} onDirtyChange={onDirtyChange} onCancel={() => { setEditing(null); setFormVersion(value => value + 1) }} /> : <p className="alert alert-info">Room edits are locked while this listing is {property.status.replaceAll('_', ' ')}.</p>}
   </section>
 }
 
-function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacementRef, onDirtyChange }) {
+function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacementRef, onDirtyChange, saveRef }) {
+  const formRef = useRef(null)
+  const saving = useRef(false)
+  const [validationAttempted, setValidationAttempted] = useState(false)
   const [dirty, setDirty] = useState(false)
   useEffect(() => { onDirtyChange?.(dirty); return () => onDirtyChange?.(false) }, [dirty, onDirtyChange])
   const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
@@ -70,7 +73,7 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   const mutation = useMutation({
     mutationKey: ['property-write', property.id],
     mutationFn: values => writeApi(option ? 'patch' : 'post', `/landlord/properties/${property.id}/room-options${option ? '/' + option.id : ''}`, values),
-    onSuccess: data => { clearUnsaved(); setDirty(false); onSaved(data) },
+    onSuccess: async data => { clearUnsaved(); setDirty(false); await onSaved(data) },
   })
   const pending = mutation.isPending
   useEffect(() => {
@@ -79,18 +82,26 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   }, [confirmReplacementRef, dirty, pending])
   const [amountError, setAmountError] = useState(null)
   const errors = fieldErrors(mutation.error)
-  function submit(event) {
-    event.preventDefault()
-    if (property.status === 'approved' && !canReplaceOthers()) return
-    const data = Object.fromEntries(new FormData(event.currentTarget))
-    if (Number(data.available_units) > Number(data.total_units)) { setAmountError(new Error('Available beds or rooms cannot exceed the total. Check both numbers.')); event.currentTarget.elements.available_units.focus(); return }
+  useImperativeHandle(saveRef, () => ({ save: () => save(formRef.current) }))
+  async function save(form) {
+    if (saving.current) return null
+    setValidationAttempted(true)
+    if (!form.reportValidity()) return null
+    if (property.status === 'approved' && !canReplaceOthers()) return null
+    const data = Object.fromEntries(new FormData(form))
+    if (Number(data.available_units) > Number(data.total_units)) { setAmountError(new Error('Available beds or rooms cannot exceed the total. Check both numbers.')); form.elements.available_units.focus(); return null }
     try {
       setAmountError(null)
-      mutation.mutate({ name: data.name, inventory_type: inventory, price_basis: inventory === 'bedspace' ? 'per_person' : 'per_room', capacity: Number(data.capacity), total_units: Number(data.total_units), available_units: Number(data.available_units), monthly_rent_centavos: toCentavos(data.rent), deposit_centavos: toCentavos(data.deposit), advance_months: Number(data.advance_months), utilities_notes: data.utilities_notes, revision: property.revision, fees: fees.map(fee => ({ name: fee.name, frequency: fee.frequency, amount_centavos: toCentavos(fee.amount) })) })
-    } catch (error) { setAmountError(error) }
+      const payload = { name: data.name, inventory_type: inventory, price_basis: inventory === 'bedspace' ? 'per_person' : 'per_room', capacity: Number(data.capacity), total_units: Number(data.total_units), available_units: Number(data.available_units), monthly_rent_centavos: toCentavos(data.rent), deposit_centavos: toCentavos(data.deposit), advance_months: Number(data.advance_months), utilities_notes: data.utilities_notes, revision: property.revision, fees: fees.map(fee => ({ name: fee.name, frequency: fee.frequency, amount_centavos: toCentavos(fee.amount) })) }
+      saving.current = true
+      return await mutation.mutateAsync(payload)
+    } catch (error) { if (!error.response) setAmountError(error); return null }
+    finally { saving.current = false }
   }
   function changeFee(key, field, value) { setFees(current => current.map(fee => fee.key === key ? { ...fee, [field]: value } : fee)) }
-  return <form onSubmit={submit} onChange={() => setDirty(true)} className="room-form"><fieldset disabled={mutation.isPending}><h3>{option ? 'Edit room option' : 'Add a room option'}</h3>
+  return <form ref={formRef} onSubmit={event => { event.preventDefault(); void save(event.currentTarget) }} onInvalidCapture={() => setValidationAttempted(true)} onChange={() => setDirty(true)} className={'room-form' + (validationAttempted ? ' was-validated' : '')}><fieldset disabled={mutation.isPending}><h3>{option ? 'Edit room option' : 'Add a room option'}</h3>
+    <p className="small text-secondary">Fill in this option, then choose Save and continue below to save it and move to location details. Use {option ? 'Save room option' : 'Add room option'} to stay here and add another option.</p>
+    {validationAttempted && <p className="small text-secondary" role="status">Required fields are marked. Check any highlighted fields before saving.</p>}
     <ErrorNotice error={mutation.error} />{amountError && <p role="alert" className="alert alert-danger">{amountError.message}</p>}
     <Field label="Room option name" name="name" value={values.name} onChange={editField} maxLength={100} required error={errors} />
     <label className="form-label" htmlFor="inventory_type">Inventory and price basis</label><select className="form-select mb-3" id="inventory_type" value={inventory} onChange={event => setInventory(event.target.value)}><option value="bedspace">Bedspace · price per person</option><option value="whole_room">Whole room · price per room</option></select>

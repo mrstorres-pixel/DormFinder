@@ -15,19 +15,23 @@ import { pesos } from '../lib/money'
 import { editorSteps, nextEditorStep, listingReadiness, hasLocationPin } from '../lib/listingReadiness'
 import './landlord-workspace.css'
 import { OwnerAvailability } from './AvailabilityStatus'
+import ActionDialog from './ActionDialog'
 
 export function Landlord() {
   const location = useLocation()
   const [page, setPage] = useState(1)
-  const query = useQuery({ queryKey: ['properties', page], queryFn: async () => (await api.get('/landlord/properties', { params: { page } })).data, retry: false, refetchInterval: 240_000 })
+  const [view, setView] = useState('active')
+  const query = useQuery({ queryKey: ['properties', page, view], queryFn: async () => (await api.get('/landlord/properties', { params: { page, view } })).data, retry: false, refetchInterval: 240_000 })
   return <section className="container page-space owner-listings">
     <div className="page-heading"><div><span className="eyebrow">PROPERTY OWNER WORKSPACE</span><h1>Your properties</h1><p>Manage your listings and keep availability current.</p></div><Link to="/landlord/properties/new" className="btn btn-primary">+ Add a property</Link></div>
     {location.state?.notice && <p className="alert alert-success" role="status">{location.state.notice}</p>}
+    <label className="owner-listing-view">Show properties<select className="form-select" value={view} onChange={event => { setView(event.target.value); setPage(1) }}><option value="active">Active listings and drafts</option><option value="archived">Removed listings</option><option value="all">All properties</option></select></label>
     {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> :
       query.data.data.length ? <div className="row g-4 mt-1">{query.data.data.map((property) => <div className="col-md-6 col-xl-4" key={property.id}>
         <article className="property-card">
           <div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} /> : <span aria-hidden="true">⌂</span>}<span className="status-badge">{property.status === 'approved' && property.availability?.status === 'hidden' ? 'Hidden: confirm availability' : property.status.replaceAll('_', ' ')}</span></div>
           <div className="p-4"><p className="small text-secondary text-uppercase mb-2">{property.property_type.replaceAll('_', ' ')}</p><h2>{property.title}</h2><p className="text-secondary">{property.address || property.city}</p><p className="small mb-3">{property.status === 'draft' ? 'Finish details, photos and room options, then submit for review.' : property.status === 'rejected' ? 'Read the review feedback and update your draft before resubmitting.' : property.status === 'pending_review' ? 'Awaiting administrator review. Editing is paused.' : property.status === 'approved' ? '' : 'Open the listing to check its status and available actions.'}</p><OwnerAvailability property={property} compact /><Link className="stretched-link" to={'/landlord/properties/' + property.id + '#' + (property.availability?.status && property.availability.status !== 'current' ? 'rooms' : nextEditorStep(property))}>{property.availability?.status && property.availability.status !== 'current' ? 'Refresh availability' : 'Manage property'} <span aria-hidden="true">→</span></Link></div>
+          {!['archived', 'suspended'].includes(property.status) && <OwnerListingRemoval property={property} />}
         </article>
       </div>)}</div> : <div className="panel empty-state"><span className="empty-icon" aria-hidden="true">⌂</span><h2>Make a little room for possibility.</h2><p>Add your first property and prepare it for students looking near their campus.</p><Link className="btn btn-outline-primary" to="/landlord/properties/new">Create your first draft</Link></div>}
     {query.data?.meta.last_page > 1 && <nav aria-label="Property pages" className="d-flex align-items-center gap-3 mt-4">
@@ -36,6 +40,17 @@ export function Landlord() {
       <button className="btn btn-outline-primary" disabled={page >= query.data.meta.last_page} onClick={() => setPage(page + 1)}>Next</button>
     </nav>}
   </section>
+}
+
+function OwnerListingRemoval({ property }) {
+  const [open, setOpen] = useState(false)
+  const client = useQueryClient()
+  const remove = useMutation({ mutationFn: () => writeApi('post', `/landlord/properties/${property.id}/lifecycle`, { action: 'archive', revision: property.revision, reason: 'Removed by the property owner from their active listings.' }), onSuccess: async data => {
+    setOpen(false)
+    client.setQueryData(['property', String(property.id)], data)
+    await Promise.all(['properties', 'listings', 'listings-map', 'dashboard', 'notifications'].map(key => client.invalidateQueries({ queryKey: [key] })))
+  } })
+  return <div className="owner-card-removal"><button type="button" onClick={() => { remove.reset(); setOpen(true) }}>Remove listing</button><ActionDialog open={open} title="Remove listing" onClose={() => { if (!remove.isPending) setOpen(false) }}><p>Remove <strong>{property.title}</strong> from your active properties and public search?</p><p>It will be archived under Removed listings. Photos, messages and viewing history are kept. You can restore it as a draft later.</p><ErrorNotice error={remove.error} /><div className="d-flex gap-2"><button type="button" className="btn btn-outline-secondary" disabled={remove.isPending} onClick={() => setOpen(false)}>Keep listing</button><button type="button" className="btn btn-danger" disabled={remove.isPending} onClick={() => remove.mutate()}>{remove.isPending ? 'Removing…' : 'Remove listing'}</button></div></ActionDialog></div>
 }
 
 export function PropertyEditor() {
@@ -63,6 +78,7 @@ function PropertyForm({ property }) {
   const [stepError, setStepError] = useState('')
   const [validationAttempted, setValidationAttempted] = useState(false)
   const locationForm = useRef(null)
+  const roomForm = useRef(null)
   const stepMessage = useRef(null)
   const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const client = useQueryClient()
@@ -96,12 +112,20 @@ function PropertyForm({ property }) {
     mutation.mutate({ values, intent: event.nativeEvent.submitter?.value || (property ? 'continue' : 'start') })
   }
   function explain(message) { setStepError(message); requestAnimationFrame(() => stepMessage.current?.focus()) }
-  function go(next) {
+  async function go(next) {
     if (busy) return
+    setStepError('')
     const target = editorSteps.findIndex(([key]) => key === next)
     const current = editorSteps.findIndex(([key]) => key === step)
     if (target > current && editable) {
-      if (photosDirty || roomsDirty) { explain(photosDirty ? 'Upload your selected photo, or clear the photo form, before continuing.' : 'Save your room option, or cancel its changes, before continuing.'); return }
+      if (photosDirty) { explain('Upload your selected photo, or clear the photo form, before continuing.'); return }
+      let savedProperty = property
+      if (roomsDirty) {
+        if (step !== 'rooms') { navigate('#rooms', { preventScrollReset: true }); explain('Finish your room option here, then save and continue.'); return }
+        const saved = await roomForm.current?.save()
+        if (!saved) return
+        savedProperty = saved
+      }
       if (step === 'location') {
         const description = locationForm.current.elements.description
         description.setCustomValidity([...(description.value || '').trim()].length < 40 ? 'Describe the property in at least 40 characters.' : '')
@@ -112,7 +136,7 @@ function PropertyForm({ property }) {
         return
       }
       if (dirty) { explain('Save your location changes before continuing.'); navigate('#location', { preventScrollReset: true }); return }
-      const missing = listingReadiness(property).find(item => !item.ready && editorSteps.findIndex(([key]) => key === item.step) < target)
+      const missing = listingReadiness(savedProperty).find(item => !item.ready && editorSteps.findIndex(([key]) => key === item.step) < target)
       if (missing) { explain(missing.label + ' before continuing.'); if (missing.step !== step) navigate('#' + missing.step, { preventScrollReset: true }); return }
     }
     setStepError(''); navigate('#' + next, { preventScrollReset: true })
@@ -135,7 +159,7 @@ function PropertyForm({ property }) {
     <OwnerAvailability property={property} /><p className="editor-introduction">Complete photos, rooms and location before sending your listing for review. Required fields are marked; optional fields can be left blank.</p><nav className="editor-steps" aria-label="Listing editor steps">{editorSteps.map(([key, label], index) => { const complete = key !== 'preview' && listingReadiness(property).filter(item => item.step === key).every(item => item.ready); return <button type="button" key={key} disabled={busy} className={complete ? 'is-complete' : ''} title={label + (complete ? ': complete' : ': needs details')} aria-current={step === key ? 'step' : undefined} onClick={() => go(key)}><span aria-hidden="true">{complete ? '✓' : index + 1}</span>{label}</button> })}</nav>
     {stepError && <p className="alert alert-warning editor-step-message" role="alert" ref={stepMessage} tabIndex={-1}>{stepError}</p>}
     <div className="editor-stage" id="editor-photos" tabIndex={-1} hidden={step !== 'photos'}><PhotoManager property={property} onDirtyChange={setPhotosDirty} /></div>
-    <div className="editor-stage" id="editor-rooms" tabIndex={-1} hidden={step !== 'rooms'}><RoomManager property={property} onDirtyChange={setRoomsDirty} /></div>
+    <div className="editor-stage" id="editor-rooms" tabIndex={-1} hidden={step !== 'rooms'}><RoomManager property={property} onDirtyChange={setRoomsDirty} saveRef={roomForm} /></div>
     <div className="editor-stage" id="editor-location" tabIndex={-1} hidden={step !== 'location'}><section className="panel"><h2>Location and property details</h2><ErrorNotice error={mutation.error} />{mutation.isSuccess && <p className="alert alert-success" role="status">Your draft has been saved.</p>}
       <p className="owner-fine-print">Required to continue: a description of at least 40 characters, the street address, city and property pin. Save draft keeps partial details and returns to My space.</p>
       <form ref={locationForm} className={validationAttempted ? 'was-validated' : ''} onInvalidCapture={() => { setValidationAttempted(true); setStepError('Complete the highlighted required fields before continuing.') }} onSubmit={submit} onChange={event => { event.target.setCustomValidity?.(''); setDirty(true); setStepError('') }}><fieldset disabled={!editable || mutation.isPending}>
@@ -157,7 +181,7 @@ function PropertyForm({ property }) {
       <OwnerPreview property={property} refresh={() => client.invalidateQueries({ queryKey: ['property', String(property.id)] })} />
       <details className="owner-listing-settings"><summary>Listing settings</summary><LifecycleControls property={property} /></details>
     </div>
-    <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{step === 'location' && editable ? 'Save and continue' : 'Continue'}</button>}</div>
+    <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{editable && (step === 'location' || (step === 'rooms' && roomsDirty)) ? 'Save and continue' : 'Continue'}</button>}</div>
   </section>
 }
 

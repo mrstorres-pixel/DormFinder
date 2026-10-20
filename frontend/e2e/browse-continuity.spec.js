@@ -48,9 +48,9 @@ test('listing round trips restore unsubmitted map movement, room choice and disp
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await expect.poll(markerPosition).toEqual(position)
 
-  await page.getByRole('combobox', { name: 'College or university' }).fill('DLSU')
-  await page.getByRole('button', { name: /DLSU/ }).click()
-  await page.getByRole('button', { name: 'Search campus', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Campus, location or listing' }).fill('DLSU')
+  await page.getByRole('button', { name: /^Campus .*DLSU/ }).click()
+  await page.getByRole('button', { name: 'Search places', exact: true }).click()
   await expect(map.locator('.campus-marker')).toHaveAttribute('title', /DLSU/)
   await expect(map.locator('.leaflet-tile').first()).toHaveAttribute('src', /\/15\//)
   await expect(page.getByRole('article', { name: 'Selected map listing' })).toHaveCount(0)

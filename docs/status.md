@@ -1,5 +1,15 @@
 # Implementation status
 
+## Group feedback and room-step correction - October 20
+
+Implemented the actionable feedback from improvement.pdf: campus/location/listing-name discovery in one bar with categorized suggestions; blue/slate surfaces, stronger controls and dividers, and navy admin navigation; registration into profile setup with a role-specific quick guide; student completion into Browse; heart save/unsave controls with note-removal confirmation; and visible owner removal through reversible archiving with an archived directory. Admin directories continue to display owner names. Empty student inboxes now explain how to start a conversation, and transient refresh failures retain cached history and unsent replies.
+
+Corrected the completed-room navigation regression: Save and continue validates and saves a new or edited room before advancing. Missing fields receive native focus and invalid styling; API errors preserve edits; repeated clicks cannot create duplicate options. Saving a room without advancing remains available for entering multiple room options.
+
+Local verification: backend 150 tests / 1741 assertions, frontend 92 tests / 27 files, Pint, lint and production build pass. The updated owner-to-admin workflows pass against the real local API and database in Chromium and WebKit, including room creation through Save and continue and subsequent approval. Synthetic workflow properties are archived afterward. Production-build acceptance includes 28 owner/admin/feedback scenarios plus six campus/neutral-map/comparison cases across both engines; saved-place and messaging regressions also pass in both engines. No application dependency, migration, catalog replacement or production test-data mutation is needed.
+
+The complete local Chromium owner/admin/student workflow also passes, including private inquiry creation/replies, saved collections, comparison and moderation. Read-only real listing-title/city searches pass in both engines after making search navigation commit synchronously, preventing a subsequent input from being replaced by the preceding search transition.
+
 ## Current increment complete - owner creation and admin workspace, October 20
 
 Implemented walking-destination search suggestions; guided owner step requirements and clear review readiness; a reliable SVG location pin and nearby-campus finder; partial Save draft returning to My space; Unicode name validation; and redesigned admin reviews, listings, reports, accounts and audit screens with server search/filter/sort/pagination, focused moderation dialogs and mobile cards. Existing records, permissions, revision safeguards and providers are preserved.

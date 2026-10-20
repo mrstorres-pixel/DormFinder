@@ -22,6 +22,7 @@ const Landlord = lazy(() => import('./components/LandlordWorkspace').then(module
 const PropertyEditor = lazy(() => import('./components/LandlordWorkspace').then(module => ({ default: module.PropertyEditor })))
 const StudentHome = lazy(() => import('./components/StudentHome'))
 const Profile = lazy(() => import('./components/ProfileSettings'))
+const QuickGuide = lazy(() => import('./components/QuickGuide'))
 const Listings = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Listings })))
 const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
 const Comparison = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Comparison })))
@@ -56,12 +57,13 @@ function Layout({ children }) {
     </div></header>
     <main id="main" tabIndex="-1">
       {logout.error && <div className="container mt-3"><ErrorNotice error={logout.error} /></div>}
+      {user && <Suspense fallback={null}><QuickGuide key={user.id} /></Suspense>}
       {children}
     </main>
     <MobileNavigation user={user} />
     <footer className="site-footer"><div className="container d-flex flex-wrap justify-content-between gap-2">
       <span>DormFinder · Made for student life.</span>
-      <span>Find a place near your college or university.</span>
+      <span>{user && user.role !== 'admin' && <Link to="/guide">Quick guide</Link>} Find a place near your college or university.</span>
     </div></footer>
   </div>
 }
@@ -83,7 +85,8 @@ function AuthPage({ register = false }) {
     onSuccess: (user) => {
       client.setQueryData(['me'], user)
       const fallback = user.role === 'landlord' ? '/landlord' : user.role === 'admin' ? '/admin' : '/account'
-      navigate(safeReturnTo(new URLSearchParams(window.location.search).get('returnTo'), fallback), { replace: true })
+      const returnTo = new URLSearchParams(window.location.search).get('returnTo')
+      navigate(register ? '/profile/setup' + (returnTo ? '?returnTo=' + encodeURIComponent(safeReturnTo(returnTo, user.role === 'landlord' ? '/landlord' : '/listings')) : '') : safeReturnTo(returnTo, fallback), { replace: true })
     },
   })
   function submit(event) {
@@ -155,6 +158,8 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/inquiries/:id" element={<Protected role={['student', 'landlord']}><InquiryThread /></Protected>} />
     <Route path="/account" element={<Protected><Account /></Protected>} />
     <Route path="/profile" element={<Protected><Profile /></Protected>} />
+    <Route path="/profile/setup" element={<Protected><Profile setup /></Protected>} />
+    <Route path="/guide" element={<Protected><QuickGuide standalone /></Protected>} />
     <Route path="/landlord" element={<Protected role="landlord"><Landlord /></Protected>} />
     <Route path="/landlord/properties/new" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="/landlord/properties/:id" element={<Protected role="landlord"><PropertyEditor /></Protected>} />

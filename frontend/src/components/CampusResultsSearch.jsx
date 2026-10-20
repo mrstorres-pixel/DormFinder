@@ -1,18 +1,13 @@
-import { useRef, useState } from 'react'
-import CampusSearch from './CampusSearch'
+import { useState } from 'react'
+import DiscoverySearch from './DiscoverySearch'
 
 export default function CampusResultsSearch({ params, campuses = [], pending, onSearch }) {
-  const [campusId, setCampusId] = useState(params.get('campus_id') || '')
-  const [error, setError] = useState('')
-  const form = useRef(null)
+  const [value, setValue] = useState({ campusId: params.get('campus_id') || '', query: params.get('q') || '' })
   function search(event) {
     event.preventDefault()
-    const input = form.current.querySelector('input[role="combobox"]')
-    if ((!campusId && input.value.trim()) || (campusId && !campuses.some(campus => String(campus.id) === campusId))) {
-      setError('Choose a campus from the suggestions.'); input.focus(); return
-    }
+    const { campusId, query } = value
     const next = new URLSearchParams(params)
-    const changed = campusId !== (params.get('campus_id') || '')
+    const changed = campusId !== (params.get('campus_id') || '') || query.trim() !== (params.get('q') || '')
     next.delete('page')
     if (changed) for (const key of ['south', 'north', 'east', 'west']) next.delete(key)
     if (campusId) {
@@ -23,11 +18,11 @@ export default function CampusResultsSearch({ params, campuses = [], pending, on
       next.delete('campus_id'); next.delete('radius_km')
       if (['recommended', 'distance'].includes(next.get('sort'))) next.set('sort', 'newest')
     }
-    setError(''); onSearch(next)
+    if (query.trim()) next.set('q', query.trim()); else next.delete('q')
+    onSearch(next)
   }
-  return <form ref={form} className="results-campus-search" onSubmit={search} aria-label="Search by campus">
-    <CampusSearch campuses={campuses} value={campusId} onChange={value => { setCampusId(value); setError('') }} />
-    <button className="btn btn-primary" disabled={pending || !campuses.length}>Search campus <span aria-hidden="true">→</span></button>
-    {error && <p className="campus-search-error" role="alert">{error}</p>}
+  return <form className="results-campus-search" onSubmit={search} aria-label="Search places">
+    <DiscoverySearch campuses={campuses} value={value} onChange={setValue} />
+    <button className="btn btn-primary" disabled={pending}>Search places <span aria-hidden="true">→</span></button>
   </form>
 }
