@@ -1,5 +1,15 @@
 # Deployment runbook — Codex execution
 
+## Released owner creation and admin workspace - October 20, 2026
+
+Application source f49b8a507f6cf844e08b2f63b795a75401ed6c2a was committed and pushed after explicit user authorization. Backend Render deployment dep-dbbidjfavr4c73e00sd0 is live on the existing free Singapore Docker service srv-db44ecrbc2fs73aj14q0. Its reported source matches the intended commit, and direct/proxied readiness requests return 200/ready. No migration or provider setting was added or changed.
+
+Frontend Vercel deployment dpl_5thHq9BJNw5FBovS7LwvLTfsuSbu is READY at https://dormfinder-cqw1yv1k8-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing team/project, frontend root, Node 24 and build settings were verified. A clean git archive excluded private files and the user certificate. Thirteen protected staged assets and six public entry assets match the tested build; entry index-DKTFjvdH.js and stylesheet index-BMg_UMK6.css identify this release.
+
+All 46 live scoped Chromium/WebKit cases pass across the main 44-case run and two actual-account read-only cases. Full data-writing owner/admin/student flows pass locally. Automatic approval review blocked synthetic production listing creation/moderation, so production verification uses API-stubbed UI scenarios, unmocked walking routes and guarded read-only account journeys. Existing records, catalog, credentials, service configuration and Deployment Protection remain intact. A bounded post-release application-error scan is empty. The untracked certificate remains excluded and retains SHA256 700723581420DD1AC98FD7E9AC529F0EF210EADCAF87FC868A3AD7D114C2F3B7.
+
+Recovery references: preceding frontend c8a702d / Vercel dpl_3HiG96ZdxdMjnM2X8JbM5rZ867EP and backend 21cf3fc / Render dep-dbas3gmq1p3s73csr9ng. No rollback was performed. This release introduces no database schema change; historical deferred operational checks retain their previous status.
+
 ## Released listing maps and walking destinations - October 19, 2026
 
 Frontend c8a702d919df0489f8804e6cd892a2abd421bdda is READY in Vercel dpl_3HiG96ZdxdMjnM2X8JbM5rZ867EP at https://dormfinder-5joeu5hkm-mrstorres-pixels-projects.vercel.app, promoted to the existing public domain. A clean committed-source archive used the verified existing project/team/frontend root/Node/build settings. Thirteen staged assets and six public entry assets match the tested build. Entry index-BeythKMY.js, listing maps in Discovery-BwTSeVsU.js / Discovery-j_wq6Rwt.css, and ListingPages-BTTWsKx1.js identify this release. All thirty-two live scoped browser cases pass, including real tiles and foot routes to CEU Malolos. Backend 21cf3fc / Render dep-dbas3gmq1p3s73csr9ng, data, environment and free providers are unchanged. Previous frontend 237e69a / Vercel dpl_FAGAMnLZx2K19gtwZSX8XmHtiejT remains the recovery reference. Deployment Protection is unchanged.
