@@ -4,7 +4,7 @@
 .room-poster { object-fit: cover; }
 .room-canvas { display: block; }
 .room-canvas[hidden] { display: none; }
-.room-scrim { pointer-events: none; background: linear-gradient(90deg, color-mix(in srgb, var(--theme-soft) 91%, transparent), color-mix(in srgb, var(--theme-soft) 12.5%, transparent) 60%, transparent); opacity: var(--intro-opacity); }
+.room-scrim { pointer-events: none; background: transparent; opacity: var(--intro-opacity); }
 .room-intro { position: absolute; top: 22%; left: max(6%, calc((100vw - 1320px) / 2)); width: 46%; max-width: 650px; opacity: var(--intro-opacity); pointer-events: none; }
 .room-intro .eyebrow, .room-ending .eyebrow { color: var(--theme-ink); font-size: .68rem; letter-spacing: .2em; }
 .room-intro h1, .room-ending p { font-family: var(--bs-body-font-family); font-weight: 400; font-size: clamp(2.8rem, 5.1vw, 5.6rem); letter-spacing: -.055em; line-height: 1.08; color: var(--theme-ink); margin: 1.15rem 0 1.4rem; }
@@ -23,6 +23,7 @@
 .room-progress { position: absolute; inset: auto 0 0; height: 3px; background: color-mix(in srgb, var(--theme-muted) 13.3%, transparent); }
 .room-progress > span { display: block; height: 100%; background: var(--theme-accent); transform: scaleX(var(--journey-progress)); transform-origin: left; }
 .room-entrance[data-mode=static] { height: auto; }
+.room-entrance[data-mode=static] .room-intro { background: var(--theme-surface); padding: 1.25rem; }
 .room-entrance[data-mode=static] .room-scroll-cue, .room-entrance[data-mode=static] .room-progress { display: none; }
 .home-discovery-hero#find-housing { padding: 3.5rem 0 2rem; scroll-margin-top: 1rem; }
 #find-housing .home-introduction h2 { font-family: var(--bs-body-font-family); font-size: clamp(2rem, 3.2vw, 3rem); font-weight: 400; letter-spacing: -.04em; }
@@ -33,7 +34,7 @@
   .room-intro { top: 14%; left: 7%; width: 86%; }
   .room-intro h1 { font-size: clamp(2.4rem, 9vw, 3.8rem); margin-top: .85rem; }
   .room-intro > p { font-size: .85rem; line-height: 1.5; }
-  .room-scrim { background: linear-gradient(180deg, color-mix(in srgb, var(--theme-soft) 96.1%, transparent), color-mix(in srgb, var(--theme-soft) 75.3%, transparent) 32%, transparent 64%); }
+  .room-intro { background: var(--theme-surface); padding: 1rem; }
   .room-search-link { top: 1rem; right: 5%; padding: .65rem 1rem; gap: 1rem; font-size: .8rem; }
   .room-ending { left: 5%; right: 5%; bottom: 14%; padding: 1.15rem; }
   .room-ending p { font-size: 2.5rem; }

@@ -1,5 +1,13 @@
 # Validation evidence — October 9, 2026
 
+## Interactive walkthrough and solid-color UI - October 20, 2026
+
+Frontend unit coverage includes per-account tour progress, expiry, safe local destinations, recordless owner tours and clipped spotlight/coach positioning. Browser checks exercise complete student/owner/admin tours, actual listing clicks, Back, pause/reload/resume, focus restoration, native filter/message/notification dialogs, failed directories, unsaved profile/message protection, narrow and short screens and reduced motion. All tour test mutations are blocked and counted; the tour itself must issue none. An additional live-account suite permits only GET and ordinary sign-in, then follows the real role tours without changing listings or private conversations.
+
+UI acceptance covers solid heading/background styles without gradients or a colored heading strip, server directories and moderation dialogs, room creation/review and failed writes, zero vacancies and explicit taken status, saved collections, image viewing, comparison alignment/tray, walking destinations, message retries/composer containment, viewings/calendars, notifications, registration/profile and mobile navigation. The homepage's actual WebGL animation, static fallback, delayed campus directory and deferred bundles are included. Screenshots are kept under ignored .local paths.
+
+Final local evidence: frontend 95 tests / 28 files, lint and production build pass; all 144 distinct scoped Chromium/WebKit scenarios have passing evidence across the main and final affected runs. The delayed campus-directory regression now keeps the search input mounted and preserves typed text. The owner editor no longer moves warning focus away from someone who has already started another field. Short-screen composer containment and all twenty walkthrough cases pass. WebKit's disappearing hero canvas was reproduced when adaptive mid-scroll resizing replaced the drawing buffer; choosing a bounded resolution during viewport resize fixes the issue. All twelve final hero cases pass, with actual WebGL in both engines, pixel-checked reversal, idle/hidden rendering suspension, reduced motion and loading/context-loss recovery. Experimental drawing-buffer and stacking workarounds were removed.
+
 ## Group feedback and completed-room navigation - October 20, 2026
 
 Backend: 150 tests / 1741 assertions pass; Pint passes. New checks cover bounded public search suggestions, hidden/draft/expired/suspended-owner exclusion, literal wildcard handling, title/address/city searches without campus inference, and ownership-protected removal with active/archived directory filters and retained inventory. The final suggestions checks pass again after restricting selected columns and trimming input.

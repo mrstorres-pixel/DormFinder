@@ -68,12 +68,14 @@ for (const role of ['student', 'landlord']) test(`new ${role} completes profile 
   state.failProfile = false
   await page.getByRole('button', { name: 'Finish profile setup' }).click()
   await expect(page).toHaveURL(role === 'student' ? /\/listings$/ : /\/landlord$/)
-  const guide = page.getByRole('region', { name: 'Getting started with DormFinder' })
-  await expect(guide).toContainText(role === 'student' ? 'Tap the heart' : 'confirm vacancies')
-  await page.getByRole('button', { name: 'Dismiss getting started guide' }).click()
+  const guide = page.locator('.walkthrough-coach')
+  await expect(guide).toContainText(role === 'student' ? 'A little tour' : 'make room for your listing')
+  await guide.getByRole('button', { name: 'Pause walkthrough' }).click()
   await expect(guide).toHaveCount(0)
-  await page.getByRole('link', { name: 'Quick guide', exact: true }).click()
+  await page.locator('.site-header').getByRole('button', { name: 'Start walkthrough', exact: true }).click()
   await expect(guide).toBeVisible()
+  await guide.getByRole('button', { name: 'Start walkthrough', exact: true }).click()
+  await expect(page.locator('.walkthrough-spotlight')).toBeVisible()
 })
 
 test('one search bar accepts text, suggests places and explicitly chooses a campus', async ({ page }, testInfo) => {

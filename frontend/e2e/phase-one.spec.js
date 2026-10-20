@@ -32,7 +32,7 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   await page.getByRole('button', { name: 'Create account', exact: true }).click()
   await expect(page).toHaveURL(/\/profile\/setup$/)
   await page.getByRole('button', { name: 'Finish profile setup' }).click()
-  await page.getByRole('button', { name: 'Dismiss getting started guide' }).click()
+  await page.getByRole('button', { name: 'Pause walkthrough' }).click()
   const setCookies = (await (await registration).headersArray()).filter((header) => header.name.toLowerCase() === 'set-cookie')
   expect(setCookies.some((header) => header.value.startsWith('dormfinder_session=') && /samesite=lax/i.test(header.value) && /httponly/i.test(header.value))).toBe(true)
   await expect(page.getByRole('heading', { name: 'Your properties', exact: true })).toBeVisible()

@@ -30,6 +30,9 @@ async function fixture(page) {
 test('admin directories filter and paginate on the server, preserve URL state and fit phones', async ({ page }, testInfo) => {
   const state = await fixture(page)
   await page.goto('/admin/listings')
+  await expect(page.locator('.admin-page-heading')).toHaveCSS('background-image', 'none')
+  await expect(page.locator('.admin-page-heading')).toHaveCSS('border-left-width', '0px')
+  await expect(page.locator('body')).toHaveCSS('background-image', 'none')
   await expect(page.getByRole('status')).toContainText('1\u201312 of 26 listings')
   await expect(page.locator('tbody tr')).toHaveCount(12)
   await page.getByRole('button', { name: 'Next', exact: true }).click()

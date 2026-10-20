@@ -38,7 +38,7 @@ export default function ProfileSettings({ setup = false }) {
   return <section className="container page-space profile-settings">
     <Link className="settings-back" to={user.role === 'student' ? '/account' : user.role === 'landlord' ? '/landlord' : '/admin'}>← {user.role === 'student' ? 'Your space' : 'Your workspace'}</Link>
     {setup && <span className="eyebrow">WELCOME TO DORMFINDER</span>}<h1>{setup ? 'Make your profile yours.' : 'Your profile'}</h1>
-    {setup && <p className="profile-setup-intro">Check your name{user.role === 'student' ? ' and optionally choose your campus' : ''}. A profile photo is optional. We will show you a quick guide when you are ready.</p>}
+    {setup && <p className="profile-setup-intro">Check your name{user.role === 'student' ? ' and optionally choose your campus' : ''}. A profile photo is optional. A guided walkthrough will help you explore when you are ready.</p>}
     <ProfilePhoto user={user} />
     <form className="profile-main-form" onChange={() => setProfileDirty(true)} onSubmit={saveProfile}><fieldset disabled={nameChange.isPending || passwordChange.isPending}>
       <section className="settings-section" aria-labelledby="personal-details"><div><h2 id="personal-details">Personal details</h2></div><div><Field label="Your name" name="name" defaultValue={user.name} required maxLength={100} error={fieldErrors(nameChange.error)} /><span className="form-label d-block">Email address</span><p className="settings-email">{user.email}</p></div></section>

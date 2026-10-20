@@ -89,6 +89,19 @@ test('owners see hidden listings and can reconfirm actual vacancies with retry a
   await page.screenshot({ path: `../.local/availability-owner-${testInfo.project.name}.png`, fullPage: true })
 })
 
+test('owners can mark every room taken with zero vacancies and get an explicit sold-out status', async ({ page }) => {
+  const state = await fixture(page, 'landlord')
+  state.fail = false
+  await page.goto('/landlord/properties/55#rooms')
+  const form = page.locator('.vacancy-form')
+  await form.getByLabel('Available units for Twin student beds').fill('0')
+  await form.getByRole('button', { name: 'Confirm vacancies today' }).click()
+  await expect(page.getByText('All room options are taken', { exact: true })).toBeVisible()
+  await expect(form.getByRole('status')).toContainText('Marked sold out')
+  expect(state.writes).toEqual([{ revision: 1, options: [{ id: 21, available_units: 0 }] }])
+  expect(state.property.status).toBe('approved')
+})
+
 test('guests retain the chosen room and availability question through the sign-in shortcut', async ({ page }) => {
   await fixture(page, 'guest')
   await page.goto('/listings/55?option=21&campus_id=8')

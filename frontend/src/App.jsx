@@ -15,6 +15,8 @@ import RoomEntrance from './components/RoomEntrance'
 import { safeReturnTo, clearInquiryDrafts } from './lib/navigation'
 import { useDiscardChanges, useClearUnsavedChanges } from './lib/useUnsavedChanges'
 import UnsavedChangesProvider from './components/UnsavedChangesProvider'
+import WalkthroughProvider from './components/WalkthroughProvider'
+import { useWalkthrough } from './lib/walkthroughContext'
 import ComparisonProvider from './components/ComparisonProvider'
 import { Notifications, StudentReports, ReportQueue, AccountModeration, AdminListings, AuditHistory } from './components/ModerationPages'
 
@@ -43,6 +45,7 @@ function Layout({ children }) {
   const { data: user } = useCurrentUser()
   const client = useQueryClient()
   const navigate = useNavigate()
+  const walkthrough = useWalkthrough()
   const logout = useMutation({
     mutationFn: () => writeApi('post', '/auth/logout'),
     onSuccess: () => { clearAllUnsaved(); clearInquiryDrafts(); setMenuOpen(false); client.clear(); client.setQueryData(['me'], null); navigate('/') },
@@ -57,13 +60,12 @@ function Layout({ children }) {
     </div></header>
     <main id="main" tabIndex="-1">
       {logout.error && <div className="container mt-3"><ErrorNotice error={logout.error} /></div>}
-      {user && <Suspense fallback={null}><QuickGuide key={user.id} /></Suspense>}
       {children}
     </main>
     <MobileNavigation user={user} />
     <footer className="site-footer"><div className="container d-flex flex-wrap justify-content-between gap-2">
       <span>DormFinder · Made for student life.</span>
-      <span>{user && user.role !== 'admin' && <Link to="/guide">Quick guide</Link>} Find a place near your college or university.</span>
+      <span>{user && <button type="button" className="walkthrough-footer-link" onClick={walkthrough.start}>{walkthrough.resumable ? 'Resume walkthrough' : 'Take a walkthrough'}</button>} Find a place near your college or university.</span>
     </div></footer>
   </div>
 }
@@ -134,7 +136,7 @@ function Account() {
 }
 
 const router = createBrowserRouter(createRoutesFromElements(
-  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><Layout><Suspense fallback={<div className="container page-space"><Loading>Loading page...</Loading></div>}><Outlet /></Suspense></Layout></ComparisonProvider></UnsavedChangesProvider>}>
+  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><WalkthroughProvider><Layout><Suspense fallback={<div className="container page-space"><Loading>Loading page...</Loading></div>}><Outlet /></Suspense></Layout></WalkthroughProvider></ComparisonProvider></UnsavedChangesProvider>}>
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />
@@ -159,7 +161,7 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/account" element={<Protected><Account /></Protected>} />
     <Route path="/profile" element={<Protected><Profile /></Protected>} />
     <Route path="/profile/setup" element={<Protected><Profile setup /></Protected>} />
-    <Route path="/guide" element={<Protected><QuickGuide standalone /></Protected>} />
+    <Route path="/guide" element={<Protected><QuickGuide /></Protected>} />
     <Route path="/landlord" element={<Protected role="landlord"><Landlord /></Protected>} />
     <Route path="/landlord/properties/new" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="/landlord/properties/:id" element={<Protected role="landlord"><PropertyEditor /></Protected>} />

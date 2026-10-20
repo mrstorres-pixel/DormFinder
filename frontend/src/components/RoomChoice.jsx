@@ -3,7 +3,7 @@ import { pesos } from '../lib/money'
 
 export default function RoomChoice({ options, selectedId, onChange }) {
   const name = useId()
-  return <fieldset className="room-choices">
+  return <fieldset className="room-choices" data-tour="room-choice">
     <legend>Choose a room option</legend>
     {options.map(option => <label className={'room-choice' + (option.id === selectedId ? ' is-chosen' : '')} key={option.id}>
       <input type="radio" name={name} value={option.id} checked={option.id === selectedId} onChange={() => onChange(option.id)} />

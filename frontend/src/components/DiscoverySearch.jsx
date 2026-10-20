@@ -32,7 +32,7 @@ export default function DiscoverySearch({ campuses = [], value, onChange, disabl
       else setOpen(false)
     }
   }
-  return <div className="campus-search discovery-search" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false) }}>
+  return <div className="campus-search discovery-search" data-tour="search" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false) }}>
     <label className="form-label" htmlFor={id}>Campus, location or listing</label>
     <div className="campus-input"><input ref={input} id={id} className="form-control" type="search" maxLength={100} autoComplete="off" role="combobox" aria-autocomplete="list" aria-expanded={open && matches.length > 0} aria-controls={open ? id + '-results' : undefined} aria-activedescendant={open && active >= 0 ? id + '-option-' + active : undefined} aria-describedby={id + '-help'} placeholder="Try UST, Sampaloc or a dorm name" value={text} disabled={disabled} onFocus={() => setOpen(true)} onChange={event => { onChange({ campusId: '', query: event.target.value }); setActive(-1); setOpen(true) }} onKeyDown={keyDown} />
       {!!text && <button type="button" aria-label="Clear search" disabled={disabled} onClick={() => { onChange({ campusId: '', query: '' }); setActive(-1); input.current?.focus() }}>×</button>}

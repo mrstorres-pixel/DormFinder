@@ -139,7 +139,7 @@ p { line-height: 1.65; }
 .admin-workspace .admin-sections { background: #1a3152; padding: .55rem; border: 1px solid #1a3152; border-radius: 14px; box-shadow: 0 5px 16px #14233e12; }
 .admin-workspace .admin-sections a { color: #dce8fc; }
 .admin-workspace .admin-sections a[aria-current], .admin-workspace .admin-sections a:hover { background: #345bc1; color: #fff; }
-.admin-page-heading { padding: 1.4rem 1.5rem; background: #d6e3f4; border: 1px solid var(--line); border-left: 5px solid var(--accent); border-radius: 12px; }
+.admin-page-heading { padding: 0 0 1.3rem; background: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; }
 .admin-workspace .admin-table thead { background: #243d60; }
 .admin-workspace .admin-table thead th { color: #e5efff; }
 .admin-workspace .admin-table tbody tr:nth-child(even) { background: #e5edf8; }

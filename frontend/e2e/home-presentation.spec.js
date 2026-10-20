@@ -1,6 +1,23 @@
 import { test, expect } from '@playwright/test'
 
-test('the wider header and image-led home stay readable on desktop and mobile', async ({ page }) => {
+test('the home shortcut focuses a usable unified search while campus suggestions are still loading', async ({ page }) => {
+  let directory
+  await page.route('**/api/v1/campuses', route => { directory = route })
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/')
+  await expect.poll(() => !!directory).toBe(true)
+  await page.getByRole('link', { name: 'Find housing', exact: true }).click()
+  const search = page.getByRole('combobox', { name: 'Campus, location or listing' })
+  await expect(search).toBeFocused()
+  await search.fill('Manila')
+  await directory.fulfill({ json: { data: [] } })
+  await expect(page.getByText(/Loading campus suggestions/)).toHaveCount(0)
+  await expect(search).toHaveValue('Manila')
+  await page.getByRole('button', { name: 'Find housing' }).click()
+  await expect(page).toHaveURL(/\/listings\?q=Manila$/)
+})
+
+test('the wider header and image-led home stay readable on desktop and mobile', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/')
@@ -8,6 +25,7 @@ test('the wider header and image-led home stay readable on desktop and mobile', 
   await page.evaluate(() => document.fonts.ready)
   expect(await page.evaluate(() => document.fonts.check('500 16px Inter'))).toBe(true)
   await expect(page.getByRole('heading', { level: 1 })).toHaveCSS('font-family', /Inter/)
+  await page.screenshot({ path: `../.local/home-solid-${testInfo.project.name}-desktop.png` })
   const brand = await page.getByRole('link', { name: 'DormFinder home' }).boundingBox()
   const navigation = await page.getByRole('navigation', { name: 'Main navigation' }).boundingBox()
   expect(brand.x).toBeLessThan(64)
@@ -19,7 +37,8 @@ test('the wider header and image-led home stay readable on desktop and mobile', 
     await card.scrollIntoViewIfNeeded()
     await expect(card.getByRole('heading', { level: 3 })).toBeVisible()
     await expect.poll(() => card.locator('img').evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true)
-    await expect(card.locator('.featured-copy p')).toHaveCount(0)
+    await expect(card.locator('.featured-copy p:not(.availability-freshness)')).toHaveCount(0)
+    await expect(card.locator('.availability-freshness')).toBeVisible()
     await expect(card.locator('.featured-facts')).toContainText(/₱[\d,]+/)
     await expect(card.locator('.featured-facts')).toContainText(/\d+-person room/)
     const cover = await card.locator('.featured-cover').boundingBox()
@@ -32,6 +51,7 @@ test('the wider header and image-led home stay readable on desktop and mobile', 
   }
   await page.setViewportSize({ width: 360, height: 900 })
   await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }))
+  await page.screenshot({ path: `../.local/home-solid-${testInfo.project.name}-phone.png` })
   await page.getByRole('button', { name: 'Menu', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Sign in', exact: true })).toBeVisible()
   await page.getByRole('link', { name: 'Sign in', exact: true }).click()

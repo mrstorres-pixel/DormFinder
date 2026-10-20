@@ -17,7 +17,7 @@ h1,h2,h3{font-weight:650;letter-spacing:-.035em}h1{font-size:clamp(2rem,4vw,3rem
 .brand small{display:block;font-size:.48rem;letter-spacing:.13em;font-weight:600;color:var(--theme-muted);margin-top:4px}
 .brand-link{text-decoration:none}.campus-nav{font-size:.82rem;color:var(--theme-muted);border-right:1px solid var(--theme-line);padding-right:1rem}
 .nav-link{font-size:.9rem;font-weight:600;color:var(--ink);white-space:nowrap}
-.hero{padding:5rem 0 3.5rem;background:linear-gradient(115deg,#f4f6ee,var(--theme-surface) 65%)}
+.hero{padding:5rem 0 3.5rem;background:var(--theme-surface);}
 .eyebrow{font-size:.7rem;font-weight:750;letter-spacing:.14em;color:var(--teal);display:inline-flex;align-items:center;gap:.5rem;margin-bottom:1.4rem}
 .status-dot{height:7px;width:7px;background:var(--teal);border-radius:50%}
 .hero h1{font-size:clamp(2.7rem,4.8vw,4.2rem);line-height:1.12;letter-spacing:-.06em}.hero h1 span{color:var(--teal)}
@@ -75,7 +75,7 @@ a{color:var(--theme-accent)}a:hover{color:var(--theme-accent-dark)}
 .form-control,.form-select{border-color:var(--theme-line);color:var(--ink);min-height:44px}.form-control:focus,.form-select:focus{border-color:var(--theme-accent);box-shadow:0 0 0 .2rem color-mix(in srgb, var(--theme-accent) 12.5%, transparent)}
 .site-header{border-color:var(--theme-line);padding:1rem 0}.site-footer{background:var(--theme-soft);color:var(--theme-muted);border-color:var(--theme-line)}
 .main-navigation{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}.menu-toggle{display:none}
-.hero{background:linear-gradient(120deg,var(--theme-soft),var(--theme-surface) 70%);padding:4rem 0}
+.hero{background:var(--theme-surface);padding:4rem 0}
 .hero h1 span{color:var(--theme-accent)}.hero-copy,.value-card p,.page-heading p{color:var(--theme-muted)}
 .eyebrow,.status-dot{color:var(--theme-accent)}.status-dot{background:var(--theme-accent)}
 .panel{border-color:var(--theme-line);border-radius:20px;box-shadow:0 5px 24px color-mix(in srgb, var(--theme-ink) 2.7%, transparent);background:#fff;padding:1.5rem}

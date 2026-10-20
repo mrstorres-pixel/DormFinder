@@ -5,7 +5,7 @@ import { useCampuses } from '../lib/discovery'
 import { amenities } from '../lib/housing'
 import { toCentavos } from '../lib/money'
 import DiscoverySearch from './DiscoverySearch'
-import { ErrorNotice, Loading } from './Feedback'
+import { ErrorNotice } from './Feedback'
 
 export default function HousingSearchForm({ home = false }) {
   const navigate = useNavigate()
@@ -35,7 +35,7 @@ export default function HousingSearchForm({ home = false }) {
   return <form className={'housing-search-form panel ' + (home ? 'home-campus-form' : '')} onSubmit={find}>
     {!home && <div className="search-form-heading"><span className="eyebrow">FIND YOUR NEXT PLACE</span><p>Search a campus, neighborhood or dorm.</p></div>}
     <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} />
-    <div className="search-entry"><div>{campuses.isPending ? <Loading>Loading campus directory…</Loading> : <DiscoverySearch campuses={campuses.data} value={{ campusId, query }} onChange={value => { setSelected(value.campusId); setQuery(value.query); setError('') }} />}</div><button className="btn btn-primary">Find housing<span aria-hidden="true"> →</span></button></div>
+    <div className="search-entry"><div><DiscoverySearch campuses={campuses.data || []} value={{ campusId, query }} onChange={value => { setSelected(value.campusId); setQuery(value.query); setError('') }} />{campuses.isPending && <p className="small text-secondary" role="status">Loading campus suggestions… You can already search for a place.</p>}</div><button className="btn btn-primary">Find housing<span aria-hidden="true"> →</span></button></div>
     <details ref={preferences} className="search-preferences" open={!home}><summary>{home ? 'Set a rent budget or preferences' : 'Room, budget and preferences'}</summary><div className="search-preferences-body"><div className="housing-search-basics">
       <div><label className="form-label" htmlFor="finder-room">Room type and price basis</label><select className="form-select" id="finder-room" name="inventory_type" defaultValue={home ? '' : 'bedspace'}><option value="">Explore any room type</option><option value="bedspace">Bedspace — per person</option><option value="whole_room">Whole room — per room</option></select></div>
       <div><label className="form-label" htmlFor="finder-budget">Maximum monthly base rent (PHP)</label><input className="form-control" id="finder-budget" name="budget" inputMode="decimal" placeholder="Your budget, optional" /></div>

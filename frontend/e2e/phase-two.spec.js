@@ -54,7 +54,7 @@ test('landlord, administrator and student complete the listing and private inqui
     await expect(page).toHaveURL(/\/profile\/setup$/)
     await page.getByRole('button', { name: 'Finish profile setup' }).click()
     await expect(page).toHaveURL(role === 'landlord' ? /\/landlord$/ : /\/listings$/)
-    await page.getByRole('button', { name: 'Dismiss getting started guide' }).click()
+    await page.getByRole('button', { name: 'Pause walkthrough' }).click()
     accounts[role] = { email: `${role}-${suffix}@example.test`, password }
     await writeFile(accountFile, JSON.stringify(accounts), { mode: 0o600 })
   }

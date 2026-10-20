@@ -1,5 +1,15 @@
 # Implementation status
 
+## Local work complete - interactive walkthrough and restrained UI, October 20
+
+The quick-guide page is replaced by a guided tour across the actual student, owner and admin screens, with highlighted controls, Back/Next, pause/resume, restart, keyboard navigation and a help button in the header. Progress is private to the account and browser tab and expires after 12 hours. New owners can inspect the creation controls without creating a sample property; existing owners also see the real photo, room, location, review and availability steps. The tour never automatically sends messages, submits listings or changes vacancies, and it respects unsaved edits.
+
+The visual pass uses solid blue, navy, warm paper and sage surfaces with stronger dividers, consistent controls and clearer typography. Gradients, decorative rings and the admin heading's colored accent strip have been removed at the user's request. Page headings use simple spacing and a bottom divider. Listing, saved-place, message, calendar, owner and admin layouts remain responsive. The message composer stays reachable on short landscape screens, and saved-card labels no longer overlap the heart control.
+
+Owner vacancy controls explicitly explain setting available units to zero when an option is taken, display a sold-out confirmation, and show when all options are taken. The home search stays usable while campus suggestions load. Editor warning focus no longer interrupts someone who has already moved into another field.
+
+Local verification: frontend 95 tests / 28 files, lint and production build pass. All 144 distinct scoped Chromium/WebKit scenarios have passing evidence across the final main, affected-screen and hero runs. The Safari canvas issue was traced to mid-scroll resolution changes; rendering now chooses a bounded resolution per viewport, and all twelve final actual-animation/fallback checks pass, including scene reversal in both engines. No dependency, backend, schema or seeded-data change is required.
+
 ## Current increment complete - group feedback and room-step correction, October 20
 
 Implemented the actionable feedback from improvement.pdf: campus/location/listing-name discovery in one bar with categorized suggestions; blue/slate surfaces, stronger controls and dividers, and navy admin navigation; registration into profile setup with a role-specific quick guide; student completion into Browse; heart save/unsave controls with note-removal confirmation; and visible owner removal through reversible archiving with an archived directory. Admin directories continue to display owner names. Empty student inboxes now explain how to start a conversation, and transient refresh failures retain cached history and unsent replies.

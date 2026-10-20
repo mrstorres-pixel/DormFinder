@@ -103,7 +103,7 @@ export default function SavedPlaces() {
   function edit(id, trigger) { if (id !== editorId && !requireSaved()) return; editTrigger.current = trigger; setEditorId(id); setEditorOpen(true) }
   function filter(id) { setParams(id ? { collection: String(id) } : {}) }
   const returnPath = safeReturnTo(params.get('returnTo'), '')
-  return <section className="saved-places-page"><header className="saved-page-heading"><div><h1>Saved places</h1><p>Your possibilities, together.</p></div><button ref={collectionTrigger} className="btn btn-outline-primary" onClick={() => setNewOpen(true)}>＋ New collection</button></header>
+  return <section className="saved-places-page" data-tour="saved-places"><header className="saved-page-heading"><div><h1>Saved places</h1><p>Your possibilities, together.</p></div><button ref={collectionTrigger} className="btn btn-outline-primary" onClick={() => setNewOpen(true)}>＋ New collection</button></header>
     {returnPath && /^\/listings\/\d+(?:[?#]|$)/.test(returnPath) && <Link className="btn btn-outline-primary mb-3" to={returnPath}>Return to selected room</Link>}
     <ErrorNotice error={lists.error || removeCollection.error} retry={lists.error ? () => lists.refetch() : undefined} />
     <nav className="saved-collection-tabs" aria-label="Saved collections"><button type="button" aria-current={!collection ? 'page' : undefined} onClick={() => filter('')}>All saved</button>{lists.data?.map(item => <button type="button" key={item.id} aria-current={String(item.id) === collection ? 'page' : undefined} onClick={() => filter(item.id)}>{item.name}</button>)}</nav>

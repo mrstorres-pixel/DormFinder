@@ -154,16 +154,14 @@ export function createDormRoom(canvas) {
     }
   }
 
-  let disposed = false, resolutionScale = 1, slowFrames = 0, renderWidth = 1, renderHeight = 1, pixelRatio = 1, lastFrame = 0
-  function sizeRenderer() {
-    renderer.setPixelRatio(pixelRatio * resolutionScale)
-    renderer.setSize(renderWidth, renderHeight, false)
-  }
+  let disposed = false
   return {
     resize(width, height, mobile) {
-      pixelRatio = Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.5)
-      renderWidth = Math.max(1, width); renderHeight = Math.max(1, height)
-      sizeRenderer()
+      const renderWidth = Math.max(1, width), renderHeight = Math.max(1, height)
+      // Bound GPU work per viewport; changing buffers mid-scroll can blank WebKit's canvas.
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, mobile ? 1 : 1.5, Math.sqrt(2_000_000 / (renderWidth * renderHeight)))
+      renderer.setPixelRatio(pixelRatio)
+      renderer.setSize(renderWidth, renderHeight, false)
       camera.aspect = width / Math.max(1, height); camera.fov = mobile ? 68 : 54; camera.updateProjectionMatrix()
       details.visible = !mobile
     },
@@ -177,16 +175,7 @@ export function createDormRoom(canvas) {
       camera.updateProjectionMatrix()
       camera.position.set(x, mobile ? 1.8 : 1.6, z)
       camera.lookAt(x, mobile ? 1.8 : 1.6, z - 10)
-      const started = performance.now()
-      const interval = started - lastFrame
-      lastFrame = started
       renderer.render(scene, camera)
-      slowFrames = performance.now() - started > 24 || (interval > 28 && interval < 80) ? slowFrames + 1 : Math.max(0, slowFrames - 1)
-      // Slow graphics devices get fewer pixels, without changing layout or scroll timing.
-      if (slowFrames >= 6 && resolutionScale > .65) {
-        resolutionScale = Math.max(.65, resolutionScale - .15)
-        slowFrames = 0; sizeRenderer(); renderer.render(scene, camera)
-      }
     },
     dispose() {
       if (disposed) return

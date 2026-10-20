@@ -90,7 +90,7 @@ export default function SearchFilters({ params, onSearch }) {
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus() }
   }
   return <div className="filters-workspace">
-    <button ref={trigger} className="btn btn-outline-primary filter-toggle" aria-haspopup="dialog" aria-expanded={expanded} aria-controls="housing-filter-drawer" onClick={() => setExpanded(true)}>Filters{applied.length > 0 && <span className="filter-count">{applied.length}</span>}</button>
+    <button ref={trigger} data-tour="filters" className="btn btn-outline-primary filter-toggle" aria-haspopup="dialog" aria-expanded={expanded} aria-controls="housing-filter-drawer" onClick={() => setExpanded(true)}>Filters{applied.length > 0 && <span className="filter-count">{applied.length}</span>}</button>
     <dialog ref={dialog} id="housing-filter-drawer" className="filter-drawer" aria-labelledby="filter-drawer-title" onKeyDown={keepFocus} onCancel={event => { event.preventDefault(); close() }} onPointerDown={event => { backdropStart.current = outside(event) }} onPointerUp={event => { if (backdropStart.current && outside(event)) close(); backdropStart.current = false }}>
       <form ref={form} id="housing-filters" className="filter-drawer-form" onSubmit={submit}>
         <header className="filter-drawer-heading"><div><h2 id="filter-drawer-title">Find your fit</h2><p>Refine the places you want to see.</p></div><button type="button" className="drawer-close" aria-label="Close filters" onClick={close}>×</button></header>

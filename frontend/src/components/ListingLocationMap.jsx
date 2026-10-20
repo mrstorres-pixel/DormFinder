@@ -21,7 +21,7 @@ export default function ListingLocationMap({ properties, campus }) {
   const selectedCampus = destination?.context === context ? campuses.data?.find(item => String(item.id) === destination.id) : campus
   const pinned = properties.filter(hasPin)
   const reference = pinned[0]
-  return <section className="panel mb-4 listing-location" aria-label="Property location">
+  return <section className="panel mb-4 listing-location" data-tour="location" aria-label="Property location">
     <div className="listing-location-heading"><h2>{selectedCampus ? 'Location and campus' : 'Location'}</h2>{reference && <button type="button" className="btn btn-outline-primary" aria-expanded={shown} aria-controls={id + '-map'} onClick={() => setShown(value => !value)}>{shown ? 'Hide map' : 'Show map'}</button>}</div>
     {!reference ? <p className="small text-secondary">A location pin is not available for this property. Use the listing address or ask the owner for directions.</p> : shown && <div id={id + '-map'}>
       <div className="listing-map-destination"><CampusSearch campuses={campuses.data || []} value={String(selectedCampus?.id || '')} onChange={id => setDestination({ context, id })} label="Walking destination" requireQuery disabled={campuses.isPending || !!campuses.error} helper="Type a university, campus or city, then choose a suggestion for walking directions." />

@@ -7,6 +7,7 @@ import './appearance.css'
 import './discovery.css'
 import App from './App.jsx'
 import './theme.css'
+import './refinements.css'
 
 const client = new QueryClient({
   defaultOptions: {

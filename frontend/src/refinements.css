@@ -1,0 +1,192 @@
+/* A calm campus palette: ink, blue, warm paper and a little green. */
+:root { --theme-surface: #f1f5fa; --theme-soft: #dce7f5; --theme-line: #a0b3cd; --theme-control: #e9f0f9; --theme-control-line: #7890af; --theme-muted: #435a79; --page: #e5edf6; --paper: #f6f1e7; --sage: #deebe3; --card-shadow: 0 7px 24px #1937590b; }
+body { background: #e5edf6; }
+.app-layout .site-header { background: #dce6f4; border-bottom: 1px solid #96accb; box-shadow: 0 3px 16px #19375908; }
+.app-layout .brand { font-weight: 700; letter-spacing: -.055em; }
+.app-layout .main-navigation { gap: .3rem; }
+.app-layout .main-navigation .nav-link, .app-layout .navigation-menu > summary { border-radius: 11px; font-size: .83rem; }
+.app-layout .main-navigation .nav-link.is-current { background: #1b3559; color: #eef4ff; box-shadow: 0 3px 10px #17395f12; }
+.app-layout .main-navigation .nav-link:hover:not(.is-current) { background: #cbdcf2; color: #1b3559; }
+.app-layout .guest-navigation > .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; line-height: 1.2; }
+.walkthrough-help { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 50%; border: 1px solid #9bb0cd; color: #445f81; background: #e6eef9; }
+.walkthrough-help:hover { color: var(--accent); background: #d2e0f5; }
+.walkthrough-help:disabled { opacity: .5; }
+.walkthrough-footer-link { background: none; border: 0; padding: 0; color: #e3edff; text-decoration: underline; text-underline-offset: 4px; margin-right: 1rem; font-size: inherit; }
+.app-layout .notification-bell { background: #e6eef9; border: 1px solid #b0c2dc; }
+.app-layout .navigation-popover { background: #eef3fb; border: 1px solid #94aaca; border-radius: 15px; padding: .55rem; box-shadow: 0 18px 50px #19375924; }
+.app-layout .navigation-popover .nav-link { min-height: 44px; }
+.app-layout .btn { border-radius: 11px; transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.app-layout .btn-primary { background-image: none; box-shadow: none; }
+.app-layout .btn-primary:hover { box-shadow: none; }
+.app-layout .btn-outline-primary { background-color: #e8f0fb; }
+.app-layout .btn-outline-primary:hover { background-color: var(--accent); }
+.app-layout .form-control, .app-layout .form-select { border-radius: 10px; min-height: 45px; box-shadow: inset 0 1px 2px #17395f04; }
+.app-layout .form-control:focus, .app-layout .form-select:focus { box-shadow: 0 0 0 3px #2558e526; }
+.app-layout .form-label { font-size: .83rem; color: #243e60; }
+.app-layout .panel { border-radius: 10px; box-shadow: none; }
+.app-layout .eyebrow { font-size: .65rem; letter-spacing: .16em; font-weight: 700; }
+.app-layout .page-heading h1 { line-height: 1.14; letter-spacing: -.045em; }
+.app-layout .map-discovery-page .discovery-controls > .page-heading, .app-layout .owner-listings > .page-heading { color: var(--ink); border: 0; border-bottom: 1px solid #a0b3cd; border-radius: 0; padding: .25rem 0 1.25rem; background: transparent; box-shadow: none; }
+.app-layout .map-discovery-page .discovery-controls > .page-heading h1 { font-size: clamp(1.7rem, 2.6vw, 2.15rem); }
+.app-layout .map-discovery-page .discovery-controls > .page-heading p, .app-layout .owner-listings > .page-heading p { color: var(--muted); font-size: .88rem; margin-bottom: 0; }
+.app-layout .map-discovery-page .discovery-controls > .page-heading .eyebrow, .app-layout .owner-listings > .page-heading .eyebrow { color: var(--muted); margin-bottom: .7rem; }
+.app-layout .owner-listings > .page-heading > .btn { background: #e5edfa; border-color: #9db6dc; color: #193759; box-shadow: none; white-space: nowrap; z-index: 1; }
+.app-layout .results-search-bar { border: 1px solid #a0b3cd; border-radius: 16px; background: #eef3fa; padding: .85rem; box-shadow: var(--card-shadow); margin-top: 1rem; }
+.app-layout .results-campus-search .form-label { margin-bottom: .4rem; }
+.app-layout .results-search-bar .filter-toggle { margin-top: 1.65rem; }
+.app-layout .results-search-bar .active-filters { margin-top: .1rem; }
+.app-layout .filter-chip { background: #dde8f7; border-color: #a5b8d4; font-size: .72rem; }
+.app-layout .discovery-toolbar { padding-block: .7rem 1rem; border-bottom: 1px solid #9bafcb; margin-bottom: 1rem; }
+.app-layout .property-card { background: var(--paper); border: 1px solid #a1b3cd; border-radius: 18px; box-shadow: var(--card-shadow); overflow: hidden; }
+.app-layout .property-card .property-cover { background: #d6e0ee; }
+.app-layout .property-card > .p-4 { background: var(--paper); }
+.app-layout .property-card h2 { font-size: 1.05rem; line-height: 1.4; font-weight: 650; letter-spacing: -.025em; }
+.app-layout .property-card .room-price { font-weight: 700; letter-spacing: -.035em; }
+.app-layout .property-card .card-actions { border-top-color: #a8bad3; }
+.app-layout .property-card .status-badge { background: #e7eef9f5; border-color: #9bb1d0; color: #1c3b62; box-shadow: 0 2px 8px #14233e14; }
+.app-layout .availability-freshness { display: inline-flex; align-items: center; gap: .35rem; background: #e0eee6; color: #23634d; border: 1px solid #9dc5b0; border-radius: 20px; padding: .25rem .55rem; font-size: .69rem; }
+.app-layout .availability-freshness.needs-confirmation { background: #f2e7ce; color: #795513; border-color: #cbb078; }
+.app-layout .map-heading { padding: .15rem .15rem .65rem; }
+.app-layout .map-heading > span { font-weight: 650; font-size: .85rem; }
+.app-layout .map-heading p { font-size: .69rem; }
+.app-layout .map-workspace, .app-layout .listing-location-canvas { border: 1px solid #94aaca; border-radius: 18px; overflow: hidden; box-shadow: var(--card-shadow); }
+.app-layout .listing-detail-page > .page-heading { padding: .4rem 0 1.4rem; border-radius: 0; border: 0; border-bottom: 1px solid #a3b4cb; background: transparent; }
+.app-layout .listing-detail-page > .page-heading h1 { font-size: clamp(1.9rem, 3vw, 2.65rem); }
+.app-layout .listing-detail-gallery .gallery-image-stage { border: 1px solid #a0b3cd; border-radius: 18px; overflow: hidden; background: #dce6f3; }
+.app-layout .listing-detail-main > .panel { border: 1px solid #a0b3cd; padding: 1.4rem; background: #f0f4fa; border-radius: 18px; }
+.app-layout .listing-detail-main h2, .app-layout .listing-detail-aside h2 { font-size: 1.2rem; }
+.app-layout .listing-detail-aside > .panel { background: #eef3fb; padding: 1.4rem; border-color: #93aaca; box-shadow: 0 10px 30px #19375912; }
+.app-layout .room-cost-overview { padding: 1.1rem; background: #f5f0e5; border: 1px solid #c6bea8; border-radius: 14px; margin-top: 1.1rem; }
+.app-layout .room-cost-overview .room-overview-price { font-size: 2rem; line-height: 1.2; margin-top: 0; }
+.app-layout .room-cost-overview > p:last-child { margin-bottom: 0; }
+.app-layout .room-choice { background: #e5edf8; border-color: #a1b6d3; border-radius: 12px; }
+.app-layout .room-choice.is-chosen { background: #d9e6fc; border-color: #2c5ce4; box-shadow: 0 0 0 1px #2c5ce4; }
+.app-layout .listing-primary-actions { gap: .75rem; }
+.app-layout .listing-small-actions { border-top: 1px solid #adbed6; margin-top: .35rem; padding-top: .65rem; }
+.app-layout .photo-gallery figcaption { color: #536883; font-size: .76rem; }
+.app-layout .comparison-scroll { border: 1px solid #9db0cb; border-radius: 18px; background: #eef3fb; box-shadow: var(--card-shadow); }
+.app-layout .comparison-table tbody th { background: #dce7f5; color: #264467; }
+.app-layout .comparison-table tbody td { border-color: #acbdd5; }
+.app-layout .comparison-tray { border-color: #92aad1; background: #e9f0fcf5; box-shadow: 0 8px 32px #18386026; backdrop-filter: blur(12px); }
+.app-layout .saved-page-heading, .app-layout .space-introduction, .app-layout .viewings-heading { background: transparent; border: 0; border-bottom: 1px solid #a1b4cf; border-radius: 0; padding: .4rem 0 1.4rem; }
+.app-layout .saved-page-heading h1, .app-layout .viewings-heading h1 { letter-spacing: -.045em; font-size: clamp(1.9rem, 3vw, 2.6rem); }
+.app-layout .saved-collection-tabs { gap: .5rem; padding-bottom: 1.15rem; border-bottom: 1px solid #a0b3cd; }
+.app-layout .saved-collection-tabs button { border-color: #adc0da; background: #e4edf9; color: #3b5576; font-size: .82rem; }
+.app-layout .saved-collection-tabs button[aria-current] { background: #1b3559; color: #eef4ff; border-color: #1b3559; }
+.app-layout .saved-place-card { background: var(--paper); border-color: #a1b4cd; box-shadow: var(--card-shadow); }
+.app-layout .saved-place-copy h2 { font-weight: 650; }
+.app-layout .saved-card-actions { border-top: 1px solid #afbdd0; }
+.app-layout .saved-card-actions > button { background: #e5edf9; border: 1px solid #acbed8; border-radius: 8px; padding: .45rem .6rem; font-size: .72rem; }
+.app-layout .saved-card-heart .save-heart { background: #edf3fbf2; border-color: #91a7c6; }
+.app-layout .saved-place-card .featured-cover .status-badge { inset: auto auto .65rem .65rem; max-width: calc(100% - 1.3rem); white-space: normal; }
+.app-layout .saved-page-empty, .app-layout .space-saved-empty, .app-layout .empty-state { background: #e7efee; border: 1px solid #a1b8b6; border-radius: 20px; padding: 3rem 1.3rem; }
+.app-layout .saved-page-empty > span, .app-layout .space-saved-empty > span, .app-layout .empty-icon { display: grid; place-items: center; width: 72px; height: 72px; margin: 0 auto 1.2rem; background: #d4e4e0; border: 1px solid #9ab8ac; border-radius: 23px; color: #326e62; }
+.app-layout .space-section-heading { border-bottom: 1px solid #a0b3cd; padding-bottom: .8rem; }
+.app-layout .owner-listing-view { background: #eef3fa; padding: .8rem 1rem; border: 1px solid #a0b3cd; border-radius: 13px; max-width: 320px; }
+.app-layout .owner-create-intro { padding-bottom: 1.2rem; border-bottom: 1px solid #a0b3cd; }
+.app-layout .owner-create > .panel { background: var(--paper); }
+.app-layout .editor-steps { border: 1px solid #a0b3cd; padding: .65rem; border-radius: 15px; background: #edf3fb; gap: .4rem; }
+.app-layout .editor-steps button[aria-current] { background: #d7e4fb; color: #204cb2; }
+.app-layout .editor-steps button.is-complete > span { background: #dcece3; border-color: #89b79f; color: #24694c; }
+.app-layout .owner-editor .room-form { background: #e6eef9; border-color: #9fb4d2; padding: 1.35rem; }
+.app-layout .owner-editor .room-option { background: #f6f1e7; border-color: #b8b7a9; }
+.app-layout .owner-editor .upload-form { background: #e5efe9; border: 1px dashed #78a28e; border-radius: 15px; padding: 1.4rem; }
+.app-layout .owner-editor .photo-grid figure { background: #dce7f5; border: 1px solid #a8bbd6; }
+.app-layout .owner-pin-picker { background: #e7eff9; border-color: #a4b9d5; }
+.app-layout .owner-availability { border-radius: 13px; background: #deece4; border-color: #96bba6; padding: .9rem 1rem; }
+.app-layout .owner-availability.needs-confirmation { background: #f2e8d2; border-color: #c6ad77; }
+.app-layout .vacancy-form { background: #e4eee7; border: 1px solid #a3bdab; padding: 1rem; border-radius: 13px; }
+.app-layout .vacancy-form > h3 { font-size: 1rem; }
+.app-layout .review-preparation { background: #e3edf7; }
+.app-layout .review-confirmation { background: #dbe9e2; border: 1px solid #9bb7a6; border-radius: 11px; padding: .8rem; }
+.app-layout .settings-section { background: #eef3fa; padding: 1.5rem; border: 1px solid #a4b7d1; border-radius: 16px; margin-top: 1rem; }
+.app-layout .settings-section h2 { font-size: 1.08rem; }
+.app-layout .settings-save { padding-block: 1.3rem; }
+.app-layout .auth-intro { position: relative; background: #1c365a; border: 1px solid #274d78; color: #e9f1ff; border-radius: 22px; padding: clamp(1.5rem, 3vw, 3rem); overflow: hidden; }
+.app-layout .auth-intro h1 { color: #edf4ff; font-size: clamp(2rem, 3.8vw, 3.2rem); }
+.app-layout .auth-intro > p { color: #c0d1ea; }
+.app-layout .auth-intro > .eyebrow { color: #a4c5ff; }
+.app-layout .auth-intro .campus-card { background: #2a486d; border: 1px solid #6381a9; color: #c6d8f0; border-radius: 15px; }
+.app-layout .auth-intro .campus-card strong { color: #f0e7d4; }
+.app-layout .auth-panel { background: #f4f0e6; border-color: #b9b7a9; padding: 1.8rem; }
+.app-layout .role-picker label { background: #e6edf7; border-color: #acbdd4; }
+.app-layout .role-picker label.selected { background: #d9e9df; border-color: #4d9074; }
+.app-layout .message-inbox { background: #e7eef9; border-right-color: #9db1cf; }
+.app-layout .inbox-heading { background: #1d385c; padding: 1.3rem 1.3rem 1.15rem; border-bottom: 1px solid #36577e; color: #edf4ff; }
+.app-layout .inbox-heading h1 { font-size: 1.5rem; color: inherit; }
+.app-layout .inbox-scroll { padding-top: .75rem; }
+.app-layout .inbox-person { border: 1px solid transparent; background: #eff3fa; margin-bottom: .45rem; }
+.app-layout .inbox-person.is-selected { background: #d4e3fc; border-color: #8ca8d6; }
+.app-layout .chat-welcome { background: #edf2f9; }
+.app-layout .chat-welcome h2 { font-size: 1.65rem; }
+.app-layout .chat-welcome > span { width: 82px; height: 82px; display: grid; place-items: center; border-radius: 26px; background: #d4e2f6; border: 1px solid #a0b8dd; }
+.app-layout .chat-header { background: #ecf2fb; border-color: #a4b9d5; }
+.app-layout .chat-place { background: #e0eaf7; border-color: #a4b9d5; }
+.app-layout .chat-history { background: #edf2f9; }
+.app-layout .chat-bubble { background: #f5f0e5; border: 1px solid #c8c4b8; }
+.app-layout .is-own .chat-bubble { background: #244fba; border-color: #244fba; color: #f0f5ff; }
+.app-layout .is-own .chat-bubble > time { color: #c8d8fa; }
+.app-layout .chat-compose { background: #e2ebf9; border-top: 1px solid #a4b8d3; }
+.app-layout .chat-compose form { border-color: #8ca3c5; background: #edf3fb; }
+.app-layout .chat-compose textarea { border: 0; background: transparent; }
+.app-layout .viewing-calendar { background: #eef3fa; border: 1px solid #9eb2ce; border-radius: 18px; padding: 1.2rem; box-shadow: var(--card-shadow); }
+.app-layout .viewing-calendar header { border-bottom: 1px solid #b0c1d8; padding-bottom: 1rem; }
+.app-layout .calendar-days { gap: 1px; background: #a8bbd5; border: 1px solid #a8bbd5; border-radius: 12px; overflow: hidden; }
+.app-layout .calendar-days > button { background: #f4f1e8; border: 0; }
+.app-layout .calendar-days > span { background: #e3ebf7; }
+.app-layout .calendar-days > button[aria-pressed=true] { background: #d4e2fb; }
+.app-layout .calendar-days > button:hover { background: #e0eaf8; }
+.app-layout .appointment-card { background: #f4f0e7; border-color: #a9b6c8; box-shadow: var(--card-shadow); }
+.app-layout .appointment-card.is-selected { background: #dfe9fb; border-color: #4774db; }
+.app-layout .appointment-detail-empty > span { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 23px; background: #deebe4; border: 1px solid #a4bcae; margin-inline: auto; color: #36725c; }
+.app-layout .admin-page-heading { background: transparent; border: 0; border-bottom: 1px solid #a0b3cd; border-radius: 0; padding: 0 0 1.3rem; }
+.app-layout .admin-filter-bar { background: #eaf1fb; box-shadow: var(--card-shadow); }
+.app-layout .admin-table-wrap { box-shadow: var(--card-shadow); }
+.app-layout .admin-table tbody tr { background: #f3f0e8; }
+.app-layout .admin-table tbody tr:nth-child(even) { background: #e5edf9; }
+.app-layout .admin-table tbody tr:hover { background: #d8e5f9; }
+.app-layout .admin-empty, .app-layout .review-empty { background: #e2ece6; border-color: #a1b7ac; }
+.app-layout .admin-empty > span, .app-layout .review-empty > span { width: 64px; height: 64px; margin-inline: auto; background: #cfe1d7; border: 1px solid #8eb4a0; border-radius: 22px; color: #34725b; display: grid; place-items: center; }
+.app-layout .site-footer { background: #172d4c; color: #c2d1e7; border-top: 1px solid #345277; }
+.notification-popover { background: #eef3fb; border-color: #91a8ca; box-shadow: 0 18px 60px #14274230; }
+.notification-popover .notification-panel-header { background: #203c62; color: #eef5ff; border-color: #446086; }
+.notification-popover .notification-panel-header h2 { color: inherit; }
+.notification-popover .notification-item { background: #f2eee5; border-bottom-color: #b0bfd2; }
+.notification-popover .notification-item.is-unread { background: #dfe9fb; }
+.action-dialog { border-color: #91a9cb; background: #edf3fb; box-shadow: 0 24px 90px #1427424d; }
+.action-dialog > header { background: #dce8f9; border-bottom-color: #9fb6d8; }
+.action-dialog .action-room-context { background: #e2ebf9; padding: .9rem; border: 1px solid #a8beda; border-radius: 11px; }
+@media (hover: hover) and (pointer: fine) { .app-layout .property-card, .app-layout .saved-place-card { transition: box-shadow .18s ease, transform .18s ease; } .app-layout .property-card:hover, .app-layout .saved-place-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px #19375916; } }
+@media (min-width: 768px) and (max-width: 1100px) { .app-layout .site-header-inner { padding-inline: 22px; gap: .5rem !important; } .app-layout .main-navigation { gap: .1rem; } .app-layout .main-navigation .nav-link, .app-layout .navigation-menu > summary { font-size: .78rem; padding-inline: .55rem; } }
+@media (min-width: 768px) and (max-width: 920px) { .app-layout .brand { font-size: 1.25rem; gap: .4rem; } .app-layout .brand svg { width: 28px; height: 32px; } .app-layout .main-navigation .nav-link, .app-layout .navigation-menu > summary { font-size: .72rem; padding-inline: .4rem; } .app-layout .account-menu { margin-left: .35rem; padding-left: .5rem; } }
+@media (max-width: 767px) {
+  .app-layout .site-header-inner { padding-inline: 14px; }
+  .app-layout.has-mobile-tabs .brand { font-size: 1.1rem; gap: 7px; }
+  .app-layout.has-mobile-tabs .brand svg { width: 26px; height: 30px; }
+  .app-layout .walkthrough-help { width: 32px; height: 32px; }
+  .app-layout .main-navigation { gap: .2rem; }
+  .app-layout .map-discovery-page .discovery-controls > .page-heading, .app-layout .owner-listings > .page-heading { padding: .25rem 0 1rem; border-radius: 0; }
+  .app-layout .map-discovery-page .discovery-controls > .page-heading h1 { font-size: 1.75rem; }
+  .app-layout .results-search-bar { padding: .8rem; }
+  .app-layout .results-search-bar .filter-toggle { margin-top: 0; }
+  .app-layout .property-card > .p-4 { padding: 1.1rem !important; }
+  .app-layout .listing-detail-page > .page-heading, .app-layout .saved-page-heading, .app-layout .viewings-heading, .app-layout .space-introduction { padding: .25rem 0 1.15rem; }
+  .app-layout .listing-detail-page > .page-heading h1 { font-size: 1.8rem; }
+  .app-layout .listing-detail-main > .panel, .app-layout .listing-detail-aside > .panel { padding: 1.1rem; }
+  .app-layout .room-cost-overview { padding: 1rem; }
+  .app-layout .saved-page-heading > button { margin-top: .4rem; }
+  .app-layout .owner-editor .room-form, .app-layout .settings-section { padding: 1rem; }
+  .app-layout .editor-steps { padding: .5rem; gap: .3rem; }
+  .app-layout .auth-panel { padding: 1.3rem; }
+  .app-layout .viewing-calendar { padding: .85rem; }
+  .app-layout .mobile-navigation { background: #dae5f5f5; border-color: #92a9c9; backdrop-filter: blur(14px); box-shadow: 0 -4px 20px #14233e12; }
+  .app-layout .mobile-navigation-link.is-current { background: #1c3b67; color: #edf4ff; }
+  .app-layout .chat-welcome h2 { font-size: 1.3rem; }
+}
+@media (prefers-reduced-motion: reduce) { .app-layout .btn, .app-layout .property-card, .app-layout .saved-place-card { transition: none; } .app-layout .property-card:hover, .app-layout .saved-place-card:hover { transform: none; } }
+@media (max-height: 560px) {
+  .app-layout.is-messaging .site-header { padding-block: .5rem; }
+  .app-layout.is-messaging .chat-header { padding-block: .4rem; }
+  .app-layout.is-messaging .chat-place { padding-block: .4rem; }
+  .app-layout.is-messaging .chat-compose { padding-block: .45rem; }
+}

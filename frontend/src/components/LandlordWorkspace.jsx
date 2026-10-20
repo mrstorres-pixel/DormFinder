@@ -22,8 +22,8 @@ export function Landlord() {
   const [page, setPage] = useState(1)
   const [view, setView] = useState('active')
   const query = useQuery({ queryKey: ['properties', page, view], queryFn: async () => (await api.get('/landlord/properties', { params: { page, view } })).data, retry: false, refetchInterval: 240_000 })
-  return <section className="container page-space owner-listings">
-    <div className="page-heading"><div><span className="eyebrow">PROPERTY OWNER WORKSPACE</span><h1>Your properties</h1><p>Manage your listings and keep availability current.</p></div><Link to="/landlord/properties/new" className="btn btn-primary">+ Add a property</Link></div>
+  return <section className="container page-space owner-listings" data-tour="owner-workspace">
+    <div className="page-heading"><div><span className="eyebrow">PROPERTY OWNER WORKSPACE</span><h1>Your properties</h1><p>Manage your listings and keep availability current.</p></div><Link to="/landlord/properties/new" className="btn btn-primary" data-tour="add-property">+ Add a property</Link></div>
     {location.state?.notice && <p className="alert alert-success" role="status">{location.state.notice}</p>}
     <label className="owner-listing-view">Show properties<select className="form-select" value={view} onChange={event => { setView(event.target.value); setPage(1) }}><option value="active">Active listings and drafts</option><option value="archived">Removed listings</option><option value="all">All properties</option></select></label>
     {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> :
@@ -111,7 +111,11 @@ function PropertyForm({ property }) {
     }
     mutation.mutate({ values, intent: event.nativeEvent.submitter?.value || (property ? 'continue' : 'start') })
   }
-  function explain(message) { setStepError(message); requestAnimationFrame(() => stepMessage.current?.focus()) }
+  function explain(message) {
+    const initiator = document.activeElement
+    setStepError(message)
+    requestAnimationFrame(() => { if (document.activeElement === initiator) stepMessage.current?.focus() })
+  }
   async function go(next) {
     if (busy) return
     setStepError('')
@@ -145,11 +149,11 @@ function PropertyForm({ property }) {
   if (!property) return <section className="container page-space owner-create">
     <Link className="back-link" to="/landlord">← Your properties</Link>
     <div className="owner-create-intro"><span className="eyebrow">YOUR NEXT LISTING</span><h1>Start with a name.</h1><p>Create a private draft, then add photos, rooms and your location.</p></div>
-    <form className="panel" onSubmit={submit} onChange={() => setDirty(true)}><ErrorNotice error={mutation.error} /><fieldset disabled={mutation.isPending}>
+    <form className="panel" data-tour="listing-basics" onSubmit={submit} onChange={() => setDirty(true)}><ErrorNotice error={mutation.error} /><fieldset disabled={mutation.isPending}>
       <Field label="Property name" name="title" required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
       <label className="form-label" htmlFor="property_type">Property type</label><select className="form-select mb-3" id="property_type" name="property_type" defaultValue="dormitory"><option value="dormitory">Dormitory</option><option value="apartment">Apartment</option><option value="boarding_house">Boarding house</option><option value="rental_room">Rental room</option></select>
       <Field label="City" name="city" defaultValue="Manila" required maxLength={100} error={errors} />
-      <button className="btn btn-primary" value="start" disabled={mutation.isPending}>{mutation.isPending ? 'Creating…' : 'Start listing'}</button>
+      <button className="btn btn-primary" data-tour="start-listing" value="start" disabled={mutation.isPending}>{mutation.isPending ? 'Creating…' : 'Start listing'}</button>
     </fieldset></form><p className="owner-fine-print">Your draft stays private until you submit it and an administrator approves it.</p>
   </section>
   return <section className="container page-space owner-editor">

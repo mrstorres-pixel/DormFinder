@@ -1,0 +1,28 @@
+.walkthrough-layer { position: fixed; inset: 0; z-index: 5000; pointer-events: none; color: var(--ink); font-family: var(--bs-body-font-family); }
+.walkthrough-shade { position: fixed; background: #101e36b3; pointer-events: auto; backdrop-filter: blur(2px); }
+.walkthrough-spotlight { position: fixed; border: 2px solid #c5d8ff; border-radius: 14px; box-shadow: 0 0 0 4px #527bf04d, 0 0 24px #1a3c6a55; pointer-events: none; }
+.walkthrough-target-lock { position: fixed; pointer-events: auto; }
+.walkthrough-coach { position: fixed; pointer-events: auto; border: 1px solid #9fb6d6; border-radius: 20px; background: #eef3fb; box-shadow: 0 24px 80px #06132d4d; padding: 20px; color: #14233e; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; animation: walkthrough-appear .18s ease-out; }
+.walkthrough-coach > header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0; border: 0; }
+.walkthrough-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .14em; color: #496891; }
+.walkthrough-close { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border: 1px solid #b8c8df; background: #dfe9f7; color: #2b466f; border-radius: 50%; font-size: 20px; line-height: 1; }
+.walkthrough-coach h2 { font-size: 22px; font-weight: 650; letter-spacing: -.04em; line-height: 1.25; color: #14233e; margin: 18px 0 12px; outline: none !important; }
+.walkthrough-coach > p { font-size: 13px; line-height: 1.75; color: #425977; margin: 0 0 18px; }
+.walkthrough-progress { height: 4px; border-radius: 20px; background: #cbd8ec; margin-top: 16px; overflow: hidden; }
+.walkthrough-progress > span { display: block; height: 100%; background: #2558e5; border-radius: inherit; transition: width .2s ease; }
+.walkthrough-coach > footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; padding: 0; border: 0; background: transparent; }
+.walkthrough-coach > footer > div { display: flex; gap: 8px; align-items: center; }
+.walkthrough-coach .btn { font-size: 12px; min-height: 42px; padding: 10px 15px; border-radius: 10px; }
+.walkthrough-back { border: 0; color: #3c5577; padding: 10px; background: transparent; font-size: 12px; min-height: 42px; border-radius: 8px; }
+.walkthrough-back:hover:not(:disabled) { background: #dce7f6; }
+.walkthrough-back:disabled { opacity: .45; cursor: default; }
+.walkthrough-count { font-size: 15px; font-weight: 650; color: #234fbc; font-variant-numeric: tabular-nums; }
+.walkthrough-count > span { font-size: 12px; font-weight: 400; color: #617796; }
+.walkthrough-bottom { display: flex; justify-content: space-between; gap: 8px; padding-top: 14px; margin-top: 15px; border-top: 1px solid #bdcce2; font-size: 10px; color: #596e8d; }
+.walkthrough-bottom button, .walkthrough-loading button { border: 0; padding: 0; color: #1943b5; background: transparent; text-decoration: underline; }
+.walkthrough-coach .walkthrough-loading { font-size: 11px; background: #e0e9f6; padding: 9px 11px; border: 1px solid #b2c5df; border-radius: 8px; }
+.tour-illustration { display: block; width: 230px; height: 125px; margin: 10px auto 0; }
+.walkthrough-coach.is-introduction > footer { justify-content: flex-end; }
+@keyframes walkthrough-appear { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 575px) { .walkthrough-coach { padding: 15px; border-radius: 17px; } .walkthrough-coach h2 { font-size: 18px; margin: 12px 0 8px; } .walkthrough-coach > p { font-size: 11.5px; line-height: 1.65; margin-bottom: 12px; max-height: 110px; overflow-y: auto; } .walkthrough-progress { margin-top: 11px; } .walkthrough-bottom { font-size: 9px; padding-top: 10px; margin-top: 10px; } .walkthrough-bottom > span { max-width: 180px; } .walkthrough-coach > footer { margin-top: 12px; } .tour-illustration { height: 110px; } }
+@media (prefers-reduced-motion: reduce) { .walkthrough-coach { animation: none; } .walkthrough-progress > span { transition: none; } }
