@@ -49,13 +49,9 @@ test('same-origin sessions, private drafts, image persistence and logout', async
 
   await page.getByRole('link', { name: '+ Add a property' }).click()
   await page.getByLabel('Property name').fill(`Demo Residence ${suffix}`)
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await page.getByRole('button', { name: 'Start listing', exact: true }).click()
   await expect(page).toHaveURL(/\/landlord\/properties\/\d+#photos$/)
   const propertyId = new URL(page.url()).pathname.split('/').pop()
-  await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Location & details', exact: true }).click()
-  await page.getByLabel('Street address').fill('Synthetic address for testing')
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
-  await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Photos', exact: true }).click()
   const png = await page.evaluate(() => {
     const canvas = document.createElement('canvas')
     canvas.width = 20; canvas.height = 20
@@ -77,6 +73,11 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   await expect(image).toBeVisible()
   await expect.poll(() => image.evaluate((node) => node.complete && node.naturalWidth > 0)).toBe(true)
 
+  await page.goto('/landlord/properties/' + propertyId + '#location')
+  await page.getByLabel('Street address').fill('Synthetic address for testing')
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await expect(page).toHaveURL(/\/landlord$/)
+  await page.goto('/landlord/properties/' + propertyId + '#photos')
   const outsider = await browser.newContext({ baseURL })
   const denied = await outsider.request.get(`/api/v1/landlord/properties/${propertyId}`, { headers: { Accept: 'application/json' } })
   expect(denied.status()).toBe(401)

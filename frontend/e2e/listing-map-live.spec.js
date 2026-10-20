@@ -23,7 +23,8 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   await expect(page.getByRole('combobox', { name: 'Walking destination' })).toHaveValue('')
   await expect(map.locator('.campus-marker')).toHaveCount(0)
   await expect.poll(() => tiles.ok).toBeGreaterThan(0)
-  await page.getByRole('combobox', { name: 'Walking destination' }).selectOption(String(campus.id))
+  await page.getByRole('combobox', { name: 'Walking destination' }).fill(campus.name)
+  await page.getByRole('combobox', { name: 'Walking destination' }).press('Enter')
   const reply = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/walking-route'))
   await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()
   const response = await reply
@@ -44,7 +45,7 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   await page.screenshot({ path: `../.local/listing-map-real-${testInfo.project.name}.png` })
   await page.goto('/listings/' + property.id + '?campus_id=' + campus.id)
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
-  await expect(page.getByRole('combobox', { name: 'Walking destination' })).toHaveValue(String(campus.id))
+  await expect(page.getByRole('combobox', { name: 'Walking destination' })).toHaveValue(campus.name)
   await expect(map.locator('.campus-marker')).toHaveAttribute('title', new RegExp(campus.name))
   expect(tiles.failed).toBe(0)
   expect(errors).toEqual([])

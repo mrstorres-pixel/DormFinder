@@ -1,11 +1,32 @@
 import { expect } from '@playwright/test'
 import { apiWrite } from './discovery-flow'
 
-async function get(page, path) {
-  return page.evaluate(async path => {
+async function get(page, path, retried = false) {
+  const result = await page.evaluate(async path => {
     const response = await fetch('/api/v1' + path, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(15000) })
-    return { status: response.status, body: await response.json() }
+    return { status: response.status, body: await response.json(), retryAfter: Number(response.headers.get('retry-after')) }
   }, path)
+  if (result.status === 429 && !retried) {
+    expect(result.retryAfter).toBeGreaterThan(0)
+    expect(result.retryAfter).toBeLessThanOrEqual(60)
+    await new Promise(resolve => setTimeout(resolve, result.retryAfter * 1000 + 250))
+    return get(page, path, true)
+  }
+  return result
+}
+
+async function openConversation(page, id) {
+  const loaded = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/inquiries/' + id && response.request().method() === 'GET')
+  await page.goto('/inquiries/' + id)
+  const response = await loaded
+  if (response.status() === 429) {
+    const retryAfter = Number(response.headers()['retry-after'])
+    expect(retryAfter).toBeGreaterThan(0)
+    expect(retryAfter).toBeLessThanOrEqual(60)
+    await expect(page.getByRole('alert').filter({ hasText: 'Too many requests' })).toBeVisible()
+    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000 + 250))
+    await page.getByRole('button', { name: 'Try again', exact: true }).click()
+  }
 }
 
 export async function verifyModeration({ landlord, reviewer, student, propertyId, title, inquiryId, ownerCredentials }) {
@@ -55,11 +76,12 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     expect((await get(student, '/admin/reports')).status).toBe(403)
     expect((await get(landlord, '/reports')).status).toBe(403)
     await reviewer.goto('/admin/reports')
-    const reported = reviewer.locator('article').filter({ has: reviewer.getByRole('heading', { name: title, exact: true }) })
+    await reviewer.getByRole('button', { name: 'Review report: ' + title }).click()
+    const reported = reviewer.getByRole('dialog', { name: 'Review report', exact: true })
     await reported.getByRole('link', { name: 'Inspect reported listing' }).click()
     await action(reviewer, 'Listing moderation', 'suspend')
     expect((await get(student, '/listings/' + propertyId)).status).toBe(404)
-    await student.goto('/inquiries/' + inquiryId)
+    await openConversation(student, inquiryId)
     await expect(student.getByText('Messaging is paused for this conversation. You can still read your earlier messages.')).toBeVisible()
     await expect(student.getByRole('log', { name: 'Conversation messages' }).getByText('Is this shared room quiet after 10 PM?', { exact: true })).toBeVisible()
     expect((await get(reviewer, '/inquiries/' + inquiryId + '/messages')).status).toBe(404)
@@ -70,7 +92,8 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     expect((await apiWrite(landlord, '/landlord/properties/' + propertyId + '/lifecycle', { revision: suspended.body.data.revision, action: 'restore', reason })).status).toBe(409)
 
     await reviewer.goto('/admin/reports')
-    const report = reviewer.locator('article').filter({ has: reviewer.getByRole('heading', { name: title, exact: true }) })
+    await reviewer.getByRole('button', { name: 'Review report: ' + title }).click()
+    const report = reviewer.getByRole('dialog', { name: 'Review report', exact: true })
     await report.getByLabel('Private resolution notes').fill(reason)
     await report.getByRole('button', { name: /Close report #/ }).click()
     await expect(report).toHaveCount(0)
@@ -84,26 +107,28 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
 
     await landlord.goto('/landlord/properties/' + propertyId)
     await action(landlord, 'Archive and restore', 'archive')
-    await student.goto('/inquiries/' + inquiryId)
+    await openConversation(student, inquiryId)
     await expect(student.getByLabel('Your reply')).toBeVisible()
     expect((await get(student, '/listings/' + propertyId)).status).toBe(404)
     await action(landlord, 'Archive and restore', 'restore')
     await publish()
 
     await reviewer.goto('/admin/users?id=' + owner.id)
+    await reviewer.getByRole('button', { name: 'Manage account: ' + owner.name }).click()
     await reviewer.getByLabel('Reason for account action #' + owner.id).fill(reason)
     await reviewer.getByLabel('Confirm suspend account #' + owner.id).check()
     restricted = true
     await reviewer.getByRole('button', { name: 'Suspend account #' + owner.id, exact: true }).click()
-    await expect(reviewer.getByRole('button', { name: 'Reactivate account #' + owner.id, exact: true })).toBeDisabled()
+    await expect(reviewer.getByRole('dialog', { name: 'Manage account' })).toHaveCount(0)
     expect((await get(landlord, '/me')).status).toBe(401)
     expect((await get(student, '/listings/' + propertyId)).status).toBe(404)
-    await student.goto('/inquiries/' + inquiryId)
+    await openConversation(student, inquiryId)
     await expect(student.getByLabel('Your reply')).toHaveCount(0)
+    await reviewer.getByRole('button', { name: 'Manage account: ' + owner.name }).click()
     await reviewer.getByLabel('Reason for account action #' + owner.id).fill(reason)
     await reviewer.getByLabel('Confirm reactivate account #' + owner.id).check()
     await reviewer.getByRole('button', { name: 'Reactivate account #' + owner.id, exact: true }).click()
-    await expect(reviewer.getByRole('button', { name: 'Suspend account #' + owner.id, exact: true })).toBeDisabled()
+    await expect(reviewer.getByRole('dialog', { name: 'Manage account' })).toHaveCount(0)
     restricted = false
     await reviewer.setViewportSize({ width: 360, height: 900 })
     expect(await reviewer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -118,8 +143,8 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     expect(restored.status).toBe('draft')
     expect((await get(student, '/listings/' + propertyId)).status).toBe(404)
     await reviewer.goto('/admin/audit')
-    await expect(reviewer.getByRole('heading', { name: 'account reactivate', exact: true }).first()).toBeVisible()
-    await expect(reviewer.getByRole('heading', { name: 'report closed', exact: true }).first()).toBeVisible()
+    await expect(reviewer.getByRole('heading', { name: /^account reactivate$/i }).first()).toBeVisible()
+    await expect(reviewer.getByRole('heading', { name: /^report closed$/i }).first()).toBeVisible()
     await reviewer.goto('/admin')
     await expect(reviewer.getByRole('navigation', { name: 'Administrator sections' }).getByRole('link', { name: 'Reports', exact: true })).toBeVisible({ timeout: 15_000 })
     for (const width of [360, 768, 1440]) {

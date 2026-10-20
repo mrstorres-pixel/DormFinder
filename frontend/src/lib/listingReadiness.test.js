@@ -13,6 +13,11 @@ describe('listing review readiness', () => {
     const checks = listingReadiness({ ...ready, photos: [{ status: 'uploading' }], room_options: [{}] })
     expect(checks.filter(item => !item.ready).map(item => item.step)).toEqual(['photos', 'rooms'])
   })
+  it('waits for every upload or photo cleanup even when a cover is ready', () => {
+    for (const status of ['uploading', 'pending_deletion']) {
+      expect(listingReadiness({ ...ready, photos: [{ status: 'ready' }, { status }] }).find(item => item.step === 'photos').ready).toBe(false)
+    }
+  })
   it('returns owners to feedback, availability or the first unfinished step according to listing state', () => {
     expect(nextEditorStep({ ...ready, status: 'rejected' })).toBe('preview')
     expect(nextEditorStep({ ...ready, status: 'approved' })).toBe('rooms')

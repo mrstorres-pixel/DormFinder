@@ -1,5 +1,15 @@
 # Architecture, API and permissions
 
+## Owner readiness, destination search and admin browsing - October 20, 2026
+
+Walking destinations use the existing campus directory through a keyboard-accessible type-ahead search. Only selecting a campus enables its route; typing or clearing removes the previous destination and directions. Listing and comparison maps preserve room and private form state. The owner pin picker uses a self-contained SVG marker, synchronizes map clicks, dragging and manual coordinates, and offers campus search solely to recenter the map.
+
+Owner drafts can remain incomplete, but forward editor navigation checks saved photos and room options. Location uses native required-field checks and the same 40-character description/address/pin requirements as server submission. Save and continue saves details before preview; Save draft bypasses completion checks, preserves valid partial data and returns to My space. The final review panel lists actionable missing requirements and explains inventory acknowledgement rather than silently disabling submission. Unfinished uploads/cleanup and stale vacancies prevent review. Existing revision checks and private-draft permissions remain authoritative.
+
+Registration normalizes whitespace and enforces a Unicode-aware personal-name pattern on client and server: at least two letters, with accents, spaces, apostrophes, hyphens and initials supported. Digits, emoji and unrelated symbols are rejected.
+
+Admin reviews, listings, accounts, reports and audit endpoints validate search, sorting and page-size parameters before applying bound database filters and stable pagination. Each directory supports relevant status/type/role/category/action filters; audit date ranges use Philippine calendar-day boundaries converted to UTC. Owner, reporter and actor names are returned only within existing administrator permissions. The frontend stores filters in the URL, returns reviews to their filtered source, displays result counts and page controls, and opens moderation forms for one selected item. Compact desktop tables become labeled mobile cards. Mutations retain reasons, explicit acknowledgements, revision checks and audit recording; private inquiry messages remain inaccessible to administrators.
+
 ## Selected walking routes — October 16, 2026
 
 `GET /api/v1/listings/{property}/walking-route?campus_id=...` resolves only a currently public listing with an active owner and an active campus. Callers cannot supply URLs or arbitrary coordinates. Missing pins and pairs more than 10 km apart are rejected before contacting the provider. Existing discovery distance filters/sorts remain explicitly straight-line distances.

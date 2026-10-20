@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Property;
 use App\Services\ActivityRecorder;
+use App\Services\AdminBrowse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,9 +54,20 @@ class ReportController extends Controller
     public function queue(Request $request): JsonResponse
     {
         abort_unless($request->user()->role === 'admin', 403);
-        $data = $request->validate(['status' => ['nullable', Rule::in(['open', 'resolved', 'dismissed'])], 'page' => ['nullable', 'integer', 'between:1,100000']]);
+        $data = AdminBrowse::filters($request, ['status' => ['nullable', Rule::in(['all', 'open', 'resolved', 'dismissed'])], 'category' => ['nullable', Rule::in(['misleading', 'inappropriate', 'duplicate', 'unavailable', 'other'])], 'sort' => ['nullable', Rule::in(['oldest', 'newest'])]]);
+        $query = DB::table('listing_reports')->leftJoin('users as reporter', 'reporter.id', '=', 'listing_reports.student_id')->select(['listing_reports.*', 'reporter.name as student_name']);
+        if (($data['status'] ?? 'open') !== 'all') {
+            $query->where('listing_reports.status', $data['status'] ?? 'open');
+        }
+        if (filled($data['category'] ?? null)) {
+            $query->where('category', $data['category']);
+        }
+        if (filled($data['q'] ?? null)) {
+            $pattern = AdminBrowse::pattern($data['q']);
+            $query->where(fn ($query) => $query->whereRaw('lower(listing_title) LIKE ?', [$pattern])->orWhereRaw('lower(body) LIKE ?', [$pattern])->orWhereRaw('lower(reporter.name) LIKE ?', [$pattern]));
+        }
 
-        return response()->json(DB::table('listing_reports')->where('status', $data['status'] ?? 'open')->orderBy('id')->paginate(12));
+        return response()->json($query->orderBy('listing_reports.id', ($data['sort'] ?? 'oldest') === 'newest' ? 'desc' : 'asc')->paginate($data['per_page'] ?? 12)->withQueryString());
     }
 
     public function resolve(Request $request, int $report, ActivityRecorder $activity): JsonResponse

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test('property and room edits survive cancelled navigation and sign-out', async ({ page }) => {
   const errors = []
   let signOuts = 0
-  const property = { id: 987, title: 'Synthetic guard draft', description: '', address: '', city: 'Manila', status: 'draft', revision: 1, amenities: [], house_rules: '', latitude: null, longitude: null, photos: [], room_options: [] }
+  const property = { id: 987, title: 'Synthetic guard draft', description: '', address: '', city: 'Manila', status: 'draft', revision: 1, amenities: [], house_rules: '', latitude: null, longitude: null, photos: [{ id: 1, url: '/images/demo/twin-room.webp', caption: 'Saved synthetic photo', status: 'ready' }], room_options: [] }
   page.on('pageerror', error => errors.push(error.message))
   await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))
   await page.route('**/api/v1/**', route => {
@@ -14,7 +14,7 @@ test('property and room edits survive cancelled navigation and sign-out', async 
     if (path.endsWith('/dashboard')) return route.fulfill({ json: { data: { listings: { draft: 1 } } } })
     if (path.endsWith('/landlord/properties/987') || (path.endsWith('/landlord/properties') && route.request().method() === 'POST')) {
       if (route.request().method() !== 'GET') Object.assign(property, route.request().postDataJSON(), { revision: property.revision + 1 })
-      if (route.request().method() === 'PATCH') property.room_options = ['Shared beds', 'Private room'].map((name, index) => ({ id: index + 1, name, inventory_type: 'bedspace', price_basis: 'per_person', capacity: 2, total_units: 2, available_units: 1, monthly_rent_centavos: 350000, deposit_centavos: 350000, advance_months: 1, fees: [], monthly_fixed_total_centavos: 350000, move_in_fixed_total_centavos: 700000, utilities_notes: 'Synthetic charges', availability_confirmed_at: new Date().toISOString(), availability_stale: false }))
+      property.room_options = ['Shared beds', 'Private room'].map((name, index) => ({ id: index + 1, name, inventory_type: 'bedspace', price_basis: 'per_person', capacity: 2, total_units: 2, available_units: 1, monthly_rent_centavos: 350000, deposit_centavos: 350000, advance_months: 1, fees: [], monthly_fixed_total_centavos: 350000, move_in_fixed_total_centavos: 700000, utilities_notes: 'Synthetic charges', availability_confirmed_at: new Date().toISOString(), availability_stale: false }))
       return route.fulfill({ json: { data: property } })
     }
     if (path.endsWith('/landlord/properties')) return route.fulfill({ json: { data: [], meta: { last_page: 1, current_page: 1 } } })
@@ -46,7 +46,7 @@ test('property and room edits survive cancelled navigation and sign-out', async 
   await expect(dialog).toBeVisible()
   await page.getByRole('button', { name: 'Stay and edit' }).click()
   await expect(page.getByLabel('Property name')).toHaveValue(property.title)
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await page.getByRole('button', { name: 'Start listing', exact: true }).click()
   await expect(page).toHaveURL(/\/landlord\/properties\/987#photos$/)
   await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Rooms & costs', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Room options and charges' })).toBeVisible()
@@ -59,11 +59,8 @@ test('property and room edits survive cancelled navigation and sign-out', async 
   await page.getByRole('button', { name: 'Add fixed fee', exact: true }).click()
   await page.getByLabel('Fee 1 name', { exact: true }).fill('Draft fee')
   await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Location & details', exact: true }).click()
-  await page.getByLabel('Property name').fill('Saved property, unsaved room')
-  const saved = page.waitForResponse(response => response.url().endsWith('/landlord/properties/987') && response.request().method() === 'PATCH')
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
-  await saved
-  await expect(page.getByRole('status')).toContainText('Your draft has been saved.')
+  await expect(page.locator('.editor-step-message')).toContainText('Save your room option')
+  await expect(page).toHaveURL(/#rooms$/)
   await expect(page.getByLabel('Room option name')).toHaveValue('Unsaved room')
   await expect(page.getByLabel('Room capacity')).toHaveValue('4')
   await expect(page.getByLabel('Monthly rent (PHP)', { exact: true })).toHaveValue('4321.50')

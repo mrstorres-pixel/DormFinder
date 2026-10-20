@@ -5,6 +5,7 @@ import { mapLabelLayout } from '../lib/mapLabelLayout'
 import { useWalkingRoute, drawWalkingRoute } from '../lib/walking'
 import { ErrorNotice } from './Feedback'
 import WalkingRouteControl from './WalkingRouteControl'
+import CampusSearch from './CampusSearch'
 import 'leaflet/dist/leaflet.css'
 import './listing-location-map.css'
 
@@ -20,12 +21,10 @@ export default function ListingLocationMap({ properties, campus }) {
   const selectedCampus = destination?.context === context ? campuses.data?.find(item => String(item.id) === destination.id) : campus
   const pinned = properties.filter(hasPin)
   const reference = pinned[0]
-  const directory = [...(campuses.data || [])].sort((a, b) => a.name.localeCompare(b.name))
   return <section className="panel mb-4 listing-location" aria-label="Property location">
     <div className="listing-location-heading"><h2>{selectedCampus ? 'Location and campus' : 'Location'}</h2>{reference && <button type="button" className="btn btn-outline-primary" aria-expanded={shown} aria-controls={id + '-map'} onClick={() => setShown(value => !value)}>{shown ? 'Hide map' : 'Show map'}</button>}</div>
     {!reference ? <p className="small text-secondary">A location pin is not available for this property. Use the listing address or ask the owner for directions.</p> : shown && <div id={id + '-map'}>
-      <div className="listing-map-destination"><label className="form-label" htmlFor={id + '-campus'}>Walking destination</label><select id={id + '-campus'} className="form-select" value={selectedCampus?.id || ''} disabled={campuses.isPending || !!campuses.error} onChange={event => setDestination({ context, id: event.target.value })}><option value="">Choose your campus</option>{directory.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select>
-        {!selectedCampus && <p className="form-text">Choose your campus to calculate walking time and a route.</p>}
+      <div className="listing-map-destination"><CampusSearch campuses={campuses.data || []} value={String(selectedCampus?.id || '')} onChange={id => setDestination({ context, id })} label="Walking destination" requireQuery disabled={campuses.isPending || !!campuses.error} helper="Type a university, campus or city, then choose a suggestion for walking directions." />
         {campuses.isPending && <p role="status" className="form-text">Loading campuses…</p>}
         <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} />
       </div>

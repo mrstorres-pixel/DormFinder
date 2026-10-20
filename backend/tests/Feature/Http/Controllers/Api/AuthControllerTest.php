@@ -12,6 +12,25 @@ class AuthControllerTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
+    #[TestWith(['123#@%'])]
+    #[TestWith(['Ana123'])]
+    #[TestWith(['A'])]
+    #[TestWith(['Ana 😀'])]
+    public function test_registration_rejects_names_with_numbers_symbols_or_too_few_letters(string $name): void
+    {
+        $this->postJson('/api/v1/auth/register/student', ['name' => $name, 'email' => 'name@example.test', 'password' => 'TestingPass1234', 'password_confirmation' => 'TestingPass1234'])->assertUnprocessable()->assertJsonValidationErrors('name');
+        $this->assertDatabaseCount('users', 0);
+    }
+
+    #[TestWith(['  José   Dela-Cruz  ', 'José Dela-Cruz'])]
+    #[TestWith(['María O’Neill', 'María O’Neill'])]
+    #[TestWith(['李明', '李明'])]
+    #[TestWith(['J. Santos', 'J. Santos'])]
+    public function test_registration_accepts_and_normalizes_international_names(string $name, string $expected): void
+    {
+        $this->postJson('/api/v1/auth/register/student', ['name' => $name, 'email' => 'name@example.test', 'password' => 'TestingPass1234', 'password_confirmation' => 'TestingPass1234'])->assertCreated()->assertJsonPath('data.name', $expected);
+    }
+
     #[TestWith(['student'])]
     #[TestWith(['landlord'])]
     public function test_registers_the_role_from_the_route_and_hashes_the_password(string $role): void

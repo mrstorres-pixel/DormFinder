@@ -7,6 +7,7 @@ use App\Http\Resources\PropertyResource;
 use App\Models\ListingReview;
 use App\Models\Property;
 use App\Services\ActivityRecorder;
+use App\Services\AdminBrowse;
 use App\Services\ListingWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -45,16 +46,27 @@ class ReviewController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         abort_unless($request->user()->role === 'admin', 403);
-        $request->validate(['page' => ['nullable', 'integer', 'min:1']]);
+        $data = AdminBrowse::filters($request, ['property_type' => ['nullable', Rule::in(['dormitory', 'apartment', 'boarding_house', 'rental_room'])], 'sort' => ['nullable', Rule::in(['oldest', 'newest', 'title_asc', 'title_desc'])]]);
+        $query = Property::query()->where('status', 'pending_review')->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->with([...ListingController::relations(), 'landlord:id,name']);
+        AdminBrowse::propertySearch($query, $data['q'] ?? null);
+        if (filled($data['property_type'] ?? null)) {
+            $query->where('property_type', $data['property_type']);
+        }
+        $sort = $data['sort'] ?? 'oldest';
+        if (str_starts_with($sort, 'title_')) {
+            $query->orderBy('title', $sort === 'title_asc' ? 'asc' : 'desc');
+        } else {
+            $query->orderBy('submitted_at', $sort === 'newest' ? 'desc' : 'asc');
+        }
 
-        return PropertyResource::collection(Property::query()->where('status', 'pending_review')->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->with(ListingController::relations())->oldest('submitted_at')->orderBy('id')->paginate(12));
+        return PropertyResource::collection($query->orderBy('id')->paginate($data['per_page'] ?? 12)->withQueryString());
     }
 
     public function show(Request $request, Property $property): PropertyResource
     {
         abort_unless($request->user()->role === 'admin', 403);
 
-        return new PropertyResource($property->load(ListingController::relations()));
+        return new PropertyResource($property->load([...ListingController::relations(), 'landlord:id,name']));
     }
 
     public function decide(Request $request, Property $property, ListingWorkflow $workflow): PropertyResource

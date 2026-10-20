@@ -8,6 +8,7 @@ import Brand from './components/Brand'
 import SiteNavigation from './components/SiteNavigation'
 import MobileNavigation from './components/MobileNavigation'
 import NotificationBell from './components/NotificationBell'
+import { personNamePattern, personNameHint } from './lib/personName'
 import HousingSearchForm from './components/HousingSearchForm'
 import FeaturedHomes from './components/FeaturedHomes'
 import RoomEntrance from './components/RoomEntrance'
@@ -101,7 +102,7 @@ function AuthPage({ register = false }) {
       </fieldset>}
       <ErrorNotice error={mutation.error} />
       <form onSubmit={submit}>
-        {register && <Field label="Your name" name="name" autoComplete="name" maxLength={100} required error={errors} />}
+        {register && <Field label="Your name" name="name" autoComplete="name" pattern={personNamePattern} title={personNameHint} hint={personNameHint} minLength={2} maxLength={100} required error={errors} />}
         <Field label="Email address" name="email" type="email" autoComplete="email" maxLength={254} required error={errors} />
         <Field label="Password" name="password" type="password" autoComplete={register ? 'new-password' : 'current-password'} minLength={register ? 12 : undefined} required error={errors} hint={register ? 'At least 12 characters, including letters and numbers.' : undefined} />
         {register && <Field label="Confirm password" name="password_confirmation" type="password" autoComplete="new-password" required error={errors} />}

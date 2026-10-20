@@ -7,6 +7,8 @@ use App\Http\Resources\PropertyResource;
 use App\Models\Property;
 use App\Models\User;
 use App\Services\ActivityRecorder;
+use App\Services\AdminBrowse;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,13 +21,22 @@ class ModerationController extends Controller
     public function properties(Request $request): AnonymousResourceCollection
     {
         abort_unless($request->user()->role === 'admin', 403);
-        $data = $request->validate(['status' => ['nullable', Rule::in(['draft', 'pending_review', 'approved', 'rejected', 'suspended', 'archived'])], 'page' => ['nullable', 'integer', 'between:1,100000']]);
-        $query = Property::query()->with(ListingController::relations());
+        $data = AdminBrowse::filters($request, ['status' => ['nullable', Rule::in(['draft', 'pending_review', 'approved', 'rejected', 'suspended', 'archived'])], 'property_type' => ['nullable', Rule::in(['dormitory', 'apartment', 'boarding_house', 'rental_room'])], 'sort' => ['nullable', Rule::in(['newest', 'oldest', 'title_asc', 'title_desc'])]]);
+        $query = Property::query()->with([...ListingController::relations(), 'landlord:id,name']);
+        AdminBrowse::propertySearch($query, $data['q'] ?? null);
         if (filled($data['status'] ?? null)) {
             $query->where('status', $data['status']);
         }
 
-        return PropertyResource::collection($query->orderByDesc('id')->paginate(12));
+        if (filled($data['property_type'] ?? null)) {
+            $query->where('property_type', $data['property_type']);
+        }
+        $sort = $data['sort'] ?? 'newest';
+        if (str_starts_with($sort, 'title_')) {
+            $query->orderBy('title', $sort === 'title_asc' ? 'asc' : 'desc');
+        }
+
+        return PropertyResource::collection($query->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')->paginate($data['per_page'] ?? 12)->withQueryString());
     }
 
     private function actionData(Request $request, array $actions): array
@@ -83,13 +94,13 @@ class ModerationController extends Controller
     public function users(Request $request): JsonResponse
     {
         abort_unless($request->user()->role === 'admin', 403);
-        $data = $request->validate(['id' => ['nullable', 'integer', 'min:1'], 'q' => ['nullable', 'string', 'max:100'], 'status' => ['nullable', Rule::in(['active', 'suspended'])], 'page' => ['nullable', 'integer', 'between:1,100000']]);
-        $query = User::query()->select(['id', 'name', 'email', 'role', 'status', 'moderation_revision'])->whereIn('role', ['student', 'landlord']);
+        $data = AdminBrowse::filters($request, ['id' => ['nullable', 'integer', 'min:1'], 'status' => ['nullable', Rule::in(['active', 'suspended'])], 'role' => ['nullable', Rule::in(['student', 'landlord'])], 'sort' => ['nullable', Rule::in(['newest', 'oldest', 'name_asc', 'name_desc'])]]);
+        $query = User::query()->select(['id', 'name', 'email', 'role', 'status', 'moderation_revision', 'created_at'])->whereIn('role', ['student', 'landlord']);
         if (isset($data['id'])) {
             $query->where('id', $data['id']);
         }
         if (filled($data['q'] ?? null)) {
-            $pattern = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], mb_strtolower(trim($data['q']))).'%';
+            $pattern = AdminBrowse::pattern($data['q']);
             $query->where(function ($query) use ($pattern): void {
                 $query->whereRaw('lower(name) LIKE ?', [$pattern])->orWhereRaw('lower(email) LIKE ?', [$pattern]);
             });
@@ -98,7 +109,15 @@ class ModerationController extends Controller
             $query->where('status', $data['status']);
         }
 
-        return response()->json($query->orderBy('id')->paginate(12));
+        if (filled($data['role'] ?? null)) {
+            $query->where('role', $data['role']);
+        }
+        $sort = $data['sort'] ?? 'oldest';
+        if (str_starts_with($sort, 'name_')) {
+            $query->orderBy('name', $sort === 'name_asc' ? 'asc' : 'desc');
+        }
+
+        return response()->json($query->orderBy('id', $sort === 'newest' ? 'desc' : 'asc')->paginate($data['per_page'] ?? 12)->withQueryString());
     }
 
     public function account(Request $request, User $user, ActivityRecorder $activity): JsonResponse
@@ -147,14 +166,28 @@ class ModerationController extends Controller
     public function audit(Request $request): JsonResponse
     {
         abort_unless($request->user()->role === 'admin', 403);
-        $data = $request->validate(['property_id' => ['nullable', 'integer', 'min:1'], 'user_id' => ['nullable', 'integer', 'min:1'], 'page' => ['nullable', 'integer', 'between:1,100000']]);
-        $query = DB::table('moderation_actions');
+        $data = AdminBrowse::filters($request, ['property_id' => ['nullable', 'integer', 'min:1'], 'user_id' => ['nullable', 'integer', 'min:1'], 'action' => ['nullable', Rule::in(['listing_review', 'listing_status', 'listing_archive', 'listing_restore', 'listing_suspend', 'account_suspend', 'account_reactivate', 'account_listing_hidden', 'report_closed', 'availability_update'])], 'sort' => ['nullable', Rule::in(['newest', 'oldest'])], 'from' => ['nullable', 'date_format:Y-m-d'], 'to' => ['nullable', 'date_format:Y-m-d', ...($request->filled('from') ? ['after_or_equal:from'] : [])]]);
+        $query = DB::table('moderation_actions')->leftJoin('users as actor', 'actor.id', '=', 'moderation_actions.actor_id')->leftJoin('users as subject', 'subject.id', '=', 'moderation_actions.user_id')->leftJoin('properties', 'properties.id', '=', 'moderation_actions.property_id')->select(['moderation_actions.*', 'actor.name as actor_name', 'subject.name as account_name', 'properties.title as listing_title']);
         foreach (['property_id', 'user_id'] as $filter) {
             if (isset($data[$filter])) {
-                $query->where($filter, $data[$filter]);
+                $query->where('moderation_actions.'.$filter, $data[$filter]);
             }
         }
 
-        return response()->json($query->orderByDesc('id')->paginate(20));
+        if (filled($data['q'] ?? null)) {
+            $pattern = AdminBrowse::pattern($data['q']);
+            $query->where(fn ($query) => $query->whereRaw('lower(reason) LIKE ?', [$pattern])->orWhereRaw('lower(action) LIKE ?', [$pattern])->orWhereRaw('lower(actor.name) LIKE ?', [$pattern])->orWhereRaw('lower(subject.name) LIKE ?', [$pattern])->orWhereRaw('lower(properties.title) LIKE ?', [$pattern]));
+        }
+        if (filled($data['action'] ?? null)) {
+            $query->where('action', $data['action']);
+        }
+        foreach (['from' => '>=', 'to' => '<='] as $field => $operator) {
+            if (filled($data[$field] ?? null)) {
+                $date = CarbonImmutable::parse($data[$field], 'Asia/Manila');
+                $query->where('moderation_actions.created_at', $operator, ($field === 'from' ? $date->startOfDay() : $date->endOfDay())->utc());
+            }
+        }
+
+        return response()->json($query->orderBy('moderation_actions.id', ($data['sort'] ?? 'newest') === 'oldest' ? 'asc' : 'desc')->paginate($data['per_page'] ?? 20)->withQueryString());
     }
 }

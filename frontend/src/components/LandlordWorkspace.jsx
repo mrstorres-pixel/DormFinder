@@ -12,15 +12,17 @@ import ListingInformation from './ListingInformation'
 import { RoomCharges } from './RoomOptions'
 import PhotoGallery from './PhotoGallery'
 import { pesos } from '../lib/money'
-import { editorSteps, nextEditorStep } from '../lib/listingReadiness'
+import { editorSteps, nextEditorStep, listingReadiness, hasLocationPin } from '../lib/listingReadiness'
 import './landlord-workspace.css'
 import { OwnerAvailability } from './AvailabilityStatus'
 
 export function Landlord() {
+  const location = useLocation()
   const [page, setPage] = useState(1)
   const query = useQuery({ queryKey: ['properties', page], queryFn: async () => (await api.get('/landlord/properties', { params: { page } })).data, retry: false, refetchInterval: 240_000 })
   return <section className="container page-space owner-listings">
     <div className="page-heading"><div><span className="eyebrow">PROPERTY OWNER WORKSPACE</span><h1>Your properties</h1><p>Manage your listings and keep availability current.</p></div><Link to="/landlord/properties/new" className="btn btn-primary">+ Add a property</Link></div>
+    {location.state?.notice && <p className="alert alert-success" role="status">{location.state.notice}</p>}
     {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> :
       query.data.data.length ? <div className="row g-4 mt-1">{query.data.data.map((property) => <div className="col-md-6 col-xl-4" key={property.id}>
         <article className="property-card">
@@ -56,6 +58,12 @@ function PropertyForm({ property }) {
   const busy = useIsMutating({ mutationKey: ['property-write', property?.id || 'new'] }) > 0
   const [coordinates, setCoordinates] = useState({ latitude: property?.latitude ?? '', longitude: property?.longitude ?? '' })
   const [dirty, setDirty] = useState(false)
+  const [photosDirty, setPhotosDirty] = useState(false)
+  const [roomsDirty, setRoomsDirty] = useState(false)
+  const [stepError, setStepError] = useState('')
+  const [validationAttempted, setValidationAttempted] = useState(false)
+  const locationForm = useRef(null)
+  const stepMessage = useRef(null)
   const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const client = useQueryClient()
   const navigate = useNavigate()
@@ -65,17 +73,19 @@ function PropertyForm({ property }) {
   }, [existing, location.hash, step])
   const mutation = useMutation({
     mutationKey: ['property-write', property?.id || 'new'],
-    mutationFn: values => writeApi(property ? 'patch' : 'post', '/landlord/properties' + (property ? '/' + property.id : ''), values),
-    onSuccess: async saved => {
+    mutationFn: ({ values }) => writeApi(property ? 'patch' : 'post', '/landlord/properties' + (property ? '/' + property.id : ''), values),
+    onSuccess: async (saved, { intent }) => {
       clearUnsaved(); setDirty(false)
       client.setQueryData(['property', String(saved.id)], saved)
       await client.invalidateQueries({ queryKey: ['properties'] })
-      if (!property) navigate('/landlord/properties/' + saved.id + '#photos')
+      setStepError('')
+      if (intent === 'exit') navigate('/landlord', { state: { notice: 'Your draft has been saved. You can continue editing it here.' } })
+      else navigate('/landlord/properties/' + saved.id + (property ? '#preview' : '#photos'))
     },
   })
   function submit(event) {
     event.preventDefault()
-    if (property?.status === 'approved' && !canReplaceOthers()) return
+    if (!canReplaceOthers()) return
     const form = new FormData(event.currentTarget)
     const values = Object.fromEntries(form)
     if (property) {
@@ -83,9 +93,30 @@ function PropertyForm({ property }) {
       values.latitude = values.latitude || null; values.longitude = values.longitude || null
       values.revision = property.revision
     }
-    mutation.mutate(values)
+    mutation.mutate({ values, intent: event.nativeEvent.submitter?.value || (property ? 'continue' : 'start') })
   }
-  function go(next) { if (!busy) navigate('#' + next, { preventScrollReset: true }) }
+  function explain(message) { setStepError(message); requestAnimationFrame(() => stepMessage.current?.focus()) }
+  function go(next) {
+    if (busy) return
+    const target = editorSteps.findIndex(([key]) => key === next)
+    const current = editorSteps.findIndex(([key]) => key === step)
+    if (target > current && editable) {
+      if (photosDirty || roomsDirty) { explain(photosDirty ? 'Upload your selected photo, or clear the photo form, before continuing.' : 'Save your room option, or cancel its changes, before continuing.'); return }
+      if (step === 'location') {
+        const description = locationForm.current.elements.description
+        description.setCustomValidity([...(description.value || '').trim()].length < 40 ? 'Describe the property in at least 40 characters.' : '')
+        setValidationAttempted(true)
+        if (!locationForm.current.reportValidity()) { setStepError('Complete the highlighted required fields before continuing.'); return }
+        if (!hasLocationPin(coordinates)) { explain('Place the property pin on the map, or enter a valid latitude and longitude, before continuing.'); return }
+        locationForm.current?.requestSubmit()
+        return
+      }
+      if (dirty) { explain('Save your location changes before continuing.'); navigate('#location', { preventScrollReset: true }); return }
+      const missing = listingReadiness(property).find(item => !item.ready && editorSteps.findIndex(([key]) => key === item.step) < target)
+      if (missing) { explain(missing.label + ' before continuing.'); if (missing.step !== step) navigate('#' + missing.step, { preventScrollReset: true }); return }
+    }
+    setStepError(''); navigate('#' + next, { preventScrollReset: true })
+  }
   const errors = fieldErrors(mutation.error)
   if (!property) return <section className="container page-space owner-create">
     <Link className="back-link" to="/landlord">← Your properties</Link>
@@ -94,29 +125,31 @@ function PropertyForm({ property }) {
       <Field label="Property name" name="title" required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
       <label className="form-label" htmlFor="property_type">Property type</label><select className="form-select mb-3" id="property_type" name="property_type" defaultValue="dormitory"><option value="dormitory">Dormitory</option><option value="apartment">Apartment</option><option value="boarding_house">Boarding house</option><option value="rental_room">Rental room</option></select>
       <Field label="City" name="city" defaultValue="Manila" required maxLength={100} error={errors} />
-      <button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
+      <button className="btn btn-primary" value="start" disabled={mutation.isPending}>{mutation.isPending ? 'Creating…' : 'Start listing'}</button>
     </fieldset></form><p className="owner-fine-print">Your draft stays private until you submit it and an administrator approves it.</p>
   </section>
   return <section className="container page-space owner-editor">
     <Link className="back-link" to="/landlord">← Your properties</Link>
     <div className="page-heading mt-4"><div><span className="eyebrow">YOUR LISTING</span><h1>{property.title}</h1></div><span className="status-badge position-static">{property.status.replaceAll("_", " ")} · {property.status === "approved" ? (property.availability?.status === "hidden" ? "hidden" : "public") : "private"}</span></div>
     {property.status === 'approved' && <p className="owner-fine-print">Confirm vacancies to keep or restore public visibility. Changes to photos, room terms or property details return it to draft for review.</p>}
-    <OwnerAvailability property={property} /><nav className="editor-steps" aria-label="Listing editor steps">{editorSteps.map(([key, label], index) => <button type="button" key={key} disabled={busy} aria-current={step === key ? 'step' : undefined} onClick={() => go(key)}><span aria-hidden="true">{index + 1}</span>{label}</button>)}</nav>
-    <div className="editor-stage" id="editor-photos" tabIndex={-1} hidden={step !== 'photos'}><PhotoManager property={property} /></div>
-    <div className="editor-stage" id="editor-rooms" tabIndex={-1} hidden={step !== 'rooms'}><RoomManager property={property} /></div>
+    <OwnerAvailability property={property} /><p className="editor-introduction">Complete photos, rooms and location before sending your listing for review. Required fields are marked; optional fields can be left blank.</p><nav className="editor-steps" aria-label="Listing editor steps">{editorSteps.map(([key, label], index) => { const complete = key !== 'preview' && listingReadiness(property).filter(item => item.step === key).every(item => item.ready); return <button type="button" key={key} disabled={busy} className={complete ? 'is-complete' : ''} title={label + (complete ? ': complete' : ': needs details')} aria-current={step === key ? 'step' : undefined} onClick={() => go(key)}><span aria-hidden="true">{complete ? '✓' : index + 1}</span>{label}</button> })}</nav>
+    {stepError && <p className="alert alert-warning editor-step-message" role="alert" ref={stepMessage} tabIndex={-1}>{stepError}</p>}
+    <div className="editor-stage" id="editor-photos" tabIndex={-1} hidden={step !== 'photos'}><PhotoManager property={property} onDirtyChange={setPhotosDirty} /></div>
+    <div className="editor-stage" id="editor-rooms" tabIndex={-1} hidden={step !== 'rooms'}><RoomManager property={property} onDirtyChange={setRoomsDirty} /></div>
     <div className="editor-stage" id="editor-location" tabIndex={-1} hidden={step !== 'location'}><section className="panel"><h2>Location and property details</h2><ErrorNotice error={mutation.error} />{mutation.isSuccess && <p className="alert alert-success" role="status">Your draft has been saved.</p>}
-      <form onSubmit={submit} onChange={() => setDirty(true)}><fieldset disabled={!editable || mutation.isPending}>
+      <p className="owner-fine-print">Required to continue: a description of at least 40 characters, the street address, city and property pin. Save draft keeps partial details and returns to My space.</p>
+      <form ref={locationForm} className={validationAttempted ? 'was-validated' : ''} onInvalidCapture={() => { setValidationAttempted(true); setStepError('Complete the highlighted required fields before continuing.') }} onSubmit={submit} onChange={event => { event.target.setCustomValidity?.(''); setDirty(true); setStepError('') }}><fieldset disabled={!editable || mutation.isPending}>
         <Field label="Property name" name="title" defaultValue={property?.title} required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
         <div className="mb-3"><label className="form-label" htmlFor="property_type">Property type</label><select className="form-select" id="property_type" name="property_type" defaultValue={property?.property_type || 'dormitory'}>
           <option value="dormitory">Dormitory</option><option value="apartment">Apartment</option><option value="boarding_house">Boarding house</option><option value="rental_room">Rental room</option>
         </select></div>
-        <Field as="textarea" label="About the property" name="description" defaultValue={property?.description} rows={4} maxLength={5000} hint="Describe the property honestly. Do not include private contact details." error={errors} />
-        <Field label="Street address" name="address" defaultValue={property?.address} maxLength={255} error={errors} />
+        <Field as="textarea" label="About the property" name="description" defaultValue={property?.description} rows={4} required minLength={40} maxLength={5000} hint="At least 40 characters. Describe the rooms, surroundings and what students should know." error={errors} />
+        <Field label="Street address" name="address" defaultValue={property?.address} required maxLength={255} error={errors} />
         <Field label="City" name="city" defaultValue={property?.city || 'Manila'} required maxLength={100} error={errors} />
-        <fieldset className="mb-3"><legend className="h3">Shared facilities</legend><p className="small">Select only facilities available at this property.</p><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input type="checkbox" name="amenities" value={value} defaultChecked={property?.amenities?.includes(value)} /> {label}</label>)}</div></fieldset><Field label="House rules" name="house_rules" as="textarea" defaultValue={property?.house_rules} maxLength={2000} rows={3} hint="Describe quiet hours, visitor rules, and other restrictions honestly." error={errors} /><p className="small">Coordinates are optional for a draft and required before submitting for review.</p>
+        <fieldset className="mb-3"><legend className="h3">Shared facilities <small>(optional)</small></legend><p className="small">Select only facilities available at this property.</p><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input type="checkbox" name="amenities" value={value} defaultChecked={property?.amenities?.includes(value)} /> {label}</label>)}</div></fieldset><Field label="House rules (optional)" name="house_rules" as="textarea" defaultValue={property?.house_rules} maxLength={2000} rows={3} hint="Include quiet hours, visitor policies, smoking rules or other restrictions." error={errors} /><h3 className="h5 mt-4">Property location <span className="required-field-mark">Required to continue</span></h3><p className="small">Place a pin at the property. A nearby campus only helps you find the area.</p>
         {step === 'location' && <MapPinPicker latitude={coordinates.latitude} longitude={coordinates.longitude} onChange={value => { setCoordinates(value); setDirty(true) }} />}
-        <div className="row"><div className="col-sm-6"><Field label="Latitude (optional)" name="latitude" type="number" step="any" min="-90" max="90" value={coordinates.latitude} onChange={event => setCoordinates(current => ({ ...current,latitude:event.target.value }))} error={errors} /></div><div className="col-sm-6"><Field label="Longitude (optional)" name="longitude" type="number" step="any" min="-180" max="180" value={coordinates.longitude} onChange={event => setCoordinates(current => ({ ...current,longitude:event.target.value }))} error={errors} /></div></div>
-        <button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
+        <div className="row"><div className="col-sm-6"><Field label="Latitude" name="latitude" type="number" step="any" min="-90" max="90" value={coordinates.latitude} onChange={event => setCoordinates(current => ({ ...current,latitude:event.target.value }))} error={errors} /></div><div className="col-sm-6"><Field label="Longitude" name="longitude" type="number" step="any" min="-180" max="180" value={coordinates.longitude} onChange={event => setCoordinates(current => ({ ...current,longitude:event.target.value }))} error={errors} /></div></div>
+        <button type="submit" value="exit" formNoValidate className="btn btn-outline-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
       </fieldset></form>
     </section></div>
     <div className="editor-stage" id="editor-preview" tabIndex={-1} hidden={step !== 'preview'}>
@@ -124,7 +157,7 @@ function PropertyForm({ property }) {
       <OwnerPreview property={property} refresh={() => client.invalidateQueries({ queryKey: ['property', String(property.id)] })} />
       <details className="owner-listing-settings"><summary>Listing settings</summary><LifecycleControls property={property} /></details>
     </div>
-    <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>Continue</button>}</div>
+    <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{step === 'location' && editable ? 'Save and continue' : 'Continue'}</button>}</div>
   </section>
 }
 
@@ -138,11 +171,12 @@ function OwnerPreview({ property, refresh }) {
   </section>
 }
 
-function PhotoManager({ property }) {
+function PhotoManager({ property, onDirtyChange }) {
   const client = useQueryClient()
   const [inputKey, setInputKey] = useState(0)
   const uploadIdentity = useRef({ file: null, caption: '', id: '' })
   const [dirty, setDirty] = useState(false)
+  useLayoutEffect(() => { onDirtyChange?.(dirty) }, [dirty, onDirtyChange])
   const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const editable = ['draft', 'rejected', 'approved'].includes(property.status)
   async function refresh() {
@@ -188,6 +222,7 @@ function PhotoManager({ property }) {
       <Field label="Choose a photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required />
       <Field label="Photo description" name="caption" placeholder="e.g. Shared room facing the courtyard" maxLength={160} />
       <button className="btn btn-outline-primary w-100" disabled={upload.isPending || remove.isPending || order.isPending}>{upload.isPending ? 'Uploading…' : 'Upload photo'}</button>
+      {dirty && <button type="button" className="btn btn-link w-100 mt-2" disabled={upload.isPending} onClick={() => { clearUnsaved(); setDirty(false); uploadIdentity.current = { file: null, caption: '', id: '' }; setInputKey(key => key + 1) }}>Clear photo form</button>}
     </fieldset></form>}
   </section>
 }

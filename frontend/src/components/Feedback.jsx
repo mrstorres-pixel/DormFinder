@@ -24,7 +24,7 @@ export function Loading({ children = 'Getting things ready…' }) {
 export function Field({ label, name, error, hint, as: Tag = 'input', ...props }) {
   const message = error?.[name]?.join(' ')
   return <div className="mb-3">
-    <label className="form-label" htmlFor={name}>{label}</label>
+    <label className={'form-label' + (props.required ? ' field-required' : '')} htmlFor={name}>{label}</label>
     <Tag id={name} name={name} className={'form-control' + (message ? ' is-invalid' : '')}
       aria-invalid={message ? true : undefined}
       aria-describedby={message ? name + '-error' : hint ? name + '-hint' : undefined} {...props} />
