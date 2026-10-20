@@ -1,6 +1,6 @@
 # Implementation status
 
-## Local work complete - interactive walkthrough and restrained UI, October 20
+## Current increment complete - interactive walkthrough and restrained UI, October 20
 
 The quick-guide page is replaced by a guided tour across the actual student, owner and admin screens, with highlighted controls, Back/Next, pause/resume, restart, keyboard navigation and a help button in the header. Progress is private to the account and browser tab and expires after 12 hours. New owners can inspect the creation controls without creating a sample property; existing owners also see the real photo, room, location, review and availability steps. The tour never automatically sends messages, submits listings or changes vacancies, and it respects unsaved edits.
 
@@ -9,6 +9,8 @@ The visual pass uses solid blue, navy, warm paper and sage surfaces with stronge
 Owner vacancy controls explicitly explain setting available units to zero when an option is taken, display a sold-out confirmation, and show when all options are taken. The home search stays usable while campus suggestions load. Editor warning focus no longer interrupts someone who has already moved into another field.
 
 Local verification: frontend 95 tests / 28 files, lint and production build pass. All 144 distinct scoped Chromium/WebKit scenarios have passing evidence across the final main, affected-screen and hero runs. The Safari canvas issue was traced to mid-scroll resolution changes; rendering now chooses a bounded resolution per viewport, and all twelve final actual-animation/fallback checks pass, including scene reversal in both engines. No dependency, backend, schema or seeded-data change is required.
+
+Source 1d1a7f2bbaa168c0ca895c3b2982dbe57b0adefa is live at https://dormfinder-pink.vercel.app in Vercel dpl_2sKSLXskqkWUw4hH2kCwTX3o6Lbr. All 80 live Chromium/WebKit checks pass, including the complete walkthrough with existing student, owner and admin accounts in both engines, actual tiles/walking routes, and guarded owner/admin directories. Real-account checks block business writes. All 35 staged assets and six public entry assets match the tested build. Direct/proxied API readiness returns 200, and the bounded Vercel runtime error scan returns no events. The previous backend and user certificate are unchanged.
 
 ## Current increment complete - group feedback and room-step correction, October 20
 

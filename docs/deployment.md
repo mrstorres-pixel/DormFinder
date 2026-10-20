@@ -1,5 +1,13 @@
 # Deployment runbook — Codex execution
 
+## Released interactive walkthrough and solid-color UI - October 20, 2026
+
+Application source 1d1a7f2bbaa168c0ca895c3b2982dbe57b0adefa is READY in Vercel deployment dpl_2sKSLXskqkWUw4hH2kCwTX3o6Lbr, staged at https://dormfinder-c3clscbns-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1, team team_lakGFdG84Dlw3s6qfEG8IKQc, frontend root, Node 24 and install/build settings were verified from the clean committed archive. All 35 staged JS/CSS assets match the tested local build, and all six public HTML-linked entry assets match after promotion. Entry index-DQ4-XUsJ.js and stylesheet index-DiYpqN8w.css identify this release.
+
+The user authorized publishing earlier in the session; the later design correction was incorporated before committing and staging. Gradients and decorative heading strips/rings were removed. No backend deployment, database migration, catalog replacement, production vacancy confirmation or provider-setting change was made. Backend source f0acbdaf5fa59680cd3b3c329c1d52893f2120c0 remains live in Render dep-dbbndc9jfumc7389or20. Direct and proxied API readiness return 200. Recovery reference: preceding frontend source f0acbdaf5fa59680cd3b3c329c1d52893f2120c0 / Vercel dpl_6dGskM7jM1e5qmgWvFqkfkuHPP9V. No rollback was performed.
+
+All 80 final live Chromium/WebKit cases pass without skips, including real role walkthroughs and read-only existing-account/map checks. Business writes are intercepted in production acceptance; full browser action/failure flows use synthetic API responses. Local evidence covers 144 distinct scoped browser scenarios, frontend 95 tests / 28 files, lint and build. The post-acceptance Vercel runtime error query (15-minute window ending about 15:52 UTC) returns zero events. The untracked certificate remains excluded and retains SHA256 700723581420DD1AC98FD7E9AC529F0EF210EADCAF87FC868A3AD7D114C2F3B7.
+
 ## Released owner creation and admin workspace - October 20, 2026
 
 Application source f49b8a507f6cf844e08b2f63b795a75401ed6c2a was committed and pushed after explicit user authorization. Backend Render deployment dep-dbbidjfavr4c73e00sd0 is live on the existing free Singapore Docker service srv-db44ecrbc2fs73aj14q0. Its reported source matches the intended commit, and direct/proxied readiness requests return 200/ready. No migration or provider setting was added or changed.
