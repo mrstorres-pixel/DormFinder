@@ -97,7 +97,7 @@ function AuthPage({ register = false }) {
   }
   const errors = fieldErrors(mutation.error)
   return <div className="container page-space"><div className="auth-grid">
-    <aside className="auth-intro"><span className="eyebrow">A LITTLE CLOSER TO CAMPUS</span><h1>{register ? 'Make room for your next chapter.' : 'Welcome back to your space.'}</h1><p>{register ? 'A clearer housing search starts with a simple introduction.' : 'Your listings and conversations, all in one place.'}</p><div className="campus-card">⌖ <span>Your college. Your campus.<strong>Your next chapter.</strong></span></div></aside>
+    <aside className="auth-intro"><span className="eyebrow">A LITTLE CLOSER TO CAMPUS</span><h1>{register ? 'Make room for your next chapter.' : 'Welcome back to your space.'}</h1><p>{register ? 'A clearer housing search starts with a simple introduction.' : 'Your listings and conversations, all in one place.'}</p><div className="campus-card"><span>Your college. Your campus.<strong>Your next chapter.</strong></span></div></aside>
     <section className="panel auth-panel"><h2>{register ? 'Create your account' : 'Sign in'}</h2><p className="text-secondary">{register ? 'Choose how you’ll use DormFinder.' : 'Enter the email and password for your account.'}</p>
       {register && <fieldset className="role-picker mb-4"><legend className="visually-hidden">Account type</legend>
         {['student', 'landlord'].map((value) => <label key={value} className={role === value ? 'selected' : ''}>

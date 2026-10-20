@@ -1,5 +1,11 @@
 # Validation evidence — October 9, 2026
 
+## Auth text contrast and alignment correction - October 21, 2026
+
+The new auth-presentation browser suite measures actual computed foreground/background colors on the solid auth surfaces and checks each visible text node against 4.5:1 for normal text or 3:1 for large text. It also measures the center of both campus-card text lines and their vertical group against the containing box, with less than one pixel deviation required. The suite covers sign-in and both registration roles at five widths (1440/1024/768/390/320) in Chromium and WebKit and rejects horizontal overflow. Screenshots of desktop and phone layouts were inspected. This is a scoped solid-surface check, not a claim of complete accessibility certification.
+
+All six auth cases pass against both development and production builds. The production-build run also includes the existing registration/profile, unified search, saved places, owner archive, messaging and notification regression scenarios: 26 cases pass across both engines. Lint and the Vercel build pass; the existing large Three.js bundle warning remains. No backend, schema, dependency or business data change is involved.
+
 ## Interactive walkthrough and solid-color UI - October 20, 2026
 
 Frontend unit coverage includes per-account tour progress, expiry, safe local destinations, recordless owner tours and clipped spotlight/coach positioning. Browser checks exercise complete student/owner/admin tours, actual listing clicks, Back, pause/reload/resume, focus restoration, native filter/message/notification dialogs, failed directories, unsaved profile/message protection, narrow and short screens and reduced motion. All tour test mutations are blocked and counted; the tour itself must issue none. An additional live-account suite permits only GET and ordinary sign-in, then follows the real role tours without changing listings or private conversations.

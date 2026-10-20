@@ -106,7 +106,8 @@ body { background: #e5edf6; }
 .app-layout .auth-intro h1 { color: #edf4ff; font-size: clamp(2rem, 3.8vw, 3.2rem); }
 .app-layout .auth-intro > p { color: #c0d1ea; }
 .app-layout .auth-intro > .eyebrow { color: #a4c5ff; }
-.app-layout .auth-intro .campus-card { background: #2a486d; border: 1px solid #6381a9; color: #c6d8f0; border-radius: 15px; }
+.app-layout .auth-intro .campus-card { background: #2a486d; border: 1px solid #6381a9; color: #d5e2f5; border-radius: 15px; padding: 1.1rem; display: flex; justify-content: center; align-items: center; text-align: center; }
+.app-layout .auth-intro .campus-card span { color: inherit; font-size: .875rem; line-height: 1.6; }
 .app-layout .auth-intro .campus-card strong { color: #f0e7d4; }
 .app-layout .auth-panel { background: #f4f0e6; border-color: #b9b7a9; padding: 1.8rem; }
 .app-layout .role-picker label { background: #e6edf7; border-color: #acbdd4; }
