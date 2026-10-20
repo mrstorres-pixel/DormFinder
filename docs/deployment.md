@@ -1,5 +1,11 @@
 # Deployment runbook — Codex execution
 
+## Released auth contrast and alignment correction - October 21, 2026
+
+Source 0ec5f067a248bb933915abb3af688d6ad8e6033e is READY in Vercel dpl_B3iZ1xin8xM4NmfhqKj5BdMgrgsL at https://dormfinder-mp9zdaq1v-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing project/team, frontend root, Node 24 and build settings were verified from the clean committed archive. All 35 staged JS/CSS assets match the tested build; all six public HTML-linked assets match after promotion. Entry index-D4X2-v9V.js and stylesheet index-BURa9i-t.css identify the release.
+
+All 26 scoped Chromium/WebKit browser cases pass locally against the production build and again against the public deployment with API mutations intercepted. Auth contrast and centering checks cover login and student/owner registration at five screen widths in both engines. Desktop and phone screenshots were inspected. Lint/build and direct/proxied API readiness pass. A bounded 15-minute runtime-error query returned zero events. No backend/data/provider/dependency change was made; backend f0acbdaf5fa59680cd3b3c329c1d52893f2120c0 remains live in Render dep-dbbndc9jfumc7389or20. Recovery reference: prior frontend 1d1a7f2 / Vercel dpl_2sKSLXskqkWUw4hH2kCwTX3o6Lbr. The user certificate is excluded and unchanged.
+
 ## Released interactive walkthrough and solid-color UI - October 20, 2026
 
 Application source 1d1a7f2bbaa168c0ca895c3b2982dbe57b0adefa is READY in Vercel deployment dpl_2sKSLXskqkWUw4hH2kCwTX3o6Lbr, staged at https://dormfinder-c3clscbns-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1, team team_lakGFdG84Dlw3s6qfEG8IKQc, frontend root, Node 24 and install/build settings were verified from the clean committed archive. All 35 staged JS/CSS assets match the tested local build, and all six public HTML-linked entry assets match after promotion. Entry index-DQ4-XUsJ.js and stylesheet index-DiYpqN8w.css identify this release.

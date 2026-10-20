@@ -6,6 +6,8 @@ The navy auth introduction now gives the campus caption an explicit inherited li
 
 Rendered contrast and geometry checks cover all three routes at 1440, 1024, 768, 390 and 320 pixels in Chromium and WebKit. The two caption lines have 7.13:1 and 7.61:1 contrast against their solid background. All 26 scoped production-build browser cases, lint and build pass. This correction is frontend only; publication evidence is recorded in the deployment runbook.
 
+Source 0ec5f06 is live at https://dormfinder-pink.vercel.app in Vercel dpl_B3iZ1xin8xM4NmfhqKj5BdMgrgsL. All 26 scoped live browser cases pass, 35 staged assets and six public entry assets match the tested build, direct/proxied API readiness returns 200 and the bounded runtime-error query returns no events.
+
 ## Current increment complete - interactive walkthrough and restrained UI, October 20
 
 The quick-guide page is replaced by a guided tour across the actual student, owner and admin screens, with highlighted controls, Back/Next, pause/resume, restart, keyboard navigation and a help button in the header. Progress is private to the account and browser tab and expires after 12 hours. New owners can inspect the creation controls without creating a sample property; existing owners also see the real photo, room, location, review and availability steps. The tour never automatically sends messages, submits listings or changes vacancies, and it respects unsaved edits.

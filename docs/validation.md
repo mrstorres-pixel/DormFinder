@@ -6,6 +6,8 @@ The new auth-presentation browser suite measures actual computed foreground/back
 
 All six auth cases pass against both development and production builds. The production-build run also includes the existing registration/profile, unified search, saved places, owner archive, messaging and notification regression scenarios: 26 cases pass across both engines. Lint and the Vercel build pass; the existing large Three.js bundle warning remains. No backend, schema, dependency or business data change is involved.
 
+Post-publication acceptance repeats all 26 cases against https://dormfinder-pink.vercel.app successfully. The six auth cases measure the deployed component at all five widths. API actions in these browser scenarios are mocked, so production business data is untouched. The 35 staged asset hashes and six public entry hashes match the tested build; both API readiness paths return 200, and a bounded runtime-error scan returns no events.
+
 ## Interactive walkthrough and solid-color UI - October 20, 2026
 
 Frontend unit coverage includes per-account tour progress, expiry, safe local destinations, recordless owner tours and clipped spotlight/coach positioning. Browser checks exercise complete student/owner/admin tours, actual listing clicks, Back, pause/reload/resume, focus restoration, native filter/message/notification dialogs, failed directories, unsaved profile/message protection, narrow and short screens and reduced motion. All tour test mutations are blocked and counted; the tour itself must issue none. An additional live-account suite permits only GET and ordinary sign-in, then follows the real role tours without changing listings or private conversations.
