@@ -60,7 +60,7 @@ class ListingController extends Controller
         abort_if($request->user() && $request->user()->role !== 'student', 403);
         $data = $request->validate([
             'campus_id' => ['nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)],
-            'selections' => ['required', 'array', 'min:1', 'max:3'],
+            'selections' => ['required', 'array', 'min:2', 'max:3'],
             'selections.*' => ['array:property_id,room_option_id'],
             'selections.*.property_id' => ['required', 'integer', 'distinct', 'min:1'],
             'selections.*.room_option_id' => ['required', 'integer', 'min:1'],

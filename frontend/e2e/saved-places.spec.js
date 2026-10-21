@@ -95,7 +95,8 @@ test('one-click saving, optional collections, exact-room comparison and retained
   await expect(editor.getByRole('status')).toHaveText('Saved changes.')
   await page.keyboard.press('Escape')
   await page.getByRole('button', { name: 'Compare room', exact: true }).click()
-  await expect(page.getByRole('link', { name: 'Compare 1 listing', exact: true })).toHaveAttribute('href', '/compare?items=21:43')
+  await expect(page.getByRole('button', { name: 'Select one more', exact: true })).toBeDisabled()
+  await expect(page.getByRole('region', { name: 'Your comparison selection' }).getByRole('link')).toHaveCount(0)
   await page.reload()
   await expect(page.getByText('Ask about the sunny desk', { exact: true })).toBeVisible()
   for (const width of [1440, 768, 390, 360]) {

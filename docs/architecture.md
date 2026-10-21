@@ -1,5 +1,13 @@
 # Architecture, API and permissions
 
+## Shared comparison destination and minimum selection - October 21, 2026
+
+The comparison endpoint requires two or three distinct property/room pairs. The frontend blocks one-item tray navigation and direct comparison URLs, retains remaining selections after removal and imports valid comparison URLs into the existing tab-level selection state. Its comparison data request sends room selections without a default campus; a single campus search stores only the explicitly selected campus_id in the URL.
+
+The walking comparison query keys every property/campus coordinate pair, reuses the existing walking-route cache and requests only the two or three compared public properties. Uncached calls run sequentially with 1.2 seconds between calls, preserving the existing server cooldown and incoming/outgoing limits. A changed destination aborts the old query. Failed items remain explicit, successful estimates remain cached, and retry fetches missing estimates. There is no straight-line substitute. Only complete comparable walking results supply the shortest-walk highlight. The chosen route is drawn on the existing Leaflet map; changing the displayed route does not issue another provider request. Room selection does not invalidate routes for unchanged coordinates.
+
+Comparison reuses the existing public walking endpoint, privacy boundaries, FOSSGIS/OSRM attribution and approximate campus reference. No provider configuration, schema, bulk routing job or new service is introduced.
+
 ## Owner readiness, destination search and admin browsing - October 20, 2026
 
 Walking destinations use the existing campus directory through a keyboard-accessible type-ahead search. Only selecting a campus enables its route; typing or clearing removes the previous destination and directions. Listing and comparison maps preserve room and private form state. The owner pin picker uses a self-contained SVG marker, synchronizes map clicks, dragging and manual coordinates, and offers campus search solely to recenter the map.

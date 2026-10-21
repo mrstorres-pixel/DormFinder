@@ -20,6 +20,13 @@ describe('practical campus housing decisions', () => {
     expect(result[2]).toContain('Lowest known monthly charges (tie)')
     expect(result[1]).not.toContain('Lowest stated move-in charges')
   })
+  it('uses pedestrian distances for walking highlights and does not rank incomplete routes', () => {
+    const rows = [row(1, 300000, 500000), row(2, 400000, 600000)]
+    const routes = { 1: { route: { distance_meters: 900 } }, 2: { route: { distance_meters: 450 } } }
+    expect(comparisonHighlights(rows, routes)[2]).toContain('Shortest walk to campus')
+    expect(comparisonHighlights(rows, routes)[1]).not.toContain('Closest to selected campus')
+    expect(comparisonHighlights(rows, { 1: routes[1], 2: { error: 'No route' } })[1]).not.toContain('Shortest walk to campus')
+  })
   it('never ranks unknown charges or unrelated campus references as better', () => {
     const first = row(1,undefined,undefined)
     const second = row(2,400000,500000)

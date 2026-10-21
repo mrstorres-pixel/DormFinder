@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, useSearchParams, useLocation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { api, writeApi } from '../lib/api'
+import { api } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { pesos } from '../lib/money'
 import { useCampuses, distanceLabel } from '../lib/discovery'
-import { useComparison, parseSelections, comparisonItems, cleanSelections } from '../lib/comparison'
+import { useComparison } from '../lib/comparison'
 import { ErrorNotice, Loading } from './Feedback'
 import { RoomCharges } from './RoomOptions'
 import { ComparisonTray, SearchFilters, ListingCard, PhotoGallery, ListingMap } from './Discovery'
 import { ReportForm } from './ModerationPages'
 import CampusMap from './CampusMap'
 import ListingInformation from './ListingInformation'
-import { preferredOption, searchParameters, amenities } from '../lib/housing'
-import { comparisonHighlights } from '../lib/practical'
+import { preferredOption, searchParameters } from '../lib/housing'
 import ListingActions from './ListingActions'
 import AvailabilityStatus from './AvailabilityStatus'
 import { browseKey, readBrowseState, saveBrowseState } from '../lib/browseState'
@@ -107,68 +106,8 @@ export function ListingDetails() {
   const checked = selections.some(item => item.property_id === property.id)
   return <section className="container page-space listing-detail-page"><Link className="back-link" to={location.state?.browse || '/listings?' + (params.get('campus_id') ? 'campus_id=' + params.get('campus_id') + '&sort=recommended&radius_km=2' : '')}>← Browse listings</Link><div className="page-heading mt-4"><div><span className="eyebrow">{property.property_type.replaceAll('_', ' ')}</span><h1>{property.title}</h1><p>{property.address}, {property.city}</p></div><div className="listing-heading-actions">{property.is_demo && <span className="badge text-bg-warning">Synthetic demo listing</span>}</div></div>
     <ComparisonTray />
-    <div className="listing-detail-layout"><div className="listing-detail-gallery"><PhotoGallery key={property.id} photos={property.photos} refresh={() => query.refetch()} /></div><div className="listing-detail-main"><section className="panel mb-4"><h2>About this property</h2><p className="preserve-lines">{property.description}</p><p className="small text-secondary">{campus && distanceLabel(property.distance_from_campus, campus)}</p><p className="small text-secondary">Reviewed for listing content. This does not certify safety, legal compliance or ownership.</p></section><ListingInformation property={property} /><ListingMap properties={[property]} campus={campus} />{user?.role === 'student' && <ReportForm key={'report-' + property.id} property={property} />}</div><div className="listing-detail-aside"><section className="panel" id="rooms-and-costs" aria-label="Selected room summary"><h2>Rooms and costs</h2>{option ? <><RoomChoice options={property.room_options} selectedId={option.id} onChange={optionId => { if (viewingDirty && !window.confirm('Discard your unsent viewing request before changing room options?')) return; setChoice(String(optionId)); if (checked) choose(property.id, optionId) }} /><div className="room-cost-overview"><p className="room-overview-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><dl className="cost-quick-list"><div><dt>Known monthly charges</dt><dd>{pesos(option.monthly_fixed_total_centavos)}</dd></div><div><dt>Deposit, advance & one-time fees</dt><dd>{pesos(option.move_in_fixed_total_centavos)}</dd></div></dl><p className="small">{option.capacity}-person room · {option.available_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ' · Recently confirmed'}</p><p className="small text-secondary">Variable utilities and rent not covered by the advance are additional.</p></div><AvailabilityStatus option={option} /><details className="room-terms"><summary>Detailed charges and room terms</summary><RoomCharges option={option} /></details><div className="listing-decisions">{(!user || user.role === 'student') ? <ListingActions key={'actions-' + option.id} property={property} option={option} campus={campus} onDirtyChange={setViewingDirty} /> : <p className="small text-secondary">Students can request a visit or message the owner here.</p>}</div></> : <p>No room options currently available.</p>}</section></div></div>
+    <div className="listing-detail-layout"><div className="listing-detail-gallery"><PhotoGallery key={property.id} photos={property.photos} refresh={() => query.refetch()} /></div><div className="listing-detail-main"><section className="panel mb-4"><h2>About this property</h2><p className="preserve-lines">{property.description}</p><p className="small text-secondary">{campus && distanceLabel(property.distance_from_campus, campus)}</p><p className="small text-secondary">Reviewed for listing content. This does not certify safety, legal compliance or ownership.</p></section><ListingInformation property={property} /><ListingMap properties={[property]} campus={campus} />{user?.role === 'student' && <ReportForm key={'report-' + property.id} property={property} />}</div><div className="listing-detail-aside"><section className="panel" id="rooms-and-costs" aria-label="Selected room summary"><h2>Rooms and costs</h2>{option ? <><RoomChoice options={property.room_options} selectedId={option.id} onChange={optionId => { if (viewingDirty && !window.confirm('Discard your unsent viewing request before changing room options?')) return; setChoice(String(optionId)); if (checked) choose(property.id, optionId) }} /><div className="room-cost-overview"><p className="room-overview-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><dl className="cost-quick-list"><div><dt>Known monthly charges</dt><dd>{pesos(option.monthly_fixed_total_centavos)}</dd></div><div><dt>Deposit, advance & one-time fees</dt><dd>{pesos(option.move_in_fixed_total_centavos)}</dd></div></dl><p className="small">{option.capacity}-person room · {option.available_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ' · Recently confirmed'}</p></div><AvailabilityStatus option={option} /><details className="room-terms"><summary>Detailed charges and room terms</summary><RoomCharges option={option} /></details><div className="listing-decisions">{(!user || user.role === 'student') ? <ListingActions key={'actions-' + option.id} property={property} option={option} campus={campus} onDirtyChange={setViewingDirty} /> : <p className="small text-secondary">Students can request a visit or message the owner here.</p>}</div></> : <p>No room options currently available.</p>}</section></div></div>
   </section>
 }
 
-export function Comparison() {
-  const [params, setParams] = useSearchParams()
-  const { choose } = useComparison()
-  const campuses = useCampuses()
-  const selections = parseSelections(params.get('items'))
-  const valid = selections.length > 0 && selections.length <= 3 && cleanSelections(selections).length === selections.length
-  const query = useQuery({ queryKey: ['comparison', params.toString()], enabled: valid, queryFn: async () => writeApi('post', '/compare', { selections, campus_id: params.get('campus_id') || undefined }), retry: false, refetchInterval: 240_000 })
-  const rows = query.data || []
-  const highlights = comparisonHighlights(rows.map(property => params.has('campus_id') ? property : { ...property, distance_from_campus: undefined }))
-  const campus = campuses.data?.find(item => String(item.id) === params.get('campus_id'))
-  function change(propertyId, optionId) {
-    const next = selections.map(item => item.property_id === propertyId ? { ...item, room_option_id: Number(optionId) } : item)
-    choose(propertyId, optionId)
-    setParams(current => { const result = new URLSearchParams(current); result.set('items', comparisonItems(next)); return result })
-  }
-  function remove(propertyId) {
-    choose(propertyId, 0, false)
-    setParams(current => { const result = new URLSearchParams(current); result.set('items', comparisonItems(selections.filter(item => item.property_id !== propertyId))); return result })
-  }
-  const essentials = [
-    ['Monthly base rent', (_, option) => <span className="comparison-price"><strong>{pesos(option.monthly_rent_centavos)}</strong><small>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</small></span>],
-    ['Known monthly charges', (_, option) => <strong>{pesos(option.monthly_fixed_total_centavos)}</strong>],
-    ['Deposit, advance and one-time fees', (_, option) => pesos(option.move_in_fixed_total_centavos)],
-    ['Room capacity', (_, option) => `${option.capacity} people`],
-    ['Availability updated', (_, option) => <AvailabilityStatus option={option} />],
-    ['Available inventory', (_, option) => <span className={option.available_units === 0 || option.availability_stale ? 'room-caution' : ''}>{option.available_units} of {option.total_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'}{option.available_units === 0 ? ' · Sold out' : ''}{option.availability_stale ? ' · Needs confirmation' : ' · Recently confirmed'}</span>],
-    ...(campus ? [['Campus distance', property => distanceLabel(property.distance_from_campus, campus)]] : []),
-  ]
-  const terms = [
-    ['Price basis', (_, option) => option.price_basis === 'per_person' ? 'Per person' : 'Per room'],
-    ['Deposit', (_, option) => pesos(option.deposit_centavos)],
-    ['Advance rent', (_, option) => `${option.advance_months} month(s)`],
-    ['Fixed fees', (_, option) => option.fees.map(fee => `${fee.name}: ${pesos(fee.amount_centavos)} (${fee.frequency.replaceAll('_', ' ')})`).join('; ') || 'None stated'],
-    ['Utilities and other terms', (_, option) => option.utilities_notes || 'Not provided'],
-    ['Availability confirmation', (_, option) => option.availability_confirmed_at ? `${new Date(option.availability_confirmed_at).toLocaleDateString('en-PH')}${option.availability_stale ? ' · Needs confirmation' : ''}` : 'Not provided'],
-    ['Property type', property => property.property_type.replaceAll('_', ' ')],
-    ['Shared amenities', property => property.amenities == null ? 'Not provided' : property.amenities.map(key => amenities[key] || key).join(', ') || 'None listed'],
-    ['House rules', property => property.house_rules || 'Not provided'],
-    ['Address', property => `${property.address}, ${property.city}`],
-  ]
-  const destination = property => `/listings/${property.id}?option=${property.room_options[0].id}${campus ? '&campus_id=' + campus.id : ''}`
-  const tableRows = cells => cells.map(([label, value]) => <tr key={label}><th scope="row">{label}</th>{rows.map(property => <td key={property.id}>{value(property, property.room_options[0])}</td>)}</tr>)
-  return <section className="container-fluid page-space comparison-page" style={{ '--comparison-count': rows.length || 1 }}><Link className="back-link" to="/listings">← Choose listings</Link><h1 className="mt-4">Compare your options</h1><p className="comparison-intro">Your rooms, side by side. Compare the same price basis; per-person and per-room prices differ.</p>
-    {!valid ? <div className="panel"><p>Select one to three distinct listings and their room options.</p><Link to="/listings">Browse listings</Link></div> : query.isPending ? <Loading /> : query.error ? <><ErrorNotice error={query.error} retry={() => query.refetch()} /><p>A selected listing or option may no longer be public. Remove it or choose another listing.</p><div className="d-flex gap-2 flex-wrap">{selections.map(item => <button key={item.property_id} className="btn btn-outline-secondary" onClick={() => remove(item.property_id)}>Remove listing {item.property_id}</button>)}</div></> : <>
-      <section className="comparison-essential" aria-label="Comparison highlights">
-        <p className="comparison-scroll-hint">Swipe across to see every room →</p>
-        <div className="comparison-scroll" role="region" aria-label="Listing comparison table" tabIndex={0}><table className="table comparison-table" aria-label="Selected room essentials"><thead><tr><th scope="col"><span className="visually-hidden">Compare</span></th>{rows.map(property => <th scope="col" key={property.id}>
-          <Link aria-label={'Open listing: ' + property.title} to={destination(property)}>{property.photos[0] ? <img className="comparison-photo" src={property.photos[0].url} alt={property.photos[0].caption} /> : <span className="comparison-photo-placeholder">No photo available</span>}</Link>
-          <h2><Link to={destination(property)}>{property.title}</Link></h2>
-        </th>)}</tr><tr className="comparison-room-row"><th scope="row"><span className="visually-hidden">Room selection</span></th>{rows.map(property => <td key={property.id}>
-          <label className="d-block">Room option<span className="visually-hidden"> for {property.title}</span><select aria-label={'Room option for ' + property.title} className="form-select mt-2" value={property.room_options[0].id} onChange={event => change(property.id, event.target.value)}>{property.alternative_room_options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select></label>
-          <div className="comparison-column-actions"><FavoriteButton compact propertyId={property.id} optionId={property.room_options[0].id} title={property.title} /><button className="btn btn-link btn-sm" aria-label={'Remove ' + property.title} onClick={() => remove(property.id)}>Remove</button></div>
-          {highlights[property.id].length > 0 && <ul className="comparison-highlight-list">{highlights[property.id].map(reason => <li key={reason}>{reason}</li>)}</ul>}
-        </td>)}</tr></thead><tbody>{tableRows(essentials)}<tr><th scope="row"><span className="visually-hidden">Next step</span></th>{rows.map(property => <td key={property.id}><Link className="btn btn-outline-primary" to={destination(property)}>View room</Link></td>)}</tr></tbody></table></div>
-        <p className="comparison-footnote">Variable utilities and rent not covered by the advance are additional. Cost highlights use the same price basis and recently confirmed vacancies.</p>
-      </section>
-      <details className="comparison-terms"><summary>Full costs and property details</summary><div className="comparison-scroll" role="region" aria-label="Detailed comparison" tabIndex={0}><table className="table comparison-table" aria-label="Selected room fees and property terms"><thead><tr><th scope="col">Details</th>{rows.map(property => <th key={property.id} scope="col">{property.title}<br /><span className="small text-secondary">{property.room_options[0].name}</span></th>)}</tr></thead><tbody>{tableRows(terms)}</tbody></table></div></details>
-      <ListingMap properties={rows} campus={campus} />
-    </>}
-  </section>
-}
+export { default as Comparison } from './ComparisonWorkspace'

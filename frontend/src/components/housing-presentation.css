@@ -27,6 +27,10 @@ html:has(.comparison-tray) { scroll-padding-bottom: 190px; }
 .property-card .card-location { color: var(--muted); font-size: .78rem; }
 .property-card .card-room-picker .form-label { margin-bottom: .3rem; color: var(--muted); }
 .property-card .card-room-picker .form-select { margin: 0 !important; }
+.property-card .listing-card-body, .property-card .listing-card-options { flex: 1; }
+.property-card .card-single-room .form-label { display: block; }
+.property-card .card-room-value { min-height: 45px; display: flex; align-items: center; padding: .5rem 0; font-size: .85rem; }
+.property-card .listing-card-options > .card-actions { margin-top: auto; }
 .property-card .card-price-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .5rem; }
 .property-card .card-price-line .room-price { margin: 0; font-size: 1.3rem; }
 .property-card .card-monthly-total { color: var(--muted); font-size: .76rem; }

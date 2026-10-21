@@ -35,8 +35,9 @@ test('students keep campus, budget and room context through mobile search and co
   const title = await card.getByRole('heading').innerText()
   const optionId = new URL(await card.getByRole('link', { name: 'Open listing: ' + title }).getAttribute('href'), page.url()).searchParams.get('option')
   await card.getByRole('checkbox', { name: /Compare/ }).check()
+  await page.locator('.property-card').filter({ hasNot: page.getByRole('heading', { name: title, exact: true }) }).first().getByRole('checkbox', { name: /Compare/ }).check()
   const compared = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/api/v1/compare') && response.request().method() === 'POST')
-  await page.getByRole('link', { name: 'Compare 1 listing', exact: true }).click()
+  await page.getByRole('link', { name: 'Compare 2 listings', exact: true }).click()
   const comparisonResponse = await compared
   expect(comparisonResponse.status()).toBe(200)
   await comparisonResponse.finished()

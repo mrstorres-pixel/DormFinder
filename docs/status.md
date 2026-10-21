@@ -1,5 +1,13 @@
 # Implementation status
 
+## Comparison walking destinations and aligned listing actions - October 21
+
+Comparison now requires two or three distinct listings in the tray, direct URL guard and API. Removing a listing preserves the remaining selection and prompts for another. One searchable, URL-backed campus destination drives both the comparison table and map; no campus is supplied by default. Each selected listing receives a pedestrian distance and estimated time, with a selectable highlighted route. Campus changes cancel obsolete requests, clear old paths and update room links. Routing is sequential, bounded to the selected listings, cached by exact coordinates/campus and supports partial failures and retry without repeating successful estimates. Existing provider limits and approximate-campus references remain.
+
+The comparison header now spans the selected photos and room controls, removing the two unused left header blocks. The table fills its workspace, uses solid theme surfaces and displays walking-based proximity highlights. Single-room cards reserve a matching room-information area and keep actions at the bottom so admin Show on map controls align. The requested sample-location sentence and comparison cost footnote are removed.
+
+Local checks pass 42 scoped API tests / 339 assertions, 96 frontend tests / 28 files, formatting, lint and build. Every scenario in the 94-case Chromium/WebKit selection has passing evidence across the main run and affected ten-case housing rerun. One mobile screenshot check needed to scroll the now-taller header action into view before checking its viewport position; keyboard horizontal scrolling and action accessibility both pass. Dedicated cases cover neutral campus state, walking values/path switching, a late old-campus reply, partial failure/retry and the admin single/multiple-room alignment.
+
 ## Listing and map layout polish - October 21
 
 Map preview actions now share equal-height buttons with centered labels and SVG arrows. The map footer and walking controls have proper inner spacing, clearer type and simpler sample-location wording. Save/sign-in and compare controls share vertical alignment. Owner and administrator review notes use padded solid-color panels. Listing moderation and owner archive/restore controls are directly visible; their confirmations, reasons and unsaved-edit protections remain intact. The admin sidebar scrolls with the page so the expanded controls remain reachable. Owner-account management has a separate button, and multiline confirmation checkboxes align with the first line.

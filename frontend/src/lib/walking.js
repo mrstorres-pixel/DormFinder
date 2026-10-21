@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './api'
 
+export const walkingIdentity = (property, campus) => property && campus ? [property.id, property.latitude, property.longitude, campus.id, campus.latitude, campus.longitude].join(':') : ''
+
 export function walkingLabel(route) {
   const minutes = Math.max(1, Math.ceil(route.duration_seconds / 60))
   const distance = route.distance_meters >= 1000 ? (route.distance_meters / 1000).toFixed(1) + ' km' : Math.round(route.distance_meters) + ' m'
@@ -10,7 +12,7 @@ export function walkingLabel(route) {
 
 export function useWalkingRoute(property, campus) {
   const client = useQueryClient()
-  const identity = property && campus ? [property.id, property.latitude, property.longitude, campus.id, campus.latitude, campus.longitude].join(':') : ''
+  const identity = walkingIdentity(property, campus)
   const [requested, setRequested] = useState('')
   const active = !!identity && requested === identity
   const query = useQuery({
@@ -20,6 +22,55 @@ export function useWalkingRoute(property, campus) {
   })
   return { active, route: active ? query.data : null, loading: active && query.isFetching, error: active ? query.error : null,
     show: () => { if (active) query.refetch(); else setRequested(identity) }, clear: () => { client.cancelQueries({ queryKey: ['walking-route', identity], exact: true }); setRequested('') } }
+}
+
+function routingPause(signal) {
+  return new Promise((resolve, reject) => {
+    const abort = () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')) }
+    const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve() }, 1200)
+    if (signal.aborted) abort()
+    else signal.addEventListener('abort', abort, { once: true })
+  })
+}
+
+export function useComparisonWalkingRoutes(properties, campus) {
+  const client = useQueryClient()
+  const identities = properties.map(property => walkingIdentity(property, campus)).join('|')
+  return useQuery({
+    queryKey: ['comparison-walking', identities], enabled: !!campus && properties.length >= 2,
+    queryFn: async ({ signal }) => {
+      const routes = {}
+      let requested = false
+      for (const property of properties) {
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError')
+        if (property.latitude == null || property.longitude == null) {
+          routes[property.id] = { error: 'No property location pin is available.' }
+          continue
+        }
+        const key = ['walking-route', walkingIdentity(property, campus)]
+        const cached = client.getQueryState(key)
+        if (cached?.data && Date.now() - cached.dataUpdatedAt < 86_400_000) {
+          routes[property.id] = { route: cached.data }
+          continue
+        }
+        // Request only the selected two or three public listings, respecting the shared router cooldown.
+        if (requested) await routingPause(signal)
+        requested = true
+        try {
+          const route = (await api.get(`/listings/${property.id}/walking-route`, { params: { campus_id: campus.id }, signal })).data.data
+          if (signal.aborted) throw new DOMException('Aborted', 'AbortError')
+          if (!Number.isFinite(route?.distance_meters) || !Number.isFinite(route?.duration_seconds) || route.geometry?.type !== 'LineString' || !Array.isArray(route.geometry.coordinates) || route.geometry.coordinates.length < 2) throw new Error('Invalid walking route')
+          client.setQueryData(key, route)
+          routes[property.id] = { route }
+        } catch (error) {
+          if (signal.aborted) throw error
+          routes[property.id] = { error: error.response?.data?.message || 'Walking directions are temporarily unavailable.' }
+        }
+      }
+      return routes
+    },
+    staleTime: query => Object.values(query.state.data || {}).some(item => item.error) ? 0 : 86_400_000, retry: false, refetchOnWindowFocus: false, refetchOnReconnect: false,
+  })
 }
 
 export function drawWalkingRoute(L, map, route, property, campus, preview = false) {

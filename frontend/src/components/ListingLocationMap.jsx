@@ -6,13 +6,14 @@ import { useWalkingRoute, drawWalkingRoute } from '../lib/walking'
 import { ErrorNotice } from './Feedback'
 import WalkingRouteControl from './WalkingRouteControl'
 import CampusSearch from './CampusSearch'
+import { walkingLabel } from '../lib/walking'
 import 'leaflet/dist/leaflet.css'
 import './listing-location-map.css'
 
 const hasPin = place => place.latitude != null && place.longitude != null && Number.isFinite(Number(place.latitude)) && Number.isFinite(Number(place.longitude))
 
-export default function ListingLocationMap({ properties, campus }) {
-  const [shown, setShown] = useState(false)
+export default function ListingLocationMap({ properties, campus, initiallyShown = false, showDestinationSearch = true, walkingComparison }) {
+  const [shown, setShown] = useState(initiallyShown)
   const [destination, setDestination] = useState(null)
   const [attempt, setAttempt] = useState(0)
   const campuses = useCampuses()
@@ -24,32 +25,35 @@ export default function ListingLocationMap({ properties, campus }) {
   return <section className="panel mb-4 listing-location" data-tour="location" aria-label="Property location">
     <div className="listing-location-heading"><h2>{selectedCampus ? 'Location and campus' : 'Location'}</h2>{reference && <button type="button" className="btn btn-outline-primary" aria-expanded={shown} aria-controls={id + '-map'} onClick={() => setShown(value => !value)}>{shown ? 'Hide map' : 'Show map'}</button>}</div>
     {!reference ? <p className="small text-secondary">A location pin is not available for this property. Use the listing address or ask the owner for directions.</p> : shown && <div id={id + '-map'}>
-      <div className="listing-map-destination"><CampusSearch campuses={campuses.data || []} value={String(selectedCampus?.id || '')} onChange={id => setDestination({ context, id })} label="Walking destination" requireQuery disabled={campuses.isPending || !!campuses.error} helper="Type a university, campus or city, then choose a suggestion for walking directions." />
+      {showDestinationSearch && <div className="listing-map-destination"><CampusSearch campuses={campuses.data || []} value={String(selectedCampus?.id || '')} onChange={id => setDestination({ context, id })} label="Walking destination" requireQuery disabled={campuses.isPending || !!campuses.error} helper="Type a university, campus or city, then choose a suggestion for walking directions." />
         {campuses.isPending && <p role="status" className="form-text">Loading campuses…</p>}
         <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} />
-      </div>
-      <LocationCanvas key={context + ':' + (selectedCampus?.id || 'none') + ':' + attempt} properties={pinned} campus={selectedCampus} retry={() => setAttempt(value => value + 1)} />
+      </div>}
+      {!showDestinationSearch && <p className="comparison-map-destination">{selectedCampus ? <>Walking destination: <strong>{selectedCampus.name}</strong></> : 'Choose a walking destination above to compare routes.'} <a href="#comparison-campus">{selectedCampus ? 'Change campus' : 'Choose campus'}</a></p>}
+      <LocationCanvas key={context + ':' + (selectedCampus?.id || 'none') + ':' + attempt} properties={pinned} campus={selectedCampus} retry={() => setAttempt(value => value + 1)} walkingComparison={walkingComparison} />
       {properties.length !== pinned.length && <p className="small text-secondary">{properties.length - pinned.length} compared listing(s) have no location pin.</p>}
-      <p className="listing-location-note">{properties.some(property => property.is_demo) ? 'Sample listing locations are illustrative. ' : 'Property locations are supplied by owners. '}{selectedCampus ? 'The campus pin is an approximate reference.' : 'Choose a campus above for walking directions.'}</p>
+      <p className="listing-location-note">{!properties.some(property => property.is_demo) && 'Property locations are supplied by owners. '}{selectedCampus ? 'The campus pin is an approximate reference.' : 'Choose a campus above for walking directions.'}</p>
       <p className="listing-location-links"><a href={`https://www.openstreetmap.org/?mlat=${reference.latitude}&mlon=${reference.longitude}#map=16/${reference.latitude}/${reference.longitude}`} target="_blank" rel="noreferrer">Open {pinned.length === 1 ? 'property' : 'area'} in OpenStreetMap</a><a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
     </div>}
   </section>
 }
 
-function LocationCanvas({ properties, campus, retry }) {
+function LocationCanvas({ properties, campus, retry, walkingComparison }) {
   const element = useRef(null)
   const [error, setError] = useState(false)
   const [engine, setEngine] = useState(null)
   const [moved, setMoved] = useState(false)
   const [routeView, setRouteView] = useState(0)
   const property = properties.length === 1 ? properties[0] : null
-  const latitude = property?.latitude
-  const longitude = property?.longitude
   const campusId = campus?.id
   const campusLatitude = campus?.latitude
   const campusLongitude = campus?.longitude
   const campusName = campus?.name
   const walking = useWalkingRoute(property, campus)
+  const routeProperty = walkingComparison ? properties.find(item => item.id === walkingComparison.selectedId) : property
+  const route = walkingComparison ? walkingComparison.routes[routeProperty?.id]?.route : walking.route
+  const routeLatitude = routeProperty?.latitude
+  const routeLongitude = routeProperty?.longitude
   const markerData = JSON.stringify(properties.map(({ id, title, latitude, longitude }) => ({ id, title, latitude, longitude })))
   useEffect(() => {
     let cancelled = false
@@ -92,16 +96,17 @@ function LocationCanvas({ properties, campus, retry }) {
     return () => { cancelled = true; observer?.disconnect(); map?.remove() }
   }, [markerData, campusId, campusLatitude, campusLongitude, campusName])
   useEffect(() => {
-    if (!engine || !walking.route || latitude == null || longitude == null) return
-    return drawWalkingRoute(engine.L, engine.map, walking.route, { latitude, longitude }, { latitude: campusLatitude, longitude: campusLongitude })
-  }, [engine, walking.route, latitude, longitude, campusLatitude, campusLongitude, routeView])
+    if (!engine || !route || routeLatitude == null || routeLongitude == null) return
+    return drawWalkingRoute(engine.L, engine.map, route, { latitude: routeLatitude, longitude: routeLongitude }, { latitude: campusLatitude, longitude: campusLongitude })
+  }, [engine, route, routeLatitude, routeLongitude, campusLatitude, campusLongitude, routeView])
   return <>
     <div className="listing-location-canvas"><div className="listing-map" ref={element} role="region" aria-label="Listing map" aria-busy={!engine && !error} />
       {!engine && !error && <p role="status" className="listing-map-loading">Loading map…</p>}
-      {engine && moved && <button type="button" className="btn btn-light btn-sm listing-map-reset" onClick={() => walking.route ? setRouteView(value => value + 1) : engine.fitLocations()}>{walking.route ? 'Recenter route' : campus ? 'Show both locations' : property ? 'Back to property' : 'Fit compared places'}</button>}
+      {engine && moved && <button type="button" className="btn btn-light btn-sm listing-map-reset" onClick={() => route ? setRouteView(value => value + 1) : engine.fitLocations()}>{route ? 'Recenter route' : walkingComparison ? 'Fit compared places' : campus ? 'Show both locations' : property ? 'Back to property' : 'Fit compared places'}</button>}
     </div>
     {error && <div role="status" className="listing-map-error"><p>Map imagery is unavailable. You can still use the address and the OpenStreetMap link below.</p><button type="button" className="btn btn-outline-primary btn-sm" onClick={retry}>Retry map</button></div>}
-    <WalkingRouteControl walking={walking} property={property} campus={campus} />
-    {campus && !property && <p className="small text-secondary">Open a listing to calculate its walking route to {campus.name}.</p>}
+    {!walkingComparison && <WalkingRouteControl walking={walking} property={property} campus={campus} />}
+    {walkingComparison && route && <div className="comparison-route-summary" role="status"><strong>{walkingLabel(route)}</strong><p>{routeProperty.title} to {campus.name}. The campus reference is approximate; dashed connections are outside the walking estimate.</p><p>Walking routes: <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noreferrer">FOSSGIS / OSRM</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a></p></div>}
+    {campus && !property && !walkingComparison && <p className="small text-secondary">Open a listing to calculate its walking route to {campus.name}.</p>}
   </>
 }

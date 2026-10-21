@@ -151,12 +151,14 @@ class PhaseThreeTest extends TestCase
     {
         $property = $this->listing();
         $alternative = RoomOption::factory()->for($property)->create(['inventory_type' => 'whole_room', 'price_basis' => 'per_room']);
+        $second = $this->listing();
+        $selections = [['property_id' => $property->id, 'room_option_id' => $alternative->id], ['property_id' => $second->id, 'room_option_id' => $second->roomOptions()->first()->id]];
         $this->become(User::factory()->create());
-        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $alternative->id]]])
+        $this->postJson('/api/v1/compare', ['selections' => $selections])
             ->assertOk()->assertJsonPath('data.0.room_options.0.id', $alternative->id)->assertJsonCount(2, 'data.0.alternative_room_options')
             ->assertJsonMissingPath('data.0.distance_from_campus')->assertJsonMissingPath('data.0.landlord_id');
         $property->forceFill(['status' => 'suspended'])->save();
-        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $alternative->id]]])->assertUnprocessable();
+        $this->postJson('/api/v1/compare', ['selections' => $selections])->assertUnprocessable();
     }
 
     public function test_unselected_browse_detail_map_and_comparison_do_not_assume_a_campus(): void
@@ -167,13 +169,15 @@ class PhaseThreeTest extends TestCase
         $this->getJson('/api/v1/listings-map')->assertOk()->assertJsonMissingPath('data.0.distance_from_campus');
         $this->getJson('/api/v1/listings/'.$property->id)->assertOk()->assertJsonMissingPath('data.distance_from_campus');
         $selections = [['property_id' => $property->id, 'room_option_id' => $room->id]];
+        $second = $this->listing();
+        $selections[] = ['property_id' => $second->id, 'room_option_id' => $second->roomOptions()->first()->id];
         $this->postJson('/api/v1/compare', ['selections' => $selections])->assertOk()->assertJsonMissingPath('data.0.distance_from_campus');
         $campus = Campus::query()->firstOrFail();
         $this->postJson('/api/v1/compare', ['selections' => $selections, 'campus_id' => $campus->id])->assertOk()->assertJsonPath('data.0.distance_from_campus.campus_id', $campus->id);
         $this->getJson('/api/v1/listings?sort=distance')->assertUnprocessable()->assertJsonValidationErrors('campus_id');
         $this->getJson('/api/v1/listings?sort=recommended')->assertUnprocessable()->assertJsonValidationErrors('campus_id');
         Campus::query()->update(['active' => false]);
-        $this->getJson('/api/v1/listings')->assertOk()->assertJsonPath('data.0.id', $property->id);
+        $this->getJson('/api/v1/listings')->assertOk()->assertJsonFragment(['id' => $property->id]);
     }
 
     public function test_readiness_requires_the_phase_three_migration(): void

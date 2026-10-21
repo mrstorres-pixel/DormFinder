@@ -21,9 +21,9 @@ async function fixture(page, { failed = false, count = 2 } = {}) {
     const json = data => route.fulfill({ json: { data, meta: { current_page: 1, last_page: 1, total: 1 } } })
     if (path.endsWith('/me')) return route.fulfill({ status: 401, json: { message: 'Unauthenticated' } })
     if (path.endsWith('/campuses')) return json([campus])
-    if (path.endsWith('/compare')) return json([{ ...listing, room_options: [rooms.find(room => room.id === route.request().postDataJSON().selections[0].room_option_id)], alternative_room_options: rooms }])
+    if (path.endsWith('/compare')) return json(route.request().postDataJSON().selections.map(selection => ({ ...listing, id: selection.property_id, title: selection.property_id === 1 ? listing.title : 'Second gallery residence', room_options: [rooms.find(room => room.id === selection.room_option_id)], alternative_room_options: rooms })))
     if (/\/listings\/1$/.test(path)) return json(listing)
-    return json([listing])
+    return json([listing, { ...listing, id: 2, title: 'Second gallery residence' }])
   })
   return state
 }
@@ -46,7 +46,8 @@ test('listing cover, map-preview and comparison images open the chosen room with
   await expect(page.getByRole('group', { name: 'Choose a room option' }).locator('input:checked')).toHaveValue('22')
   await page.getByRole('link', { name: 'Browse listings' }).click()
   await card.getByRole('checkbox', { name: /Compare/ }).check()
-  await page.getByRole('link', { name: 'Compare 1 listing', exact: true }).click()
+  await page.locator('.property-card').nth(1).getByRole('checkbox', { name: /Compare/ }).check()
+  await page.getByRole('link', { name: 'Compare 2 listings', exact: true }).click()
   await page.getByRole('table').getByRole('link', { name: 'Open listing: ' + property.title }).click()
   await expect(page.getByRole('group', { name: 'Choose a room option' }).locator('input:checked')).toHaveValue('22')
   await expect(page).toHaveURL(/campus_id=8/)

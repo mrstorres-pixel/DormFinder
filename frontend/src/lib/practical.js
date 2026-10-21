@@ -1,7 +1,7 @@
 import { amenities } from './housing'
 import { pesos } from './money'
 
-export function comparisonHighlights(rows) {
+export function comparisonHighlights(rows, walkingRoutes) {
   const result = Object.fromEntries(rows.map(row => [row.id, []]))
   if (rows.length < 2) return result
   const eligible = rows.filter(row => row.room_options[0]?.available_units > 0 && row.room_options[0]?.availability_stale === false)
@@ -15,6 +15,15 @@ export function comparisonHighlights(rows) {
       if (winners.length === group.length) continue
       for (const row of winners) result[row.id].push(label + (winners.length > 1 ? ' (tie)' : ''))
     }
+  }
+  if (walkingRoutes) {
+    const located = eligible.filter(row => Number.isFinite(walkingRoutes[row.id]?.route?.distance_meters))
+    if (located.length >= 2 && located.length === rows.length) {
+      const closest = Math.min(...located.map(row => walkingRoutes[row.id].route.distance_meters))
+      const winners = located.filter(row => walkingRoutes[row.id].route.distance_meters === closest)
+      if (winners.length < located.length) for (const row of winners) result[row.id].push('Shortest walk to campus' + (winners.length > 1 ? ' (tie)' : ''))
+    }
+    return result
   }
   const located = eligible.filter(row => Number.isFinite(row.distance_from_campus?.meters))
   if (located.length > 1 && located.every(row => row.distance_from_campus.campus_id === located[0].distance_from_campus.campus_id)) {

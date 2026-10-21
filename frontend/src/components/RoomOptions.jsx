@@ -23,7 +23,7 @@ export function RoomCharges({ option }) {
     </dl>
     <p className="small text-secondary">{option.utilities_notes}</p>
     <AvailabilityStatus option={option} />
-    <p className="small text-secondary">Totals cover the stated pricing basis. Variable utilities and rent not covered by the advance are additional. This is an inquiry service; no booking or payment is made here.</p>
+    <p className="small text-secondary">Totals cover the stated pricing basis. This is an inquiry service; no booking or payment is made here.</p>
   </div>
 }
 

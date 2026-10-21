@@ -66,7 +66,10 @@ class StudentDiscoveryTest extends TestCase
     public function test_guests_can_compare_public_options_but_not_private_records(): void
     {
         $property = $this->listing();
+        $second = $this->listing();
         $selections = [['property_id' => $property->id, 'room_option_id' => $property->roomOptions()->first()->id]];
+        $this->postJson('/api/v1/compare', ['selections' => $selections])->assertUnprocessable()->assertJsonValidationErrors('selections');
+        $selections[] = ['property_id' => $second->id, 'room_option_id' => $second->roomOptions()->first()->id];
         $this->postJson('/api/v1/compare', ['selections' => $selections])->assertOk()->assertJsonMissingPath('data.0.landlord_id');
         $property->forceFill(['status' => 'draft'])->save();
         $this->postJson('/api/v1/compare', ['selections' => $selections])->assertUnprocessable();

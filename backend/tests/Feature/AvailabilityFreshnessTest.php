@@ -40,7 +40,8 @@ class AvailabilityFreshnessTest extends TestCase
         $this->getJson('/api/v1/listings')->assertOk()->assertJsonCount(0, 'data');
         $this->getJson('/api/v1/listings-map')->assertOk()->assertJsonPath('meta.total', 0);
         $this->getJson('/api/v1/listings/'.$property->id)->assertNotFound();
-        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $option->id]]])->assertUnprocessable();
+        $second = $this->listing();
+        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $option->id], ['property_id' => $second->id, 'room_option_id' => $second->roomOptions()->first()->id]]])->assertUnprocessable();
         Http::preventStrayRequests();
         $this->getJson('/api/v1/listings/'.$property->id.'/walking-route?campus_id=1')->assertNotFound();
         Http::assertNothingSent();
@@ -56,7 +57,8 @@ class AvailabilityFreshnessTest extends TestCase
         $this->getJson('/api/v1/listings')->assertOk()->assertJsonCount(1, 'data')->assertJsonCount(1, 'data.0.room_options')->assertJsonPath('data.0.room_options.0.id', $current->id);
         $this->getJson('/api/v1/listings?price_basis=per_person&max_rent_centavos=200000')->assertOk()->assertJsonCount(0, 'data');
         $this->getJson('/api/v1/listings/'.$property->id)->assertOk()->assertJsonCount(1, 'data.room_options');
-        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $expired->id]]])->assertUnprocessable();
+        $second = $this->listing();
+        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $property->id, 'room_option_id' => $expired->id], ['property_id' => $second->id, 'room_option_id' => $second->roomOptions()->first()->id]]])->assertUnprocessable();
     }
 
     public function test_owner_reminders_are_private_deduplicated_and_progress_from_due_to_warning_to_hidden(): void

@@ -1,5 +1,13 @@
 # Validation evidence — October 9, 2026
 
+## Comparison minimum, walking destinations and admin card alignment - October 21, 2026
+
+Scoped PHP verification passes 42 tests / 339 assertions across StudentDiscoveryTest, PhaseTwoTest, PhaseThreeTest and AvailabilityFreshnessTest. Cases now use two valid listings when checking option ownership, privacy, campus neutrality and expiry, so the new minimum cannot accidentally mask those checks. One-item comparison is explicitly rejected. Pint passes. The stopped local database was started before the final test run; only the isolated dormfinder_test database was used.
+
+Frontend lint/build and 96 tests / 28 files pass. The production-build browser selection covers 94 distinct Chromium/WebKit scenarios across the new comparison workflow, housing, browse/tray, listing destinations, galleries, saved places, viewings, navigation, admin reviews and role walkthroughs. Ninety-three passed initially; the new taller comparison header required explicitly scrolling its removal control into view in the Safari viewport assertion. All ten final housing cases then pass, giving passing evidence for every scenario. The functional room-change and horizontal keyboard scrolling checks remain enforced.
+
+Dedicated comparison cases verify: two-item entry and retained single selection after removal; no implicit TIP campus even when the API fixture includes TIP distance data; CEU/TIP changes updating table values, room links, marker and route together; per-listing estimates; shortest-walk ranking only with complete results; successful-route reuse after a partial failure; cancellation of late old-campus data; and equal Show on map action positions for administrator cards with different room-selector types. Screenshots at desktop, tablet and phone widths were inspected. An additional live comparison case is prepared to verify two real CEU pedestrian estimates through the deployed backend.
+
 ## Listing/map spacing and visible management actions - October 21, 2026
 
 The production-build browser run covers 86 scenarios in Chromium/WebKit across housing presentation, admin reviews/directories, the owner editor, maps/walking routes, viewings, saved places, messaging, notifications and auth. Eighty-five passed initially. The new admin narrow-screen scenario exposed a Safari legend retaining its earlier width at 320 px; changing that fieldset legend to auto width resolves the overflow. All ten affected admin-review cases pass on the final build, giving passing evidence for every distinct scenario. Frontend 95 tests / 28 files, lint and build pass; the existing deferred Three.js bundle-size advisory remains.

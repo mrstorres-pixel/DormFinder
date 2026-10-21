@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ComparisonContext, cleanSelections } from '../lib/comparison'
 
 export default function ComparisonProvider({ children }) {
@@ -9,5 +9,9 @@ export default function ComparisonProvider({ children }) {
   function choose(propertyId, optionId, checked = true) {
     setSelections(current => checked ? cleanSelections([...current.filter(item => item.property_id !== propertyId), { property_id: propertyId, room_option_id: Number(optionId) }]) : current.filter(item => item.property_id !== propertyId))
   }
-  return <ComparisonContext.Provider value={{ selections, choose, clear: () => setSelections([]) }}>{children}</ComparisonContext.Provider>
+  const replace = useCallback(value => setSelections(current => {
+    const next = cleanSelections(value)
+    return JSON.stringify(current) === JSON.stringify(next) ? current : next
+  }), [])
+  return <ComparisonContext.Provider value={{ selections, choose, replace, clear: () => setSelections([]) }}>{children}</ComparisonContext.Provider>
 }

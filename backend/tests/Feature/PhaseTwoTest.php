@@ -149,8 +149,10 @@ class PhaseTwoTest extends TestCase
         $second = $this->completeProperty('approved');
         $this->become(User::factory()->create());
         $valid = ['property_id' => $first->id, 'room_option_id' => $first->roomOptions()->first()->id];
-        $this->postJson('/api/v1/compare', ['selections' => [$valid]])->assertOk()->assertJsonCount(1, 'data')->assertJsonCount(1, 'data.0.room_options');
-        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $first->id, 'room_option_id' => $second->roomOptions()->first()->id]]])->assertUnprocessable();
+        $other = ['property_id' => $second->id, 'room_option_id' => $second->roomOptions()->first()->id];
+        $this->postJson('/api/v1/compare', ['selections' => [$valid]])->assertUnprocessable()->assertJsonValidationErrors('selections');
+        $this->postJson('/api/v1/compare', ['selections' => [$valid, $other]])->assertOk()->assertJsonCount(2, 'data')->assertJsonCount(1, 'data.0.room_options');
+        $this->postJson('/api/v1/compare', ['selections' => [['property_id' => $first->id, 'room_option_id' => $other['room_option_id']], $other]])->assertUnprocessable();
         $this->postJson('/api/v1/compare', ['selections' => [$valid, $valid]])->assertUnprocessable();
         $this->postJson('/api/v1/compare', ['selections' => [$valid, $valid, $valid, $valid]])->assertUnprocessable();
         $this->become($first->landlord);

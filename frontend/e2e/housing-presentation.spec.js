@@ -60,7 +60,8 @@ test('map preview and guest listing actions align, with readable padded map note
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   }
   await actions.getByRole('button', { name: '+ Compare', exact: true }).click()
-  await expect(actions.getByRole('link', { name: 'Open comparison' })).toBeVisible()
+  await expect(actions.getByRole('link', { name: 'Open comparison' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Select one more' })).toBeDisabled()
   await expect(actions.getByRole('link', { name: 'Sign in to save' })).toHaveAttribute('href', /option%3D21/)
 })
 
@@ -142,13 +143,13 @@ test('comparison prioritizes images and essentials while retaining expandable te
   await page.keyboard.press('ArrowRight')
   await expect.poll(() => scroller.evaluate(node => node.scrollLeft)).toBeGreaterThan(0)
   await scroller.evaluate(node => { node.scrollLeft = node.scrollWidth })
+  await primary.getByRole('button', { name: 'Remove No-photo residence' }).scrollIntoViewIfNeeded()
   await expect(primary.getByRole('button', { name: 'Remove No-photo residence' })).toBeInViewport()
   await page.screenshot({ path: `../.local/housing-comparison-${testInfo.project.name}-mobile.png` })
   await primary.getByRole('button', { name: 'Remove No-photo residence' }).click()
   await expect(primary.getByRole('combobox')).toHaveCount(2)
   await primary.getByRole('button', { name: 'Remove ' + listings[1].title }).click()
-  await primary.getByRole('button', { name: 'Remove ' + listings[0].title }).click()
-  await expect(page.getByText('Select one to three distinct listings and their room options.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Choose at least two listings' })).toBeVisible()
 })
 
 test('unavailable comparison remains recoverable and invalid comparisons make no request', async ({ page }) => {
@@ -158,10 +159,10 @@ test('unavailable comparison remains recoverable and invalid comparisons make no
   await expect(page.getByText('A selected listing is unavailable.')).toBeVisible()
   state.fail = false
   await page.getByRole('button', { name: 'Remove listing 2', exact: true }).click()
-  await expect(page.getByRole('table').first().getByRole('combobox')).toHaveCount(1)
+  await expect(page.getByRole('heading', { name: 'Choose at least two listings' })).toBeVisible()
   let requests = 0
   page.on('request', request => { if (new URL(request.url()).pathname.endsWith('/compare') && request.method() === 'POST') requests++ })
   await page.goto('/compare?items=1:21,1:22')
-  await expect(page.getByText('Select one to three distinct listings and their room options.')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Choose at least two listings' })).toBeVisible()
   expect(requests).toBe(0)
 })
