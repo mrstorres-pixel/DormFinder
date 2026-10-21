@@ -6,6 +6,8 @@ Map preview actions now share equal-height buttons with centered labels and SVG 
 
 The UI pass covered listings, maps, comparison, the owner editor, review/moderation, admin directories, saved places, messaging, viewings, notifications and authentication. All 86 distinct scoped Chromium/WebKit scenarios have passing evidence across the main run and affected admin rerun; 95 frontend tests, lint and build pass. The new narrow-screen check caught a Safari fieldset-legend overflow; explicit auto width fixes it, and all ten final review cases pass. Text inset checks measure actual glyph bounds, and action checks measure center alignment and touch-target height. No backend, data, dependency or provider-setting change is required.
 
+Source b8f48fd is live at https://dormfinder-pink.vercel.app in Vercel dpl_8djFpf1uABUFQ85xyAzJM6f4URkm. All 90 final live checks pass in one run, including real walking routes and read-only existing owner/admin journeys. All staged/public build hashes match, direct/proxied readiness passes and the bounded runtime-error scan is empty.
+
 ## Sign-in and registration text correction - October 21
 
 The navy auth introduction now gives the campus caption an explicit inherited light color, removing the darker child style that made its first line unreadable. Both lines are centered horizontally and vertically with equal padding, and the stray location symbol is removed. The same component serves sign-in and student/owner registration. The small card remains readable on phone layouts as well.

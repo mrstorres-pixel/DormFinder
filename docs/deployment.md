@@ -1,5 +1,11 @@
 # Deployment runbook — Codex execution
 
+## Released listing/map layout polish - October 21, 2026
+
+Source b8f48fd139e9be79dee6df598408eb84afea0b21 is READY in Vercel dpl_8djFpf1uABUFQ85xyAzJM6f4URkm, staged at https://dormfinder-bvmoylix8-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing team/project, frontend root, Node 24 and build settings were verified from a clean committed archive. All 35 staged JS/CSS assets and six public HTML-linked assets match the tested build. Entry index-DXrBssYx.js and main stylesheet index-D-gkTgQH.css identify the release.
+
+All 90 live Chromium/WebKit cases pass in one final 4.1-minute run. Eighty-six use API fixtures for action/error paths; the four additional cases verify existing owner/admin workspaces with business writes blocked and actual pedestrian routes through the backend. The real map screenshots were inspected. Local evidence covers 95 frontend tests, lint/build and all 86 distinct browser cases across the main/affected runs, including the corrected narrow Safari legend overflow. Direct/proxied API readiness returns 200 and the bounded post-acceptance 15-minute runtime-error query returns zero events. No backend deployment, schema/data/dependency/provider-setting change was made. The prior auth release 0ec5f06 / dpl_B3iZ1xin8xM4NmfhqKj5BdMgrgsL is the frontend recovery reference. The untracked certificate is excluded and retains its recorded SHA256.
+
 ## Released auth contrast and alignment correction - October 21, 2026
 
 Source 0ec5f067a248bb933915abb3af688d6ad8e6033e is READY in Vercel dpl_B3iZ1xin8xM4NmfhqKj5BdMgrgsL at https://dormfinder-mp9zdaq1v-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing project/team, frontend root, Node 24 and build settings were verified from the clean committed archive. All 35 staged JS/CSS assets match the tested build; all six public HTML-linked assets match after promotion. Entry index-D4X2-v9V.js and stylesheet index-BURa9i-t.css identify the release.
