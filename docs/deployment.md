@@ -1,5 +1,15 @@
 # Deployment runbook — Codex execution
 
+## Released comparison walking routes and minimum selection - October 21, 2026
+
+Application source 696c8e53580593b12ea97094b92dca42b23ce9f7 is live on both existing services. Render dep-dbc191navr4c73egb1d0 finished live at 01:26:27 UTC on srv-db44ecrbc2fs73aj14q0 in the user-confirmed workspace tea-d7ip6vu7r5hc73ccjjng. The free plan, auto-deploy-off setting and established Docker context/entrypoint remain. Readiness returned 200 before frontend promotion. No schema migration, reseeding, environment, credential, dependency or provider configuration change was required.
+
+Vercel dpl_55u4AZ8k4AvutmVhoEbtaU2SAwpK is READY at https://dormfinder-qlo8hgci5-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. A clean archive of committed source used the verified existing project/team, frontend root, Node 24 and established build settings. All 35 staged JS/CSS assets match the tested build through authenticated CLI access; all six public HTML-linked assets match after promotion. Entry index-ChDp7fUF.js and main stylesheet index-D-gkTgQH.css identify the release. Deployment Protection is retained.
+
+All 100 live Chromium/WebKit cases pass in one five-minute run, including two actual CEU Mendiola comparison walks, path switching and existing owner/admin read-only workspaces. The deployed API independently rejects one-item comparison with 422. Direct/proxied readiness returns 200, and bounded post-acceptance Render/Vercel runtime-error scans are empty. Validation.md records fixture boundaries, local checks and the preserved walking-provider limits. Private artifacts and the untracked user certificate remain excluded and unchanged.
+
+The immediately prior recovery pair is frontend b8f48fd / dpl_8djFpf1uABUFQ85xyAzJM6f4URkm and backend f0acbdaf5fa59680cd3b3c329c1d52893f2120c0 / dep-dbbndc9jfumc7389or20. Re-inspect artifacts, retention and compatibility before recovery; the older frontend permits one-item comparison, so coordinate recovery with the API validation rule. No rollback rehearsal occurred; the user's deferred live Render rollback and historical unverified CI exception retain their prior status.
+
 ## Released listing/map layout polish - October 21, 2026
 
 Source b8f48fd139e9be79dee6df598408eb84afea0b21 is READY in Vercel dpl_8djFpf1uABUFQ85xyAzJM6f4URkm, staged at https://dormfinder-bvmoylix8-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The existing team/project, frontend root, Node 24 and build settings were verified from a clean committed archive. All 35 staged JS/CSS assets and six public HTML-linked assets match the tested build. Entry index-DXrBssYx.js and main stylesheet index-D-gkTgQH.css identify the release.
