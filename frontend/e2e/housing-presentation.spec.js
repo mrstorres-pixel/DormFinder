@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { expectInsetText, expectAlignedControls } from './ui-layout'
 
 const campus = { id: 8, name: 'Test University', slug: 'test-campus', latitude: 14.6, longitude: 120.98 }
 const twin = { id: 21, name: 'Twin beds', capacity: 2, monthly_rent_centavos: 400000, monthly_fixed_total_centavos: 425000, move_in_fixed_total_centavos: 800000, price_basis: 'per_person', inventory_type: 'bedspace', available_units: 2, total_units: 2, availability_stale: false, availability_confirmed_at: '2026-10-16T00:00:00Z', deposit_centavos: 400000, advance_months: 1, utilities_notes: 'Electricity is metered separately.', fees: [{ name: 'Wi-Fi', amount_centavos: 25000, frequency: 'monthly' }] }
@@ -30,6 +31,38 @@ async function fixture(page) {
   })
   return state
 }
+
+test('map preview and guest listing actions align, with readable padded map notes at all widths', async ({ page }, testInfo) => {
+  await fixture(page)
+  await page.goto('/listings?campus_id=8')
+  await page.locator('#listing-card-1').getByRole('button', { name: 'Show on map' }).click()
+  const preview = page.getByRole('article', { name: 'Selected map listing' })
+  await expect(preview.getByRole('img')).toBeVisible()
+  for (const width of [1440, 1024, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await expectAlignedControls(preview.locator('.map-preview-links > *'))
+    await expectInsetText(page.locator('.map-note'))
+    await expect(preview.getByRole('button', { name: 'Room details' })).toHaveAttribute('aria-expanded', 'false')
+    await preview.getByRole('button', { name: 'Room details' }).click()
+    await expect(preview.getByLabel('Room in map preview')).toBeVisible()
+    await preview.getByRole('button', { name: 'Less detail' }).click()
+    await preview.scrollIntoViewIfNeeded()
+    if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/layout-map-${testInfo.project.name}-${width}.png` })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await page.goto('/listings/1?option=21&campus_id=8')
+  const actions = page.locator('.listing-small-actions')
+  for (const width of [1440, 1024, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await expectAlignedControls(actions.locator(':scope > a, :scope > button'))
+    await actions.scrollIntoViewIfNeeded()
+    if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/layout-listing-${testInfo.project.name}-${width}.png` })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+  await actions.getByRole('button', { name: '+ Compare', exact: true }).click()
+  await expect(actions.getByRole('link', { name: 'Open comparison' })).toBeVisible()
+  await expect(actions.getByRole('link', { name: 'Sign in to save' })).toHaveAttribute('href', /option%3D21/)
+})
 
 test('photo-led cards keep capacity, inventory and selected-room costs without the full address', async ({ page }, testInfo) => {
   await fixture(page)

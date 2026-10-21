@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { expectInsetText } from './ui-layout'
 
 const room = { id: 21, name: 'Shared beds', inventory_type: 'bedspace', price_basis: 'per_person', capacity: 2, total_units: 4, available_units: 2, monthly_rent_centavos: 400000, deposit_centavos: 400000, advance_months: 1, fees: [], monthly_fixed_total_centavos: 400000, move_in_fixed_total_centavos: 800000, utilities_notes: 'Electricity is metered separately.', availability_confirmed_at: '2026-10-16T00:00:00Z', availability_stale: false }
 async function owner(page, overrides = {}) {
@@ -44,6 +45,23 @@ async function owner(page, overrides = {}) {
   return state
 }
 const step = (page, name) => page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name, exact: true }).click()
+
+test('owner review notes are padded and archive controls stay visible without a dropdown', async ({ page }, testInfo) => {
+  await owner(page)
+  await page.goto('/landlord/properties/55#preview')
+  await expect(page.getByRole('heading', { name: 'Ready for review', exact: true })).toBeVisible()
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    const note = page.locator('.review-boundary-note')
+    await expectInsetText(note)
+    await note.scrollIntoViewIfNeeded()
+    if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/layout-owner-review-${testInfo.project.name}-${width}.png` })
+    const action = page.getByLabel('Listing action', { exact: true })
+    await expect(action).toBeVisible()
+    expect(await action.evaluate(element => Boolean(element.closest('details')))).toBe(false)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  }
+})
 
 test('creation guides required photos, rooms, location and review instead of a disabled dead end', async ({ page }, testInfo) => {
   const state = await owner(page)

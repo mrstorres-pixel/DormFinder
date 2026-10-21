@@ -183,7 +183,7 @@ function PropertyForm({ property }) {
     <div className="editor-stage" id="editor-preview" tabIndex={-1} hidden={step !== 'preview'}>
       <SubmissionPanel property={property} onEditStep={go} />
       <OwnerPreview property={property} refresh={() => client.invalidateQueries({ queryKey: ['property', String(property.id)] })} />
-      <details className="owner-listing-settings"><summary>Listing settings</summary><LifecycleControls property={property} /></details>
+      <div className="owner-listing-settings"><LifecycleControls property={property} /></div>
     </div>
     <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{editable && (step === 'location' || (step === 'rooms' && roomsDirty)) ? 'Save and continue' : 'Continue'}</button>}</div>
   </section>

@@ -32,7 +32,7 @@ export function ReviewQueue() {
       </article>)}</div>
     </> : <AdminEmpty title={params.get('q') || params.get('property_type') ? 'No matching submissions' : 'You’re all caught up.'}>{page > 1 ? <button className="btn btn-outline-primary" onClick={() => browse.setPage(1)}>Back to first page</button> : 'New submissions will appear here.'}</AdminEmpty>}
     {query.data && <AdminPager browse={browse} noun="submissions" />}
-    <p className="review-scope-note">Approval reviews listing content. It does not certify ownership or safety.</p>
+    <p className="review-scope-note review-boundary-note">Review covers listing details and charges. Ownership and safety are not verified.</p>
   </AdminLayout>
 }
 
@@ -62,7 +62,7 @@ export function ReviewDetails() {
         <ListingInformation property={property} />
         <section id="review-location" className="panel review-location" aria-labelledby="review-location-title"><h2 id="review-location-title">Location</h2><p>{[property.address, property.city].filter(Boolean).join(', ')}</p><ReviewLocationMap key={`${property.id}:${property.latitude}:${property.longitude}`} latitude={property.latitude} longitude={property.longitude} /><p className="review-scope-note">The pin is supplied by the owner. Check that it agrees with the address.</p></section>
       </div>
-      <aside className="review-decision-column" aria-label="Review actions"><ReviewDecision key={property.id} property={property} queuePath={queuePath} refresh={() => query.refetch()} /><details className="review-moderation"><summary>Other listing actions</summary><LifecycleControls property={property} admin /></details></aside>
+      <aside className="review-decision-column" aria-label="Review actions"><ReviewDecision key={property.id} property={property} queuePath={queuePath} refresh={() => query.refetch()} /><div className="review-moderation"><LifecycleControls property={property} admin /></div></aside>
     </div>
   </section>
 }

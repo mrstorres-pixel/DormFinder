@@ -51,7 +51,7 @@
 .review-map-error { font-size: .8rem; margin: 1rem 0 0; }
 .review-coordinates { font-size: .76rem; color: var(--muted); margin-top: 1rem; }
 .review-coordinates p { margin-top: .5rem; }
-.review-decision-column { position: sticky; top: 90px; min-width: 0; }
+.review-decision-column { min-width: 0; }
 .review-decision { padding: 1.4rem; scroll-margin-top: 100px; }
 .review-decision h2 { font-size: 1.3rem; }
 .review-decision header { border-bottom: 1px solid var(--line); padding-bottom: .85rem; margin-bottom: 1rem; }
@@ -63,7 +63,7 @@
 .review-confirmation { display: flex; gap: .65rem; font-size: .8rem; line-height: 1.6; margin-bottom: 1rem; }
 .review-confirmation input { margin-top: .3rem; flex: none; }
 .review-decision-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin-bottom: 1.25rem; }
-.review-decision-options legend { float: none; font-size: .8rem; font-weight: 600; }
+.review-decision-options legend { float: none; width: auto; max-width: 100%; font-size: .8rem; font-weight: 600; }
 .review-decision-options label { display: flex; gap: .4rem; border: 1px solid var(--line); border-radius: 10px; padding: .65rem; font-size: .78rem; cursor: pointer; }
 .review-decision-options input { margin-top: .2rem; flex: none; }
 .review-decision-options span span { display: block; color: var(--muted); font-size: .67rem; margin-top: .3rem; }
@@ -74,16 +74,13 @@
 .review-refresh-note, .review-finished p { font-size: .83rem; }
 .review-refresh-note .btn { font-size: inherit; padding: .1rem; }
 .review-moderation { margin-top: 1.25rem; }
-.review-moderation > summary { padding: .75rem 0; font-size: .8rem; color: var(--muted); }
-.review-moderation .panel { padding: 1.2rem; }
+.review-moderation > .panel { margin-top: 0 !important; padding: 1.2rem; }
 .review-moderation .panel h2 { font-size: 1.15rem; }
 .review-moderation .panel p, .review-moderation .form-label, .review-moderation label { font-size: .8rem; }
 @media (max-width: 991px) {
   .review-detail-layout { grid-template-columns: minmax(0, 1fr); }
-  .review-decision-column { position: static; }
   .review-page-heading { gap: .75rem; }
 }
-@media (max-height: 740px) { .review-decision-column { position: static; } }
 @media (max-width: 575px) {
   .review-queue-row { flex-wrap: wrap; gap: 1rem; }
   .review-queue-image { flex: 0 0 90px; align-self: start; }

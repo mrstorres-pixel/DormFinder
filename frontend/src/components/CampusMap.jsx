@@ -148,6 +148,6 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     {typeof children === 'function' ? children(walking) : children}
     </div>
     <WalkingRouteControl walking={walking} property={selectedProperty} campus={campus} />
-    <p className="small map-note">{properties.some(property => property.is_demo) ? 'Demo pins are fictional; other pins are owner-supplied.' : 'Owner-supplied property pins.'} {campus ? 'Campus is an approximate reference. Distances are straight lines.' : 'Choose a campus for distances and walking routes.'} <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
+    <div className="map-note" role="note"><p>{properties.some(property => property.is_demo) ? 'Sample listing locations are illustrative.' : 'Property locations are supplied by owners.'} {campus ? 'Campus distances use an approximate reference and are measured in a straight line.' : 'Choose a campus for distances and walking routes.'}</p><a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></div>
   </section>
 }

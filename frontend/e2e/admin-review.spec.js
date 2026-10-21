@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { expectInsetText } from './ui-layout'
 
 const room = { id: 21, name: 'Shared twin beds', inventory_type: 'bedspace', price_basis: 'per_person', capacity: 2, total_units: 4, available_units: 2, monthly_rent_centavos: 400000, deposit_centavos: 400000, advance_months: 1, fees: [{ name: 'Internet', amount_centavos: 25000, frequency: 'monthly' }], monthly_fixed_total_centavos: 425000, move_in_fixed_total_centavos: 800000, utilities_notes: 'Electricity is metered separately.', availability_confirmed_at: '2026-10-17T00:00:00Z', availability_stale: false }
 async function reviewFixture(page, overrides = {}) {
@@ -92,8 +93,7 @@ test('review keeps gallery, room costs, map fallback and unsaved feedback connec
   await page.getByRole('button', { name: 'Stay and edit' }).click()
   await expect(page.getByLabel('Feedback for the owner')).toHaveValue('Keep my unsaved review feedback.')
   await page.locator('#review-rooms').scrollIntoViewIfNeeded()
-  expect((await page.locator('.review-decision-column').boundingBox()).y).toBeGreaterThanOrEqual(85)
-  expect((await page.locator('.review-decision-column').boundingBox()).y).toBeLessThan(160)
+  await expect(page.getByLabel('Reason for listing action')).toBeVisible()
   await page.screenshot({ path: `../.local/admin-review-${testInfo.project.name}-desktop.png` })
   for (const width of [360, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 })
@@ -146,7 +146,8 @@ test('returned feedback is required and survives conflicts, refresh and retry wi
 test('approval protects other moderation drafts and reviewed listings expose no new decision', async ({ page }) => {
   const { state, errors } = await reviewFixture(page)
   await page.goto('/admin/reviews/55')
-  await page.getByText('Other listing actions', { exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Listing moderation', exact: true })).toBeVisible()
+  expect(await page.getByLabel('Reason for listing action').evaluate(element => Boolean(element.closest('details')))).toBe(false)
   await page.getByLabel('Reason for listing action').fill('Keep these separate moderation notes.')
   await acknowledged(page).check()
   page.once('dialog', dialog => dialog.accept())
@@ -168,4 +169,24 @@ test('approval protects other moderation drafts and reviewed listings expose no 
   await expect(page.getByRole('button', { name: 'Approve listing', exact: true })).toHaveCount(0)
   await expect(page.locator('.review-finished')).toContainText('This listing is now approved.')
   expect(errors).toEqual([])
+})
+
+test('review scope note has breathing room and moderation controls need no disclosure at any width', async ({ page }, testInfo) => {
+  await reviewFixture(page)
+  await page.goto('/admin')
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await expectInsetText(page.locator('.review-boundary-note'))
+  }
+  await page.goto('/admin/reviews/55')
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    const action = page.getByLabel('Listing action', { exact: true })
+    await expect(action).toBeVisible()
+    expect(await action.evaluate(element => Boolean(element.closest('details')))).toBe(false)
+    await action.scrollIntoViewIfNeeded()
+    await expect(action).toBeInViewport()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/layout-moderation-${testInfo.project.name}-${width}.png` })
+  }
 })

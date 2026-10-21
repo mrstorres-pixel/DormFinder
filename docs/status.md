@@ -1,5 +1,11 @@
 # Implementation status
 
+## Listing and map layout polish - October 21
+
+Map preview actions now share equal-height buttons with centered labels and SVG arrows. The map footer and walking controls have proper inner spacing, clearer type and simpler sample-location wording. Save/sign-in and compare controls share vertical alignment. Owner and administrator review notes use padded solid-color panels. Listing moderation and owner archive/restore controls are directly visible; their confirmations, reasons and unsaved-edit protections remain intact. The admin sidebar scrolls with the page so the expanded controls remain reachable. Owner-account management has a separate button, and multiline confirmation checkboxes align with the first line.
+
+The UI pass covered listings, maps, comparison, the owner editor, review/moderation, admin directories, saved places, messaging, viewings, notifications and authentication. All 86 distinct scoped Chromium/WebKit scenarios have passing evidence across the main run and affected admin rerun; 95 frontend tests, lint and build pass. The new narrow-screen check caught a Safari fieldset-legend overflow; explicit auto width fixes it, and all ten final review cases pass. Text inset checks measure actual glyph bounds, and action checks measure center alignment and touch-target height. No backend, data, dependency or provider-setting change is required.
+
 ## Sign-in and registration text correction - October 21
 
 The navy auth introduction now gives the campus caption an explicit inherited light color, removing the darker child style that made its first line unreadable. Both lines are centered horizontally and vertically with equal padding, and the stray location symbol is removed. The same component serves sign-in and student/owner registration. The small card remains readable on phone layouts as well.

@@ -1,5 +1,11 @@
 # Validation evidence — October 9, 2026
 
+## Listing/map spacing and visible management actions - October 21, 2026
+
+The production-build browser run covers 86 scenarios in Chromium/WebKit across housing presentation, admin reviews/directories, the owner editor, maps/walking routes, viewings, saved places, messaging, notifications and auth. Eighty-five passed initially. The new admin narrow-screen scenario exposed a Safari legend retaining its earlier width at 320 px; changing that fieldset legend to auto width resolves the overflow. All ten affected admin-review cases pass on the final build, giving passing evidence for every distinct scenario. Frontend 95 tests / 28 files, lint and build pass; the existing deferred Three.js bundle-size advisory remains.
+
+New geometry checks require both preview buttons and guest save/compare controls to have aligned centers and at least 44 px height. Actual text bounds must remain at least 12 px inside map and review-note containers. Responsive checks cover 1440/1024/768/390/320 px where applicable. Moderation and archive controls must be visible without a details disclosure and reachable in the viewport. Desktop/phone screenshots were inspected. Existing draft protection, confirmation, retry, pagination, room selection and walking-path checks remain in scope. An initial test attempt encountered a stopped local Vite service; testing resumed after starting it. The newly expanded sidebar initially exposed sticky positioning that prevented lower controls entering the viewport; it now scrolls normally. These failures are resolved rather than skipped.
+
 ## Auth text contrast and alignment correction - October 21, 2026
 
 The new auth-presentation browser suite measures actual computed foreground/background colors on the solid auth surfaces and checks each visible text node against 4.5:1 for normal text or 3:1 for large text. It also measures the center of both campus-card text lines and their vertical group against the containing box, with less than one pixel deviation required. The suite covers sign-in and both registration roles at five widths (1440/1024/768/390/320) in Chromium and WebKit and rejects horizontal overflow. Screenshots of desktop and phone layouts were inspected. This is a scoped solid-surface check, not a claim of complete accessibility certification.

@@ -30,7 +30,7 @@ export default function ListingLocationMap({ properties, campus }) {
       </div>
       <LocationCanvas key={context + ':' + (selectedCampus?.id || 'none') + ':' + attempt} properties={pinned} campus={selectedCampus} retry={() => setAttempt(value => value + 1)} />
       {properties.length !== pinned.length && <p className="small text-secondary">{properties.length - pinned.length} compared listing(s) have no location pin.</p>}
-      <p className="listing-location-note">{properties.some(property => property.is_demo) ? 'Demo locations are fictional. ' : 'Property pins are supplied by the owner. '}{selectedCampus ? 'The campus pin is an approximate reference.' : 'No campus selected.'}</p>
+      <p className="listing-location-note">{properties.some(property => property.is_demo) ? 'Sample listing locations are illustrative. ' : 'Property locations are supplied by owners. '}{selectedCampus ? 'The campus pin is an approximate reference.' : 'Choose a campus above for walking directions.'}</p>
       <p className="listing-location-links"><a href={`https://www.openstreetmap.org/?mlat=${reference.latitude}&mlon=${reference.longitude}#map=16/${reference.latitude}/${reference.longitude}`} target="_blank" rel="noreferrer">Open {pinned.length === 1 ? 'property' : 'area'} in OpenStreetMap</a><a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
     </div>}
   </section>

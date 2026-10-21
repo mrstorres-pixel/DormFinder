@@ -24,6 +24,10 @@ body { background: #e5edf6; }
 .app-layout .form-control:focus, .app-layout .form-select:focus { box-shadow: 0 0 0 3px #2558e526; }
 .app-layout .form-label { font-size: .83rem; color: #243e60; }
 .app-layout .panel { border-radius: 10px; box-shadow: none; }
+.app-layout .review-boundary-note { padding: .85rem 1rem; margin: 1.25rem 0 0; border: 1px solid #a0b3cd; border-radius: 8px; background: #e6edf7; color: #435a79; font-size: .8rem; line-height: 1.65; }
+.app-layout .listing-lifecycle .lifecycle-owner-link { min-height: 40px; display: inline-flex; align-items: center; margin: .25rem 0 .9rem; }
+.app-layout .lifecycle-confirmation { align-items: flex-start; font-size: .8rem; line-height: 1.6; }
+.app-layout .lifecycle-confirmation input { flex: none; margin-top: .3rem; }
 .app-layout .eyebrow { font-size: .65rem; letter-spacing: .16em; font-weight: 700; }
 .app-layout .page-heading h1 { line-height: 1.14; letter-spacing: -.045em; }
 .app-layout .map-discovery-page .discovery-controls > .page-heading, .app-layout .owner-listings > .page-heading { color: var(--ink); border: 0; border-bottom: 1px solid #a0b3cd; border-radius: 0; padding: .25rem 0 1.25rem; background: transparent; box-shadow: none; }

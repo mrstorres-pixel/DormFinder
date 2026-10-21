@@ -103,7 +103,7 @@ test('campus stays prominent and price labels retain anchors at their actual coo
   }, { places, campus })
   expect(positions.campusError).toBeLessThan(2)
   for (const pin of positions.pins) { expect(pin.error).toBeLessThan(2); expect(positions.campusZ).toBeGreaterThan(pin.z) }
-  await expect(page.getByText(/Demo pins are fictional/)).toBeVisible()
+  await expect(page.getByText(/Sample listing locations are illustrative/)).toBeVisible()
   await page.screenshot({ path: `../.local/campus-marker-${testInfo.project.name}-desktop.png`, fullPage: true })
   await map.locator('.campus-pin').click()
   await expect(map.locator('.leaflet-popup-content')).toContainText('Synthetic University — approximate campus reference')
