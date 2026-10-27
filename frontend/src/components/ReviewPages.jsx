@@ -10,7 +10,7 @@ import ListingInformation from './ListingInformation'
 import PhotoGallery from './PhotoGallery'
 import ReviewLocationMap from './ReviewLocationMap'
 import { LifecycleControls } from './ModerationPages'
-import { AdminShell, AdminWorkQueues, AdminLayout, AdminFilterBar, AdminPager, AdminEmpty } from './AdminTools'
+import { AdminShell, AdminWorkQueues, AdminLayout, AdminFilterBar, AdminPager, AdminEmpty, AdminResultsHeader, AdminListingImage } from './AdminTools'
 import { useAdminBrowse } from '../lib/adminBrowse'
 import './review-workspace.css'
 
@@ -25,13 +25,14 @@ export function ReviewQueue() {
     <AdminWorkQueues />
     <ol className="admin-review-workflow" aria-label="Listing review workflow"><li><span>1</span>Open a submission</li><li><span>2</span>Check photos, rooms & location</li><li><span>3</span>Approve or return feedback</li></ol>
     <AdminFilterBar browse={browse} sorts={[["oldest", "Oldest submissions first"], ["newest", "Newest submissions first"], ["title_asc", "Listing: A-Z"], ["title_desc", "Listing: Z-A"]]} filters={[{ name: 'property_type', label: 'Property type', options: [['', 'All property types'], ['dormitory', 'Dormitory'], ['apartment', 'Apartment'], ['boarding_house', 'Boarding house'], ['rental_room', 'Rental room']] }]} />
-    {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <>
+    <AdminResultsHeader browse={browse} noun="submissions" order={({ oldest: 'Oldest submissions first', newest: 'Newest submissions first', title_asc: 'Listing: A-Z', title_desc: 'Listing: Z-A' })[params.get('sort') || 'oldest']}>{rows[0] && <Link className="btn btn-primary btn-sm" to={'/admin/reviews/' + rows[0].id + '?page=' + page} state={{ adminReturn: '/admin?' + params.toString() }}>Review next listing</Link>}</AdminResultsHeader>
+    {query.isPending ? <Loading /> : query.error && !query.data ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <>
       <div className="review-queue-list">{rows.map(property => <article className="review-queue-row" key={property.id}>
-        <Link className="review-queue-image" to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }} aria-label={'Review photos: ' + property.title}>{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption || 'Listing cover'} loading="lazy" /> : <span aria-hidden="true">⌂</span>}</Link>
+        <Link className="review-queue-image" to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }} aria-label={'Review photos: ' + property.title}><AdminListingImage key={query.dataUpdatedAt} photo={property.photos[0]} /></Link>
         <div className="review-queue-copy"><span className="review-property-type">{property.property_type?.replaceAll('_', ' ') || 'Property'}</span><h2><Link to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }}>{property.title}</Link></h2><p>{[property.address, property.city].filter(Boolean).join(', ')}</p><div className="review-queue-facts"><span>{property.photos.length} photos</span><span>{property.room_options.length} room {property.room_options.length === 1 ? 'option' : 'options'}</span></div><time dateTime={property.submitted_at || undefined}>{submitted(property.submitted_at)}</time></div>
         <Link className="btn btn-outline-primary review-open" to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }} aria-label={'Review ' + property.title}>Review listing <span aria-hidden="true">↗</span></Link>
       </article>)}</div>
-    </> : <AdminEmpty title={params.get('q') || params.get('property_type') ? 'No matching submissions' : 'You’re all caught up.'}>{page > 1 ? <button className="btn btn-outline-primary" onClick={() => browse.setPage(1)}>Back to first page</button> : <><p>New submissions will appear here, with the oldest first.</p><Link className="btn btn-outline-primary" to="/admin/reports">Check student reports</Link><Link to="/admin/listings">Browse all listings</Link></>}</AdminEmpty>}
+    </> : <AdminEmpty browse={browse} title={params.get('q') || params.get('property_type') ? 'No matching submissions' : 'You’re all caught up.'}>{params.get('q') || params.get('property_type') ? 'Try another search or reset the filters to see all submissions.' : <><p>New submissions will appear here, with the oldest first.</p><Link className="btn btn-outline-primary" to="/admin/reports">Check student reports</Link><Link to="/admin/listings">Browse all listings</Link></>}</AdminEmpty>}
     {query.data && <AdminPager browse={browse} noun="submissions" />}
     <p className="review-scope-note review-boundary-note">Review covers listing details and charges. Ownership and safety are not verified.</p>
   </AdminLayout>
@@ -52,6 +53,7 @@ export function ReviewDetails() {
   return <AdminShell className="review-workspace review-detail">
     <Link className="back-link" to={queuePath}>← {backLabel}</Link>
     <header className="review-page-heading"><div><span className="eyebrow">LISTING REVIEW</span><h1>{property.title}</h1><p>{[property.address, property.city].filter(Boolean).join(', ')}</p></div><span className="review-status">{statusLabel(property.status)}</span></header>
+    <div className="admin-review-brief"><dl><div><dt>Listing reference</dt><dd>#{property.id}</dd></div><div><dt>Owner</dt><dd><Link to={'/admin/users?id=' + property.landlord_id}>{property.landlord_name || 'Owner #' + property.landlord_id}</Link></dd></div><div><dt>Submitted</dt><dd>{submitted(property.submitted_at)}</dd></div><div><dt>Content to check</dt><dd>{property.photos.length} photos · {property.room_options.length} room options</dd></div></dl><Link to={'/admin/audit?property_id=' + property.id}>View listing history</Link></div>
     {query.error && <ErrorNotice error={query.error} retry={() => query.refetch()} />}
     <div className="review-detail-layout">
       <div className="review-content">
@@ -95,7 +97,7 @@ function ReviewDecision({ property, queuePath, refresh }) {
       clearUnsaved(); setDirty(false)
       client.setQueryData(['review', String(property.id)], data)
       await Promise.all(['reviews', 'listings', 'admin-properties', 'dashboard', 'notifications', 'notification-unread', 'audit'].map(key => client.invalidateQueries({ queryKey: [key] })))
-      navigate(queuePath)
+      navigate(queuePath, { state: { adminOutcome: { id: property.id, title: property.title, decision: data.status } } })
     },
   })
   const errors = fieldErrors(mutation.error)
@@ -116,7 +118,7 @@ function ReviewDecision({ property, queuePath, refresh }) {
       <ErrorNotice error={mutation.error} />
       {mutation.error?.response?.status === 409 && <p className="review-refresh-note">The submission changed. <button className="btn btn-link" type="button" disabled={refreshing} onClick={refreshListing}>{refreshing ? 'Refreshing…' : 'Refresh listing'}</button> Your feedback stays here; check the updated listing before deciding.</p>}
       <form onSubmit={decide} onChange={() => setDirty(true)}><fieldset disabled={mutation.isPending || refreshing}>
-        <details className="review-criteria"><summary>What to check</summary><ul><li>Photos and description represent the listing clearly.</li><li>Every room’s inventory, rent and charges are understandable.</li><li>The address and pin agree; content is not misleading, prohibited or an obvious duplicate.</li></ul></details>
+        <div className="review-criteria"><h3>Before you decide</h3><ul><li>Photos and description represent the listing clearly.</li><li>Every room’s inventory, rent and charges are understandable.</li><li>The address and pin agree; content is not misleading, prohibited or an obvious duplicate.</li></ul></div>
         <label className="review-confirmation"><input type="checkbox" checked={confirmed} onChange={event => setConfirmedRevision(event.target.checked ? property.revision : null)} /><span>I have checked the listing against these review criteria.</span></label>
         <fieldset className="review-decision-options"><legend>Decision</legend><label className={decision === 'approved' ? 'is-selected' : ''}><input type="radio" name="decision" value="approved" checked={decision === 'approved'} onChange={() => setDecision('approved')} /><span>Approve<span>Publish this listing</span></span></label><label className={decision === 'rejected' ? 'is-selected' : ''}><input type="radio" name="decision" value="rejected" checked={decision === 'rejected'} onChange={() => setDecision('rejected')} /><span>Request changes<span>Return it to the owner</span></span></label></fieldset>
         <Field label="Feedback for the owner" name="reason" as="textarea" ref={feedback} value={reason} onChange={event => { setReason(event.target.value); setMissingFeedback(false) }} required={decision === 'rejected'} maxLength={2000} error={missingFeedback ? { reason: ['Explain what the owner should correct.'] } : errors} rows={4} placeholder={decision === 'rejected' ? 'Explain what needs to change…' : 'Optional note to the owner…'} />

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 async function fixture(page) {
-  const state = { requests: [], writes: [], fail: false, failWrite: false, empty: false }
+  const state = { requests: [], writes: [], fail: false, failWrite: false, empty: false, pauseWrite: false, releaseWrite: null }
   const listings = Array.from({ length: 26 }, (_, index) => ({ id: index + 1, title: 'Campus Residence ' + String(index + 1).padStart(2, '0'), city: 'Manila', property_type: 'dormitory', status: 'draft', landlord_name: 'Jamie Owner', updated_at: '2026-10-20T00:00:00Z', photos: [{ url: '/images/demo/twin-room.webp' }], room_options: [] }))
   await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))
   await page.route('**/api/v1/**', async route => {
@@ -14,6 +14,7 @@ async function fixture(page) {
     state.requests.push({ path, params: Object.fromEntries(url.searchParams) })
     if (req.method() !== 'GET') {
       state.writes.push({ path, body: req.postDataJSON() })
+      if (state.pauseWrite) await new Promise(resolve => { state.releaseWrite = resolve })
       return state.failWrite ? route.fulfill({ status: 503, json: { message: 'Synthetic write failure' } }) : json({ id: 8 })
     }
     if (state.fail) return route.fulfill({ status: 503, json: { message: 'Synthetic directory outage' } })
@@ -45,6 +46,7 @@ test('admin directories filter and paginate on the server, preserve URL state an
   await page.getByRole('button', { name: 'Filters & sorting' }).click()
   await page.getByLabel('Sort by').selectOption('title_desc')
   await page.getByRole('button', { name: 'Apply filters' }).click()
+  await expect(page.getByLabel('Search listings')).toBeFocused()
   await expect(page).not.toHaveURL(/page=2/)
   await expect(page.locator('tbody tr').first()).toContainText('Campus Residence 26')
   expect(state.requests.at(-1).params).toMatchObject({ q: 'Residence 2', sort: 'title_desc', per_page: '12' })
@@ -55,7 +57,8 @@ test('admin directories filter and paginate on the server, preserve URL state an
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Filters & sorting' })).toHaveAttribute('aria-expanded', 'false')
     await expect(page.getByRole('button', { name: 'Apply filters' })).toBeHidden()
-    await expect(page.getByRole('navigation', { name: 'Result pages' })).toBeVisible()
+    if (route === '/admin/listings') await expect(page.getByRole('navigation', { name: 'Result pages' })).toBeVisible()
+    else await expect(page.getByRole('navigation', { name: 'Result pages' })).toHaveCount(0)
     for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: 900 })
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -170,4 +173,85 @@ test('empty later pages have a direct route back to the first results', async ({
   await page.getByRole('button', { name: 'Back to first page', exact: true }).click()
   await expect(page).not.toHaveURL(/page=/)
   await expect(page.locator('tbody tr')).toHaveCount(12)
+})
+
+test('manual refresh retains useful records on failure and recovers without clearing the search', async ({ page }) => {
+  const state = await fixture(page)
+  await page.goto('/admin/listings?q=Residence+2')
+  await expect(page.locator('tbody tr')).toHaveCount(7)
+  await expect(page.getByRole('navigation', { name: 'Result pages' })).toHaveCount(0)
+  state.fail = true
+  await page.getByRole('button', { name: 'Refresh results', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('Synthetic directory outage')
+  await expect(page.getByText('The refresh failed. These are the last successfully loaded records.')).toBeVisible()
+  await expect(page.locator('tbody tr')).toHaveCount(7)
+  await expect(page.getByLabel('Search listings')).toHaveValue('Residence 2')
+  state.fail = false
+  await page.getByRole('button', { name: 'Try again', exact: true }).click()
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.locator('tbody tr')).toHaveCount(7)
+})
+
+test('report inspection can open another tab while preserving the resolution draft', async ({ page }, testInfo) => {
+  await fixture(page)
+  await page.context().route('**/admin/reviews/1', route => route.fulfill({ contentType: 'text/html', body: '<h1>Reported listing inspection</h1>' }))
+  await page.goto('/admin/reports')
+  await page.getByRole('button', { name: 'Review report: Campus Residence' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Review report', exact: true })
+  await expect(dialog.getByText('Report #8', { exact: true })).toBeVisible()
+  await expect(dialog.getByText('Jamie Student', { exact: true })).toBeVisible()
+  await expect(dialog.getByRole('link', { name: 'View listing history', exact: true })).toHaveAttribute('href', '/admin/audit?property_id=1')
+  await page.getByLabel('Private resolution notes').fill('A draft that must stay while I inspect the property.')
+  const newTab = page.waitForEvent('popup')
+  await dialog.getByRole('link', { name: 'Open listing in a new tab' }).click()
+  const inspection = await newTab
+  await expect(inspection.getByRole('heading', { name: 'Reported listing inspection' })).toBeVisible()
+  await inspection.close()
+  await expect(page.getByLabel('Private resolution notes')).toHaveValue('A draft that must stay while I inspect the property.')
+  for (const width of [1440, 390, 320]) {
+    await page.setViewportSize({ width, height: 820 })
+    await expect(dialog).toBeVisible()
+    expect(await dialog.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true)
+    if (width !== 320) await page.screenshot({ path: `../.local/admin-report-context-${testInfo.project.name}-${width}.png`, fullPage: true })
+  }
+})
+
+test('account context links to exact history and pending moderation cannot be dismissed', async ({ page }) => {
+  const state = await fixture(page)
+  await page.goto('/admin/users')
+  await page.getByRole('button', { name: 'Manage account: Jamie Owner' }).click()
+  await expect(page.getByRole('link', { name: 'View account history', exact: true })).toHaveAttribute('href', '/admin/audit?user_id=91')
+  await page.getByRole('link', { name: 'View account history', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Audit history', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Remove filter: Account #91', exact: true })).toBeVisible()
+  expect(state.requests.at(-1).params.user_id).toBe('91')
+  await page.goto('/admin/users')
+  await page.getByRole('button', { name: 'Manage account: Jamie Owner' }).click()
+  await page.getByLabel('Reason for account action #91').fill('A documented moderation decision with context.')
+  await page.getByLabel('Confirm suspend account #91').check()
+  state.pauseWrite = true
+  await page.getByRole('button', { name: 'Suspend account #91' }).click()
+  await expect.poll(() => typeof state.releaseWrite).toBe('function')
+  await expect(page.getByRole('button', { name: 'Close manage account', exact: true })).toBeDisabled()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog', { name: 'Manage account', exact: true })).toBeVisible()
+  state.releaseWrite()
+  await expect(page.getByRole('dialog', { name: 'Manage account', exact: true })).toHaveCount(0)
+  await expect(page.getByText('Account access updated for Jamie Owner.', { exact: true })).toBeVisible()
+})
+
+test('search stays focused and follows browser history without stale input values', async ({ page }) => {
+  await fixture(page)
+  await page.goto('/admin/listings')
+  await page.getByLabel('Search listings').fill('Residence 2')
+  await page.getByLabel('Search listings').press('Enter')
+  await expect(page).toHaveURL(/q=Residence\+2/)
+  await expect(page.getByLabel('Search listings')).toBeFocused()
+  await page.getByLabel('Search listings').fill('Residence 1')
+  await page.getByLabel('Search listings').press('Enter')
+  await expect(page).toHaveURL(/q=Residence\+1/)
+  await page.goBack()
+  await expect(page.getByLabel('Search listings')).toHaveValue('Residence 2')
+  await page.goForward()
+  await expect(page.getByLabel('Search listings')).toHaveValue('Residence 1')
 })

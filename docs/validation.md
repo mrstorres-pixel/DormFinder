@@ -1,5 +1,9 @@
 # Validation evidence — October 9, 2026
 
+## Admin review feedback, retained results and record context - October 27, 2026
+
+All 101 frontend unit tests across 29 files, lint and the production build pass during this refinement. Browser coverage includes next-review navigation, visible decision criteria and owner/history context, named approval confirmation and dismissal, retained records after a failed refresh, exact account-history filters, report inspection in another tab preserving resolution notes, pending-save dismissal protection, one-page pagination, broken-photo fallback, and keyboard/back-forward search state. Dialog screenshots at desktop and phone widths were inspected. All moderation writes use controlled fixtures; live acceptance will continue to block business writes. All 56 scoped Chromium/WebKit cases pass in one 1.4-minute run across admin directories/reviews, Profile recovery/role boundaries and shared viewing dialogs. The run covers the corrected search-history state and the specific account success notice; an initial run identified those two issues, and both are resolved in each engine. Four final directory-layout and admin-walkthrough checks cover the final result-label polish and guided workflow. Stage and actual-account read-only acceptance follow.
+
 ## Admin usability and Profile recovery - October 27, 2026
 
 Frontend lint, the production build and all 101 unit tests across 29 files pass. A complete 66-case Chromium/WebKit run passes for admin directories/reviews, Profile/role access/recovery, unsaved profile/password edits, comparison walking routes and three-role walkthroughs. A preceding 52-case run also passes; its two real-account photo-upload tests were intentionally skipped because no write-enabled manifest was supplied. Production business writes are not part of this acceptance.

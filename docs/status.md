@@ -1,5 +1,11 @@
 # Implementation status
 
+## Admin record context and review feedback - October 27
+
+The second admin pass adds a clear next-review action, visible review criteria and a listing brief linking the owner and listing history. Successful review decisions return a named confirmation with a link to the recorded decision; it can be dismissed without changing the queue. Result headers explain the current order and last refresh, offer a manual refresh, and preserve the last successfully loaded records with a clear warning if that refresh fails. Single-page results omit disabled pagination. Search keeps keyboard focus and synchronizes with browser back/forward navigation.
+
+Report dialogs separate the concern and listing context from the outcome form, with an explicit new-tab inspection link that preserves resolution notes. Account dialogs show account facts and exact activity history before access controls. Closing is visibly disabled during moderation saves, while existing reason, acknowledgement, revision and unsaved-change safeguards remain. Cover photos use a readable fallback on failure and retry after refreshed data. The solid-color theme remains; no backend, schema, dependency or business-data change is required. Verification and release evidence follow in validation.md and deployment.md.
+
 ## Admin workflow and Profile recovery - October 27
 
 The admin area now shares a persistent sidebar across reviews, reports, listing inspection, listings, accounts, audit history and Profile. Daily work queues show real review/report totals, with a short review sequence and useful next tasks when no submissions await review. Directories start with search and common status/role views. Extra filters and sorting open on request; applied filters remain visible and individually removable. Server pagination, URL state, filtered return paths and page size are retained. Empty queues omit pagination, while an empty later directory page offers a direct return to the first results. Solid navy, slate and warm paper surfaces use clearer dividers, aligned actions and mobile cards without gradients or decorative accent strips.

@@ -67,7 +67,17 @@ test('existing owners and admins can read the deployed editor and filtered direc
     await reviewer.getByLabel('Search listings', { exact: true }).fill('Synthetic')
     const reviews = await apply(reviewer, '/admin/reviews')
     expect(reviews.body.meta.per_page).toBe(12)
-    await readPage(reviewer, '/admin/listings', '/admin/properties')
+    const directory = await readPage(reviewer, '/admin/listings', '/admin/properties')
+    if (directory.data[0]) {
+      const listing = directory.data[0]
+      await readPage(reviewer, '/admin/reviews/' + listing.id, '/admin/reviews/' + listing.id)
+      await expect(reviewer.getByRole('link', { name: 'View listing history', exact: true })).toHaveAttribute('href', '/admin/audit?property_id=' + listing.id)
+      await expect(reviewer.locator('.admin-review-brief')).toContainText('#' + listing.id)
+      await readPage(reviewer, '/admin/listings', '/admin/properties')
+    }
+    const refreshed = reviewer.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/admin/properties' && response.request().method() === 'GET')
+    await reviewer.getByRole('button', { name: 'Refresh results', exact: true }).click()
+    expect((await refreshed).status()).toBe(200)
     const resized = reviewer.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/admin/properties' && new URL(response.url()).searchParams.get('per_page') === '24')
     await reviewer.getByLabel('Per page').selectOption('24')
     expect((await resized).status()).toBe(200)
@@ -86,6 +96,7 @@ test('existing owners and admins can read the deployed editor and filtered direc
     if (users.body.data.length) {
       await reviewer.getByRole('button', { name: 'Manage account: ' + users.body.data[0].name, exact: true }).first().click()
       await expect(reviewer.getByRole('dialog', { name: 'Manage account', exact: true })).toBeVisible()
+      await expect(reviewer.getByRole('link', { name: 'View account history', exact: true })).toHaveAttribute('href', '/admin/audit?user_id=' + users.body.data[0].id)
       await reviewer.getByRole('button', { name: 'Close manage account' }).click()
     }
     await readPage(reviewer, '/admin/reports', '/admin/reports')
@@ -101,7 +112,8 @@ test('existing owners and admins can read the deployed editor and filtered direc
     await reviewer.getByLabel('To date').fill('2026-12-31')
     const audit = await apply(reviewer, '/admin/audit')
     expect(audit.body.data.every(row => row.action === 'listing_review')).toBe(true)
-    await expect(reviewer.getByRole('navigation', { name: 'Result pages' })).toBeVisible()
+    if ((audit.body.meta?.last_page || audit.body.last_page || 1) > 1) await expect(reviewer.getByRole('navigation', { name: 'Result pages' })).toBeVisible()
+    else await expect(reviewer.getByRole('navigation', { name: 'Result pages' })).toHaveCount(0)
     await reviewer.setViewportSize({ width: 390, height: 844 })
     await expect.poll(() => reviewer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await reviewer.getByRole('button', { name: 'Menu', exact: true }).click()

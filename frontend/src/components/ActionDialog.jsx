@@ -2,7 +2,7 @@ import { useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import './appointments.css'
 
-export default function ActionDialog({ open, title, onClose, children, returnFocus, className = '', dismissOnBackdrop = false }) {
+export default function ActionDialog({ open, title, onClose, children, returnFocus, className = '', dismissOnBackdrop = false, closeDisabled = false }) {
   const dialog = useRef(null)
   const titleId = useId()
   useEffect(() => {
@@ -21,8 +21,8 @@ export default function ActionDialog({ open, title, onClose, children, returnFoc
     const first = controls[0], last = controls.at(-1)
     if ((event.shiftKey && document.activeElement === first) || (!event.shiftKey && document.activeElement === last)) { event.preventDefault(); (event.shiftKey ? last : first)?.focus() }
   }
-  return createPortal(<dialog ref={dialog} className={'action-dialog ' + className} aria-labelledby={titleId} onKeyDown={keepFocus} onPointerDown={event => { if (dismissOnBackdrop && event.target === event.currentTarget) { event.preventDefault(); onClose() } }} onCancel={event => { event.preventDefault(); onClose() }}>
-    <header><h2 id={titleId}>{title}</h2><button type="button" className="action-close" aria-label={'Close ' + title.toLowerCase()} onClick={onClose}>×</button></header>
+  return createPortal(<dialog ref={dialog} className={'action-dialog ' + className} aria-labelledby={titleId} onKeyDown={keepFocus} onPointerDown={event => { if (dismissOnBackdrop && !closeDisabled && event.target === event.currentTarget) { event.preventDefault(); onClose() } }} onCancel={event => { event.preventDefault(); if (!closeDisabled) onClose() }}>
+    <header><h2 id={titleId}>{title}</h2><button type="button" className="action-close" aria-label={'Close ' + title.toLowerCase()} disabled={closeDisabled} onClick={onClose}>×</button></header>
     <div className="action-dialog-content">{children}</div>
   </dialog>, document.body)
 }

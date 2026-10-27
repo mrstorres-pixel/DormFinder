@@ -65,6 +65,35 @@ test('photo-led review queue supports retry, correct pagination, back navigation
   expect(errors).toEqual([])
 })
 
+test('review context stays visible and a saved decision has a specific confirmation and history', async ({ page }) => {
+  const { state } = await reviewFixture(page)
+  await page.goto('/admin')
+  await page.getByRole('link', { name: 'Review next listing', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Fictional Campus House', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'View listing history', exact: true })).toHaveAttribute('href', '/admin/audit?property_id=55')
+  await expect(page.getByRole('heading', { name: 'Before you decide', exact: true })).toBeVisible()
+  await acknowledged(page).check()
+  await page.getByRole('button', { name: 'Approve listing', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Listing approved', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'View recorded decision', exact: true })).toHaveAttribute('href', '/admin/reviews/55')
+  expect(state.writes).toHaveLength(1)
+  await page.getByRole('button', { name: 'Dismiss confirmation', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Listing approved', exact: true })).toHaveCount(0)
+  await page.reload()
+  await expect(page.getByRole('heading', { name: 'Listing approved', exact: true })).toHaveCount(0)
+  expect(state.writes).toHaveLength(1)
+})
+
+test('an unavailable cover photo has a readable fallback while the listing stays inspectable', async ({ page }) => {
+  await reviewFixture(page)
+  await page.route('**/images/demo/twin-room.webp', route => route.abort('failed'))
+  await page.goto('/admin')
+  const cover = page.getByRole('link', { name: 'Review photos: Fictional Campus House', exact: true })
+  await expect(cover.getByText('Photo unavailable', { exact: true })).toBeVisible()
+  await cover.click()
+  await expect(page.getByRole('heading', { name: 'Fictional Campus House', exact: true })).toBeVisible()
+})
+
 test('review keeps gallery, room costs, map fallback and unsaved feedback connected on desktop and phones', async ({ page }, testInfo) => {
   const { state, errors } = await reviewFixture(page)
   await page.setViewportSize({ width: 1440, height: 1000 })
