@@ -10,7 +10,7 @@ import ListingInformation from './ListingInformation'
 import PhotoGallery from './PhotoGallery'
 import ReviewLocationMap from './ReviewLocationMap'
 import { LifecycleControls } from './ModerationPages'
-import { AdminNavigation, AdminLayout, AdminFilterBar, AdminPager, AdminEmpty } from './AdminTools'
+import { AdminShell, AdminWorkQueues, AdminLayout, AdminFilterBar, AdminPager, AdminEmpty } from './AdminTools'
 import { useAdminBrowse } from '../lib/adminBrowse'
 import './review-workspace.css'
 
@@ -22,15 +22,16 @@ export function ReviewQueue() {
   const { params, page, query } = browse
   const rows = query.data?.data || []
   return <AdminLayout title="Listing review queue" description="Review submissions, check their photos and charges, then approve or return clear feedback." className="review-workspace review-queue">
+    <AdminWorkQueues />
+    <ol className="admin-review-workflow" aria-label="Listing review workflow"><li><span>1</span>Open a submission</li><li><span>2</span>Check photos, rooms & location</li><li><span>3</span>Approve or return feedback</li></ol>
     <AdminFilterBar browse={browse} sorts={[["oldest", "Oldest submissions first"], ["newest", "Newest submissions first"], ["title_asc", "Listing: A-Z"], ["title_desc", "Listing: Z-A"]]} filters={[{ name: 'property_type', label: 'Property type', options: [['', 'All property types'], ['dormitory', 'Dormitory'], ['apartment', 'Apartment'], ['boarding_house', 'Boarding house'], ['rental_room', 'Rental room']] }]} />
-    {query.data && <p className="review-queue-count">{query.data.meta?.total ?? rows.length} awaiting review</p>}
     {query.isPending ? <Loading /> : query.error ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <>
       <div className="review-queue-list">{rows.map(property => <article className="review-queue-row" key={property.id}>
         <Link className="review-queue-image" to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }} aria-label={'Review photos: ' + property.title}>{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption || 'Listing cover'} loading="lazy" /> : <span aria-hidden="true">⌂</span>}</Link>
         <div className="review-queue-copy"><span className="review-property-type">{property.property_type?.replaceAll('_', ' ') || 'Property'}</span><h2><Link to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }}>{property.title}</Link></h2><p>{[property.address, property.city].filter(Boolean).join(', ')}</p><div className="review-queue-facts"><span>{property.photos.length} photos</span><span>{property.room_options.length} room {property.room_options.length === 1 ? 'option' : 'options'}</span></div><time dateTime={property.submitted_at || undefined}>{submitted(property.submitted_at)}</time></div>
         <Link className="btn btn-outline-primary review-open" to={`/admin/reviews/${property.id}?page=${page}`} state={{ adminReturn: "/admin?" + params.toString() }} aria-label={'Review ' + property.title}>Review listing <span aria-hidden="true">↗</span></Link>
       </article>)}</div>
-    </> : <AdminEmpty title={params.get('q') || params.get('property_type') ? 'No matching submissions' : 'You’re all caught up.'}>{page > 1 ? <button className="btn btn-outline-primary" onClick={() => browse.setPage(1)}>Back to first page</button> : 'New submissions will appear here.'}</AdminEmpty>}
+    </> : <AdminEmpty title={params.get('q') || params.get('property_type') ? 'No matching submissions' : 'You’re all caught up.'}>{page > 1 ? <button className="btn btn-outline-primary" onClick={() => browse.setPage(1)}>Back to first page</button> : <><p>New submissions will appear here, with the oldest first.</p><Link className="btn btn-outline-primary" to="/admin/reports">Check student reports</Link><Link to="/admin/listings">Browse all listings</Link></>}</AdminEmpty>}
     {query.data && <AdminPager browse={browse} noun="submissions" />}
     <p className="review-scope-note review-boundary-note">Review covers listing details and charges. Ownership and safety are not verified.</p>
   </AdminLayout>
@@ -45,11 +46,10 @@ export function ReviewDetails() {
   const queuePath = typeof returnPath === 'string' && ['/admin', '/admin/listings', '/admin/reports', '/admin/users', '/admin/audit'].includes(returnPath.split('?')[0]) ? returnPath : page > 1 ? '/admin?page=' + page : '/admin'
   const backLabel = queuePath.startsWith('/admin/listings') ? 'All listings' : queuePath.startsWith('/admin/reports') ? 'Listing reports' : queuePath.startsWith('/admin/audit') ? 'Audit history' : 'Review queue'
   const query = useQuery({ queryKey: ['review', id], queryFn: async () => (await api.get('/admin/reviews/' + id)).data.data })
-  if (query.isPending) return <div className="container page-space"><Loading /></div>
-  if (query.error && !query.data) return <div className="container page-space"><Link to={queuePath}>← {backLabel}</Link><ErrorNotice error={query.error} retry={() => query.refetch()} /></div>
+  if (query.isPending) return <AdminLayout title="Listing review" description="Loading the submitted property."><Loading /></AdminLayout>
+  if (query.error && !query.data) return <AdminLayout title="Listing review" description="This submission could not be loaded."><Link to={queuePath}>← {backLabel}</Link><ErrorNotice error={query.error} retry={() => query.refetch()} /></AdminLayout>
   const property = query.data
-  return <section className="container page-space review-workspace review-detail">
-    <AdminNavigation />
+  return <AdminShell className="review-workspace review-detail">
     <Link className="back-link" to={queuePath}>← {backLabel}</Link>
     <header className="review-page-heading"><div><span className="eyebrow">LISTING REVIEW</span><h1>{property.title}</h1><p>{[property.address, property.city].filter(Boolean).join(', ')}</p></div><span className="review-status">{statusLabel(property.status)}</span></header>
     {query.error && <ErrorNotice error={query.error} retry={() => query.refetch()} />}
@@ -64,7 +64,7 @@ export function ReviewDetails() {
       </div>
       <aside className="review-decision-column" aria-label="Review actions"><ReviewDecision key={property.id} property={property} queuePath={queuePath} refresh={() => query.refetch()} /><div className="review-moderation"><LifecycleControls property={property} admin /></div></aside>
     </div>
-  </section>
+  </AdminShell>
 }
 
 function ReviewRooms({ options }) {

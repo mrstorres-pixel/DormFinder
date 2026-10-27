@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test'
 
 async function fixture(page) {
-  const state = { requests: [], writes: [], fail: false, failWrite: false }
+  const state = { requests: [], writes: [], fail: false, failWrite: false, empty: false }
   const listings = Array.from({ length: 26 }, (_, index) => ({ id: index + 1, title: 'Campus Residence ' + String(index + 1).padStart(2, '0'), city: 'Manila', property_type: 'dormitory', status: 'draft', landlord_name: 'Jamie Owner', updated_at: '2026-10-20T00:00:00Z', photos: [{ url: '/images/demo/twin-room.webp' }], room_options: [] }))
   await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))
   await page.route('**/api/v1/**', async route => {
     const req = route.request(), url = new URL(req.url()), path = url.pathname
     const json = data => route.fulfill({ json: { data } })
     if (path.endsWith('/me')) return json({ id: 987, name: 'Alex Reviewer', role: 'admin' })
+    if (path.endsWith('/dashboard')) return json({ pending_reviews: state.empty ? 0 : 26, open_reports: 1 })
+    if (path.endsWith('/me/avatar')) return json({ has_avatar: false, avatar_url: null })
     if (path.endsWith('/notifications/unread-count')) return json({ unread_count: 0 })
     state.requests.push({ path, params: Object.fromEntries(url.searchParams) })
     if (req.method() !== 'GET') {
@@ -18,7 +20,7 @@ async function fixture(page) {
     if (path.endsWith('/admin/users')) return route.fulfill({ json: { data: [{ id: 91, name: 'Jamie Owner', email: 'sample@example.invalid', role: 'landlord', status: 'active', moderation_revision: 3 }], total: 1, last_page: 1, from: 1, to: 1 } })
     if (path.endsWith('/admin/reports')) return route.fulfill({ json: { data: [{ id: 8, property_id: 1, student_id: 7, student_name: 'Jamie Student', listing_title: 'Campus Residence', category: 'other', body: 'A private concern needing a clear resolution.', status: 'open', revision: 3, created_at: '2026-10-20T00:00:00Z' }], total: 1, last_page: 1 } })
     if (path.endsWith('/admin/audit')) return route.fulfill({ json: { data: [{ id: 8, property_id: 1, listing_title: 'Campus Residence', actor_name: 'Alex Reviewer', action: 'listing_review', before_status: 'pending_review', after_status: 'approved', reason: 'Reviewed property details.', revision: 3, created_at: '2026-10-20T00:00:00Z' }], total: 1, last_page: 1 } })
-    let rows = listings
+    let rows = state.empty ? [] : listings
     if (url.searchParams.get('q')) rows = rows.filter(row => row.title.includes(url.searchParams.get('q')))
     if (url.searchParams.get('sort') === 'title_desc') rows = [...rows].reverse()
     const size = Number(url.searchParams.get('per_page') || 12), current = Number(url.searchParams.get('page') || 1), start = (current - 1) * size
@@ -39,18 +41,20 @@ test('admin directories filter and paginate on the server, preserve URL state an
   await expect(page).toHaveURL(/page=2/)
   await expect(page.locator('tbody tr').first()).toContainText('Campus Residence 13')
   await page.getByLabel('Search listings').fill('Residence 2')
+  await expect(page.getByLabel('Sort by')).toBeHidden()
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
   await page.getByLabel('Sort by').selectOption('title_desc')
   await page.getByRole('button', { name: 'Apply filters' }).click()
   await expect(page).not.toHaveURL(/page=2/)
   await expect(page.locator('tbody tr').first()).toContainText('Campus Residence 26')
   expect(state.requests.at(-1).params).toMatchObject({ q: 'Residence 2', sort: 'title_desc', per_page: '12' })
   await page.getByLabel('Per page').selectOption('24')
-  await page.getByRole('button', { name: 'Apply filters' }).click()
   await expect.poll(() => state.requests.at(-1).params.per_page).toBe('24')
   for (const route of ['/admin/listings', '/admin/users', '/admin/reports', '/admin/audit']) {
     await page.goto(route)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Apply filters' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Filters & sorting' })).toHaveAttribute('aria-expanded', 'false')
+    await expect(page.getByRole('button', { name: 'Apply filters' })).toBeHidden()
     await expect(page.getByRole('navigation', { name: 'Result pages' })).toBeVisible()
     for (const width of [1440, 390, 320]) {
       await page.setViewportSize({ width, height: 900 })
@@ -58,6 +62,7 @@ test('admin directories filter and paginate on the server, preserve URL state an
       if (width !== 320) await page.screenshot({ path: `../.local/admin-polished-${route.split('/').pop()}-${testInfo.project.name}-${width}.png`, fullPage: true })
     }
   }
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
   await page.getByLabel('From date').fill('2026-10-20')
   await page.getByLabel('To date').fill('2026-10-20')
   await page.getByLabel('Action', { exact: true }).selectOption('listing_review')
@@ -101,7 +106,7 @@ test('admin directory errors can be retried and empty filters can be cleared', a
   await page.getByRole('button', { name: 'Try again' }).click()
   await expect(page.locator('tbody tr')).toHaveCount(12)
   await page.getByLabel('Search listings').fill('No such listing')
-  await page.getByRole('button', { name: 'Apply filters' }).click()
+  await page.getByRole('button', { name: 'Search', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'No matching listings' })).toBeVisible()
   await page.getByRole('button', { name: 'Clear filters' }).click()
   await expect(page.locator('tbody tr')).toHaveCount(12)
@@ -119,4 +124,50 @@ test('registration rejects numeric and symbol names while accepting internationa
     await name.fill(value)
     expect(await name.evaluate(input => input.checkValidity())).toBe(true)
   }
+})
+
+test('quick views, visible filter chips and closed filter drafts keep the server query predictable', async ({ page }) => {
+  const state = await fixture(page)
+  await page.goto('/admin/listings?page=2')
+  await page.getByRole('navigation', { name: 'Listing views' }).getByRole('button', { name: 'Drafts', exact: true }).click()
+  await expect(page).toHaveURL(/status=draft/)
+  await expect(page).not.toHaveURL(/page=2/)
+  await expect.poll(() => state.requests.at(-1).params.status).toBe('draft')
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
+  await page.getByLabel('Listing status').selectOption('archived')
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
+  await page.getByLabel('Search listings').fill('Residence 2')
+  await page.getByRole('button', { name: 'Search', exact: true }).click()
+  await expect.poll(() => state.requests.at(-1).params).toMatchObject({ q: 'Residence 2', status: 'draft' })
+  await page.getByRole('button', { name: 'Remove filter: draft', exact: true }).click()
+  await expect(page).not.toHaveURL(/status=/)
+  await expect(page).toHaveURL(/q=Residence\+2/)
+  await page.getByLabel('Per page').selectOption('24')
+  await expect.poll(() => state.requests.at(-1).params).toMatchObject({ q: 'Residence 2', per_page: '24' })
+  await page.reload()
+  await expect(page.getByLabel('Search listings')).toHaveValue('Residence 2')
+  await expect(page.getByRole('button', { name: 'Filters & sorting' })).toHaveAttribute('aria-expanded', 'false')
+})
+
+test('an empty review queue explains the next task and has no empty pagination', async ({ page }, testInfo) => {
+  const state = await fixture(page)
+  state.empty = true
+  await page.goto('/admin')
+  await expect(page.getByRole('heading', { name: 'You’re all caught up.' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Daily work queues' })).toContainText('0')
+  await expect(page.getByRole('list', { name: 'Listing review workflow' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Result pages' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Apply filters' })).toBeHidden()
+  await page.screenshot({ path: `../.local/admin-empty-${testInfo.project.name}.png`, fullPage: true })
+  await page.getByRole('link', { name: 'Check student reports', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Listing reports', exact: true })).toBeVisible()
+})
+
+test('empty later pages have a direct route back to the first results', async ({ page }) => {
+  await fixture(page)
+  await page.goto('/admin/listings?page=9')
+  await expect(page.getByRole('heading', { name: 'No matching listings', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Back to first page', exact: true }).click()
+  await expect(page).not.toHaveURL(/page=/)
+  await expect(page.locator('tbody tr')).toHaveCount(12)
 })

@@ -1,5 +1,13 @@
 # Validation evidence — October 9, 2026
 
+## Admin usability and Profile recovery - October 27, 2026
+
+Frontend lint, the production build and all 101 unit tests across 29 files pass. A complete 66-case Chromium/WebKit run passes for admin directories/reviews, Profile/role access/recovery, unsaved profile/password edits, comparison walking routes and three-role walkthroughs. A preceding 52-case run also passes; its two real-account photo-upload tests were intentionally skipped because no write-enabled manifest was supplied. Production business writes are not part of this acceptance.
+
+The new browser cases cover Account-to-Profile navigation without a deferred Profile module; a failed photo lookup with retry; failed profile saves retaining edits; navigation guards; a blocked review module retaining the app/sidebar and allowing recovery through another page; student/owner access boundaries; secondary filters hidden by default; quick server views resetting pagination; individual applied-filter removal; hidden unapplied filter drafts excluded from search; query/page-size persistence after reload; useful empty-queue tasks and recovery from an empty later page. Existing decision, conflict/revision, report resolution and account-action cases remain enforced.
+
+Desktop and 390/320 px containment checks pass, with screenshots inspected for populated/empty queues, directories and Profile. All 20 final recovery and owner-form regression checks pass against the finished build, including the alternate directory recovery link, required listing steps, room-save retry, partial draft redirect and visible archive controls. Staged asset verification and actual-account read-only acceptance follow before release completion. The existing deferred room-scene chunk size advisory remains.
+
 ## Tab branding, map links and visible catalog copy - October 27, 2026
 
 All 101 frontend tests across 29 files, lint and the production build pass. New data-presentation checks verify known seeded templates, nested room/photo fields, historical listing snapshots, listing-only search labels, exact seeded review/notification messages, untouched owner/private text, source-object immutability and preserved walking geometry/identity/price/inventory. The SVG house mark has matching locally rendered 32 px PNG/ICO assets. The existing deferred scene chunk advisory remains.

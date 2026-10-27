@@ -9,6 +9,7 @@ export function useAdminBrowse(key, path, defaultSort = 'newest') {
   return { params, page, query, defaultSort,
     apply: values => setParams(Object.fromEntries(Object.entries(values).filter(([key, value]) => key !== 'page' && String(value).trim() !== '').map(([key, value]) => [key, String(value).trim()]))),
     clear: () => setParams({}),
+    update: values => setParams(current => { const next = new URLSearchParams(current); next.delete('page'); for (const [key, value] of Object.entries(values)) { if (String(value).trim()) next.set(key, String(value).trim()); else next.delete(key) } return next }),
     setPage: page => setParams(current => { const next = new URLSearchParams(current); if (page <= 1) next.delete('page'); else next.set('page', String(page)); return next }),
   }
 }

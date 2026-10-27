@@ -9,6 +9,8 @@ import { ErrorNotice, Field, Loading } from './Feedback'
 import CampusSearch from './CampusSearch'
 import ProfilePhoto from './ProfilePhoto'
 import { safeReturnTo } from '../lib/navigation'
+import { AdminLayout } from './AdminTools'
+import { personNamePattern, personNameHint } from '../lib/personName'
 import './student-space.css'
 
 export default function ProfileSettings({ setup = false }) {
@@ -18,10 +20,10 @@ export default function ProfileSettings({ setup = false }) {
   const clearProfile = useUnsavedChanges(profileDirty)
   useUnsavedChanges(passwordDirty)
   const clearAllUnsaved = useClearUnsavedChanges()
-  const campuses = useCampuses()
+  const { data: user } = useCurrentUser()
+  const campuses = useCampuses({ enabled: user?.role === 'student' })
   const [selectedCampus, setSelectedCampus] = useState(null)
   const [campusError, setCampusError] = useState('')
-  const { data: user } = useCurrentUser()
   const client = useQueryClient()
   const navigate = useNavigate()
   const nameChange = useMutation({ mutationFn: data => writeApi('patch', '/me', data), onSuccess: data => { clearProfile(); setProfileDirty(false); client.setQueryData(['me'], data); if (setup) navigate(safeReturnTo(params.get('returnTo'), data.role === 'landlord' ? '/landlord' : '/listings'), { replace: true, state: { showGuide: true } }) } })
@@ -35,13 +37,16 @@ export default function ProfileSettings({ setup = false }) {
     nameChange.mutate(values)
   }
   if (!user) return null
-  return <section className="container page-space profile-settings">
+  const content = <>
+    {user.role !== 'admin' && <>
     <Link className="settings-back" to={user.role === 'student' ? '/account' : user.role === 'landlord' ? '/landlord' : '/admin'}>← {user.role === 'student' ? 'Your space' : 'Your workspace'}</Link>
     {setup && <span className="eyebrow">WELCOME TO DORMFINDER</span>}<h1>{setup ? 'Make your profile yours.' : 'Your profile'}</h1>
     {setup && <p className="profile-setup-intro">Check your name{user.role === 'student' ? ' and optionally choose your campus' : ''}. A profile photo is optional. A guided walkthrough will help you explore when you are ready.</p>}
+    </>}
+    {user.role === 'admin' && <div className="admin-profile-identity"><span className="admin-state">Administrator</span><p>Your access is managed by the system. Email and role cannot be changed here.</p></div>}
     <ProfilePhoto user={user} />
     <form className="profile-main-form" onChange={() => setProfileDirty(true)} onSubmit={saveProfile}><fieldset disabled={nameChange.isPending || passwordChange.isPending}>
-      <section className="settings-section" aria-labelledby="personal-details"><div><h2 id="personal-details">Personal details</h2></div><div><Field label="Your name" name="name" defaultValue={user.name} required maxLength={100} error={fieldErrors(nameChange.error)} /><span className="form-label d-block">Email address</span><p className="settings-email">{user.email}</p></div></section>
+      <section className="settings-section" aria-labelledby="personal-details"><div><h2 id="personal-details">Personal details</h2></div><div><Field label="Your name" name="name" defaultValue={user.name} required maxLength={100} pattern={personNamePattern} hint={personNameHint} autoComplete="name" error={fieldErrors(nameChange.error)} /><span className="form-label d-block">Email address</span><p className="settings-email">{user.email}</p></div></section>
       {user.role === 'student' && <section className="settings-section" aria-labelledby="campus-preference"><div><h2 id="campus-preference">Your campus</h2><p>Start your next search here.</p></div><div>{campuses.isPending || campuses.error ? <><input type="hidden" name="preferred_campus_id" value={selectedCampus ?? String(user.preferred_campus_id || '')} />{campuses.isPending && <Loading>Loading campuses…</Loading>}</> : <CampusSearch campuses={campuses.data || []} value={selectedCampus ?? String(user.preferred_campus_id || '')} onChange={value => { setSelectedCampus(value); setProfileDirty(true); setCampusError('') }} name="preferred_campus_id" />}{campusError && <p role="alert">{campusError}</p>}</div></section>}
       <ErrorNotice error={nameChange.error} /><div className="settings-save"><button className="btn btn-primary" disabled={(!setup && !profileDirty) || nameChange.isPending}>{nameChange.isPending ? 'Saving…' : setup ? 'Finish profile setup' : 'Save profile'}</button>{nameChange.isSuccess && !profileDirty && !setup && <span className="text-success" role="status">Saved.</span>}</div>
     </fieldset></form>
@@ -54,5 +59,6 @@ export default function ProfileSettings({ setup = false }) {
         <button className="btn btn-outline-primary" disabled={passwordChange.isPending}>Change password</button>
       </fieldset></form>
     </details>}
-  </section>
+  </>
+  return user.role === 'admin' ? <AdminLayout title="Your profile" description="Manage your personal details, photo and account security." className="admin-profile"><div className="admin-profile-content">{content}</div></AdminLayout> : <section className="container page-space profile-settings">{content}</section>
 }

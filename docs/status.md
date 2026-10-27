@@ -1,5 +1,13 @@
 # Implementation status
 
+## Admin workflow and Profile recovery - October 27
+
+The admin area now shares a persistent sidebar across reviews, reports, listing inspection, listings, accounts, audit history and Profile. Daily work queues show real review/report totals, with a short review sequence and useful next tasks when no submissions await review. Directories start with search and common status/role views. Extra filters and sorting open on request; applied filters remain visible and individually removable. Server pagination, URL state, filtered return paths and page size are retained. Empty queues omit pagination, while an empty later directory page offers a direct return to the first results. Solid navy, slate and warm paper surfaces use clearer dividers, aligned actions and mobile cards without gradients or decorative accent strips.
+
+A fresh real admin session could open Profile before this change. Blocking its deferred module reproduced the user's whole-page error, making a failed/stale page download a plausible cause rather than a proven historical diagnosis. Profile is now part of the main app bundle, with role-appropriate photo help, name validation and no campus-directory request for admins/owners. A page-level recovery boundary keeps global/admin navigation available for other failed page downloads, offers an explicit refresh and a working alternate route, and leaves existing unsaved-change protections in place. Review/moderation reasons, confirmations, revision checks and privacy boundaries are preserved.
+
+Local verification and release evidence are recorded in validation.md and deployment.md. No API/schema, stored listing/account data, dependency or provider-setting change is required.
+
 ## Tab branding and listing copy cleanup - October 27
 
 The tab title is now exactly DormFinder. The existing house mark is linked as an SVG favicon, with matching 32 px PNG and ICO fallbacks. The optional OpenStreetMap property/area and report-issue footer links are removed from detail, comparison and browse maps; map-engine and routing attribution remain. Tile-error recovery now directs users to the address/owner instead of a removed link. Seeded address templates now display the named nearby street, or Address not provided for older placeholder-only addresses, including historical snapshots.

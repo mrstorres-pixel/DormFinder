@@ -73,3 +73,102 @@
   .admin-table td:last-child .btn{width:100%;justify-content:center}
   .admin-property-cell img,.admin-property-placeholder{width:64px;height:52px}
 }
+
+/* The admin shell keeps work navigation separate from the current task. */
+.app-layout .admin-workspace {max-width:1540px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:2.5rem;align-items:start;padding:2rem 2rem 3rem}
+.admin-content {min-width:0}
+.admin-sidebar {position:sticky;top:1.5rem;background:#1d3452;color:#edf3fc;border:1px solid #1d3452;border-radius:14px;padding:1.25rem .75rem}
+.admin-workspace-name {display:block;padding:0 .65rem 1.2rem;color:#f4f6fb;font-size:1.02rem;font-weight:650;text-decoration:none}
+.admin-workspace-name:hover {color:#fff}
+.admin-workspace-name span {display:block;font-size:.73rem;color:#b9cbe2;font-weight:400;margin-top:.25rem}
+.app-layout .admin-workspace .admin-sections {display:block;background:transparent;border:0;border-radius:0;box-shadow:none;padding:0;margin:0}
+.admin-nav-group {display:block;font-size:.63rem;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:#b9cbe2;margin:1.1rem .65rem .45rem}
+.admin-nav-item:first-child .admin-nav-group {margin-top:0}
+.app-layout .admin-workspace .admin-sections a {display:flex;gap:.7rem;align-items:center;min-height:55px;padding:.65rem;border-radius:8px;color:#e7eef9;text-decoration:none;font-size:.84rem;line-height:1.4}
+.admin-sections svg {flex:none}
+.admin-sections small {display:block;font-size:.67rem;margin-top:.15rem;color:#bdcfe7;font-weight:400}
+.app-layout .admin-workspace .admin-sections a[aria-current] {background:#345bc1;color:#fff;font-weight:650}
+.app-layout .admin-workspace .admin-sections a[aria-current] small {color:#e3ebff}
+.app-layout .admin-workspace .admin-sections a:hover {background:#2b4668;color:#fff}
+.admin-sidebar-note {font-size:.7rem;color:#bdcfe7;line-height:1.65;margin:1.3rem .65rem .15rem;padding-top:1rem;border-top:1px solid #56708f}
+.app-layout .admin-workspace .admin-page-heading {padding:0 0 1.2rem;margin-bottom:1.4rem;border-bottom:1px solid #91a8c6}
+.admin-page-heading h1 {font-size:clamp(1.75rem,2.4vw,2.25rem);letter-spacing:-.035em;line-height:1.2}
+.admin-page-heading p {font-size:.9rem;line-height:1.65;max-width:78ch}
+.admin-work-queues {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin-bottom:1.2rem}
+.admin-work-queues a {display:flex;align-items:center;justify-content:space-between;gap:1rem;border:1px solid #9bafc8;border-radius:10px;background:#f4f0e7;padding:1rem 1.1rem;text-decoration:none;color:#1c3555;font-weight:650;font-size:.9rem}
+.admin-work-queues a[aria-current] {background:#dbe5f2;border-color:#718baF}
+.admin-work-queues small {display:block;font-weight:400;font-size:.74rem;color:#46617e;margin-top:.3rem}
+.admin-work-queues strong {font-size:1.6rem;line-height:1}
+.admin-summary-note {grid-column:1/-1;font-size:.78rem;color:var(--muted)}
+.admin-review-workflow {display:flex;flex-wrap:wrap;gap:.7rem 1.2rem;list-style:none;padding:0;margin:1.3rem 0 1.5rem;font-size:.77rem;color:#405a79}
+.admin-review-workflow li {display:flex;align-items:center;gap:.5rem}
+.admin-review-workflow li>span {display:grid;place-items:center;width:24px;height:24px;border:1px solid #8fa7c4;border-radius:50%;font-size:.7rem;flex:none;background:#edf2f8}
+.admin-task-guide {font-size:.85rem;color:#405a79;line-height:1.7;margin-bottom:1.3rem}
+.admin-views {display:flex;gap:.25rem;flex-wrap:wrap;border-bottom:1px solid #91a8c6;margin-bottom:1rem}
+.admin-views button {border:0;border-bottom:3px solid transparent;background:transparent;min-height:44px;color:#405a79;padding:.65rem .8rem;font-size:.8rem}
+.admin-views button[aria-current] {border-bottom-color:#1d3452;color:#172e4a;font-weight:650}
+.admin-views button:hover {background:#dce6f3}
+.app-layout .admin-workspace .admin-filter-bar {background:transparent;border:0;border-radius:0;padding:0;margin-bottom:1.25rem}
+.admin-search-row {display:flex;align-items:end;gap:.65rem;flex-wrap:wrap}
+.admin-search-row .admin-search-field {flex:1;min-width:180px}
+.admin-search-row label,.admin-filter-grid label {display:block;font-size:.76rem;font-weight:600;margin-bottom:.4rem}
+.admin-search-row .form-control,.admin-search-row .btn {min-height:44px;font-size:.83rem}
+.admin-filter-toggle {display:flex;align-items:center;justify-content:center;gap:.8rem}
+.admin-advanced {margin-top:1rem;padding:1.1rem;background:#eaf0f8;border:1px solid #91a8c6;border-radius:10px;min-width:0}
+.admin-advanced[hidden] {display:none}
+.admin-advanced legend {float:none;width:auto;font-size:.85rem;font-weight:650;margin:0 0 1rem;padding:0 .25rem}
+.admin-filter-grid {grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.admin-applied-filters {display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.admin-applied-filters button {font-size:.74rem;min-height:36px;border:1px solid #9bafc8;background:#edf2f8;color:#284563;border-radius:6px;padding:.4rem .65rem;overflow-wrap:anywhere;max-width:100%;text-align:left}
+.admin-applied-filters button span {margin-left:.5rem;font-size:1rem}
+.admin-applied-filters .admin-clear-filters {background:transparent;border-color:transparent;text-decoration:underline}
+.app-layout .admin-workspace .admin-table-wrap {box-shadow:none;max-height:none;overflow:auto}
+.admin-table {min-width:0}
+.app-layout .admin-workspace .admin-table thead {background:#d4dfec}
+.app-layout .admin-workspace .admin-table th {color:#28415f;font-size:.74rem;padding:.9rem .85rem;border-bottom:1px solid #8fa7c4}
+.app-layout .admin-workspace .admin-table td {padding:1rem .85rem;border-top-color:#a4b7d0}
+.app-layout .admin-workspace .admin-table tbody tr {background:#f3efe6}
+.app-layout .admin-workspace .admin-table tbody tr:nth-child(even) {background:#e9eff6}
+.app-layout .admin-workspace .admin-table tbody tr:hover {background:#dce7f3}
+.admin-table .btn {min-height:44px;white-space:normal}
+.admin-table td:last-child {white-space:normal}
+.admin-table td:first-child {width:38%}
+.admin-property-cell img,.admin-property-placeholder {width:62px;height:52px}
+.admin-pagination {gap:.8rem;padding:1rem 0}
+.admin-page-size {display:flex;align-items:center;gap:.5rem;margin-left:auto;font-size:.75rem;color:#405a79}
+.admin-page-size select {width:75px;min-height:40px;font-size:.78rem}
+.app-layout .admin-workspace .admin-empty {background:#f3efe6;border:1px solid #9bafc8;border-radius:12px;padding:2.5rem 1.5rem;text-align:left}
+.admin-empty h2 {font-size:1.25rem}
+.admin-empty-copy {font-size:.87rem;color:#405a79;line-height:1.7}
+.admin-empty-copy p {margin:0 0 1.1rem}
+.admin-empty-copy a {display:inline-flex;margin:.4rem 1rem 0 0;align-items:center;min-height:44px}
+.admin-empty-actions {display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
+.admin-empty-actions:empty {display:none}
+.admin-profile-content {max-width:920px}
+.admin-profile-identity {display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;margin-bottom:1rem}
+.admin-profile-identity p {font-size:.8rem;color:#405a79;margin:0}
+.app-layout .admin-profile .settings-section {grid-template-columns:170px minmax(0,1fr);gap:1.5rem;background:#f3efe6}
+.admin-profile .settings-save {margin-top:1rem}
+.admin-profile .settings-security {margin-top:2rem}
+.admin-profile .settings-security>summary {font-weight:650;font-size:1rem}
+.page-recovery {padding:1.5rem;background:#f3efe6;border:1px solid #9bafc8;border-radius:12px}
+@media(max-width:1250px){.app-layout .admin-workspace{gap:1.5rem;grid-template-columns:205px minmax(0,1fr)}.admin-workspace .review-detail-layout{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:950px){
+  .app-layout .admin-workspace{display:block;padding:1rem 1rem 2rem}
+  .admin-sidebar{position:static;padding:.8rem;margin-bottom:1.5rem}
+  .admin-workspace-name{padding:.2rem .4rem .8rem;font-size:.9rem}
+  .admin-workspace-name span,.admin-nav-group,.admin-sidebar-note,.admin-sections small{display:none}
+  .app-layout .admin-workspace .admin-sections{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.3rem}
+  .app-layout .admin-workspace .admin-sections a{font-size:.79rem;min-height:44px;padding:.6rem;gap:.45rem}
+}
+@media(max-width:767px){
+  .admin-work-queues{gap:.6rem}.admin-work-queues a{padding:.85rem;gap:.5rem;font-size:.8rem}.admin-work-queues small{font-size:.69rem}.admin-work-queues strong{font-size:1.35rem}
+  .admin-search-row .admin-search-field{flex-basis:100%}.admin-search-row .btn{flex:1}
+  .admin-advanced{padding:1rem}.admin-filter-grid{grid-template-columns:minmax(0,1fr)}
+  .admin-pagination{flex-direction:row;align-items:center}.admin-page-size{margin-left:auto}.admin-pagination nav{flex-basis:100%}
+  .app-layout .admin-workspace .admin-table-wrap{overflow:hidden}
+  .app-layout .admin-workspace .admin-table td{padding:0;border:0}.admin-table td:first-child{width:auto}
+  .app-layout .admin-profile .settings-section{grid-template-columns:minmax(0,1fr);gap:.8rem}
+  .admin-review-workflow{gap:.6rem;font-size:.72rem;display:grid}
+}
+@media(max-width:360px){.admin-work-queues{grid-template-columns:minmax(0,1fr)}.app-layout .admin-workspace .admin-sections a{padding:.45rem;font-size:.7rem;gap:.3rem}.admin-sections svg{width:16px;height:16px}}

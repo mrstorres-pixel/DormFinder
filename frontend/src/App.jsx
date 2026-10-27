@@ -5,6 +5,8 @@ import { fieldErrors, writeApi } from './lib/api'
 import { useCurrentUser } from './lib/auth'
 import { ErrorNotice, Field, Loading } from './components/Feedback'
 import Brand from './components/Brand'
+import Profile from './components/ProfileSettings'
+import PageRecovery from './components/PageRecovery'
 import SiteNavigation from './components/SiteNavigation'
 import MobileNavigation from './components/MobileNavigation'
 import NotificationBell from './components/NotificationBell'
@@ -23,7 +25,7 @@ import { Notifications, StudentReports, ReportQueue, AccountModeration, AdminLis
 const Landlord = lazy(() => import('./components/LandlordWorkspace').then(module => ({ default: module.Landlord })))
 const PropertyEditor = lazy(() => import('./components/LandlordWorkspace').then(module => ({ default: module.PropertyEditor })))
 const StudentHome = lazy(() => import('./components/StudentHome'))
-const Profile = lazy(() => import('./components/ProfileSettings'))
+
 const QuickGuide = lazy(() => import('./components/QuickGuide'))
 const Listings = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Listings })))
 const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
@@ -136,7 +138,7 @@ function Account() {
 }
 
 const router = createBrowserRouter(createRoutesFromElements(
-  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><WalkthroughProvider><Layout><Suspense fallback={<div className="container page-space"><Loading>Loading page...</Loading></div>}><Outlet /></Suspense></Layout></WalkthroughProvider></ComparisonProvider></UnsavedChangesProvider>}>
+  <Route errorElement={<section className="container page-space"><h1>Something went wrong.</h1><p>Your saved work is still available. Reload this page to try again.</p><button className="btn btn-primary me-3" onClick={() => window.location.reload()}>Reload page</button><Link to="/">Return home</Link></section>} element={<UnsavedChangesProvider><ComparisonProvider><WalkthroughProvider><Layout><PageRecovery><Suspense fallback={<div className="container page-space"><Loading>Loading page...</Loading></div>}><Outlet /></Suspense></PageRecovery></Layout></WalkthroughProvider></ComparisonProvider></UnsavedChangesProvider>}>
     <Route path="/" element={<Home />} />
     <Route path="/login" element={<AuthPage />} />
     <Route path="/register" element={<AuthPage register />} />

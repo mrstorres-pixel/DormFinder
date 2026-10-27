@@ -2,8 +2,8 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from './api'
 import { useCurrentUser } from './auth'
 
-export function useCampuses() {
-  return useQuery({ queryKey: ['campuses'], queryFn: async () => (await api.get('/campuses')).data.data, staleTime: 300_000, retry: false })
+export function useCampuses({ enabled = true } = {}) {
+  return useQuery({ queryKey: ['campuses'], enabled, queryFn: async () => (await api.get('/campuses')).data.data, staleTime: 300_000, retry: false })
 }
 
 export function useFavorites() {

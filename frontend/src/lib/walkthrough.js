@@ -54,7 +54,7 @@ export function walkthroughSteps(role, context = {}) {
     ...shared,
   ]
   return [
-    step('reviews', 'A clear place to start reviewing.', 'New submissions appear in this queue. Search, filter and sort the results, then open a listing to check its saved content and review checklist.', '/admin', '.admin-filter-bar'),
+    step('reviews', 'A clear place to start reviewing.', 'New submissions appear in this queue. Search, filter and sort the results, then open a listing to check its saved content and review checklist.', '/admin', '.admin-review-workflow'),
     step('reports', 'Follow up on student concerns.', 'Filter reports by their status or category. Open a report to read the concern and record a resolution with context.', '/admin/reports', '.admin-workspace'),
     step('all-listings', 'Find the property behind the question.', 'Search titles or owner names, filter listing status and type, and use pagination for larger directories. Open a listing to inspect it before taking action.', '/admin/listings', '.admin-table-wrap, .admin-empty'),
     step('accounts', 'Keep account actions deliberate.', 'Search students and owners by name or email. Moderation actions require a reason and confirmation. This walkthrough does not change any account.', '/admin/users', '.admin-workspace'),
