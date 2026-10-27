@@ -32,4 +32,15 @@ describe('listing presentation', () => {
     expect(result.description).not.toMatch(/demo|fictional/i)
     expect(result.photos[0].caption).toBe('Study area')
   })
+
+  it('cleans only exact seeded review and notification messages, preserving private message bodies', () => {
+    const text = 'Campus demo v2 complete. Fictional rental; AI-generated image.'
+    const source = { moderation_reason: text, audit: [{ reason: text, property_id: 70, revision: 3 }], notification: { title: 'A demo listing is ready for content review.' }, messages: [{ body: text }], reason: 'Keep this owner-authored review feedback.' }
+    const result = presentListingData(source)
+    expect(result.moderation_reason).toBe('Listing content review completed.')
+    expect(result.audit[0]).toEqual({ reason: 'Listing content review completed.', property_id: 70, revision: 3 })
+    expect(result.notification.title).toBe('A listing is ready for content review.')
+    expect(result.messages[0].body).toBe(text)
+    expect(result.reason).toBe(source.reason)
+  })
 })

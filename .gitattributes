@@ -1,4 +1,5 @@
 * text=auto
+frontend/public/favicon.svg text eol=lf
 *.sh text eol=lf
 *.php text eol=lf
 *.yml text eol=lf

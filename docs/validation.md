@@ -2,9 +2,11 @@
 
 ## Tab branding, map links and visible catalog copy - October 27, 2026
 
-All 100 frontend tests across 29 files, lint and the production build pass. New data-presentation checks verify known seeded templates, nested room/photo fields, historical listing snapshots, listing-only search labels, untouched owner/private text, source-object immutability and preserved walking geometry/identity/price/inventory. The SVG house mark has matching locally rendered 32 px PNG/ICO assets. The existing deferred scene chunk advisory remains.
+All 101 frontend tests across 29 files, lint and the production build pass. New data-presentation checks verify known seeded templates, nested room/photo fields, historical listing snapshots, listing-only search labels, exact seeded review/notification messages, untouched owner/private text, source-object immutability and preserved walking geometry/identity/price/inventory. The SVG house mark has matching locally rendered 32 px PNG/ICO assets. The existing deferred scene chunk advisory remains.
 
 All 106 scoped production-build Chromium/WebKit cases pass in one 3.5-minute run. Dedicated cases verify the exact tab title, accessible clean listing titles, neutral captions, absence of optional map links/badges, retained provider credits and route geometry, stable room IDs and phone containment. Existing discovery, galleries, saved places, viewings, student space, admin reviews, map destinations and role walkthroughs also pass. The fixture cases simulate API data and errors without production writes; an additional public-catalog case is prepared for real title/photo/map/icon acceptance after release. Existing fixture suites now expect the requested display names instead of the catalog prefix. No backend, database, credential, dependency or provider-setting change is required.
+
+After including the remaining exact seeded review/notification messages, all fourteen affected branding/admin-review browser cases pass again on the final build. The first staged candidate's 35 JS/CSS files matched, but its SVG hash differed only because archive export used CRLF while the local build used LF. That candidate was not promoted. The favicon now has an explicit LF rule and the clean release archive disables automatic CRLF conversion.
 
 ## Comparison minimum, walking destinations and admin card alignment - October 21, 2026
 
