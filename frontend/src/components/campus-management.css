@@ -21,7 +21,7 @@
 .campus-history p {font-size:.8rem;line-height:1.65;margin:.35rem 0}
 .campus-history summary {padding:.5rem 0;font-size:.8rem;cursor:pointer}
 .campus-suggestion-page {max-width:900px}
-.campus-suggestion-page>.panel {padding:1.5rem;background:#f3efe6}
+.campus-suggestion-page>.panel {padding:1.5rem;background:var(--theme-surface)}
 .campus-suggestion-page .page-heading p {max-width:70ch;font-size:.9rem;line-height:1.7}
 .campus-own-requests {margin-top:2rem}
 .campus-own-requests h2 {font-size:1.35rem}

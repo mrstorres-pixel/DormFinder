@@ -10,7 +10,8 @@ import { ownerRoomFingerprint } from '../lib/ownerWorkspace'
 import { Link } from 'react-router-dom'
 import { useRequireSavedChanges, useFormChanges } from '../lib/useUnsavedChanges'
 
-export function RoomCharges({ option }) {
+export function RoomCharges({ option, detailsOnly = false }) {
+  if (detailsOnly) return <div className="room-charges"><dl className="charge-list"><div><dt>Deposit</dt><dd>{pesos(option.deposit_centavos)}</dd></div><div><dt>Advance rent</dt><dd>{option.advance_months} {option.advance_months === 1 ? 'month' : 'months'}</dd></div>{(option.fees || []).map((fee, index) => <div key={index}><dt>{fee.name} · {fee.frequency === 'monthly' ? 'monthly' : 'one time'}</dt><dd>{pesos(fee.amount_centavos)}</dd></div>)}</dl>{option.utilities_notes && <p className="room-utility-terms">{option.utilities_notes}</p>}</div>
   return <div className="room-charges">
     <p className="availability-label">{option.available_units === 0 ? 'Sold out' : option.availability_stale ? 'Vacancies need confirmation' : 'Available - recently confirmed'}</p>
     <p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p>
@@ -68,7 +69,7 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   const baseline = useRef({ revision: property.revision, fingerprint: ownerRoomFingerprint(option) })
   function markDirty() { if (!dirty && !option) baseline.current.revision = property.revision; setDirty(true) }
   useEffect(() => { onDirtyChange?.(dirty); return () => onDirtyChange?.(false) }, [dirty, onDirtyChange])
-  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
+  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty, () => save(formRef.current))
   const [inventory, setInventory] = useState(option?.inventory_type || 'bedspace')
   const [values, setValues] = useState(() => ({
     name: option?.name ?? '', capacity: option?.capacity ?? 1,

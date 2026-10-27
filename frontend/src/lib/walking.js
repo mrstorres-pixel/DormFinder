@@ -89,9 +89,12 @@ export function drawWalkingRoute(L, map, route, property, campus, preview = fals
     frame = requestAnimationFrame(() => {
       if (map.getContainer().querySelector('.leaflet-zoom-anim')) { map.off('zoomend', fit); map.once('zoomend', fit); return }
       map.invalidateSize({ pan: false })
-      const card = preview && map.getContainer().parentElement.querySelector('.map-preview')
-      const bottom = card ? card.getBoundingClientRect().height + 95 : 75
-      map.fitBounds(path.getBounds().extend(pins), { paddingTopLeft: [35, 80], paddingBottomRight: [35, bottom], maxZoom: 17, animate: false })
+      const card = preview ? map.getContainer().parentElement.querySelector('.map-preview') : null
+      const box = map.getContainer().getBoundingClientRect(), cardBox = card?.getBoundingClientRect()
+      const beside = cardBox && cardBox.width < box.width * 0.6
+      const bottom = cardBox && !beside ? cardBox.height + 105 : 75
+      const right = beside ? cardBox.width + 35 : 35
+      map.fitBounds(path.getBounds().extend(pins), { paddingTopLeft: [35, 80], paddingBottomRight: [right, bottom], maxZoom: 17, animate: false })
     })
   }
   // Leaflet ignores setView during an active zoom transition. Fit after that transition ends.

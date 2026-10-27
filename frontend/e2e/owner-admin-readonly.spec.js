@@ -44,6 +44,10 @@ test('existing owners and admins can read the deployed editor and filtered direc
   }
   try {
     const owner = await pageFor(accounts.landlord, /\/landlord$/)
+    await owner.goto('/')
+    await expect(owner.getByRole('link', { name: 'List your property', exact: true })).toHaveAttribute('href', '/landlord/properties/new')
+    await owner.getByRole('link', { name: 'List your property', exact: true }).click()
+    await expect(owner.getByRole('button', { name: 'Start listing', exact: true })).toBeVisible()
     const properties = await readPage(owner, '/landlord', '/landlord/properties')
     const editable = properties.data.find(property => ['draft', 'rejected', 'approved'].includes(property.status))
     if (editable) {

@@ -1,6 +1,15 @@
 # Validation evidence — October 9, 2026
 
 
+## Clearer listing, map, draft and viewing flows - October 27
+
+The local UI revision replaces the bottom map strip with a photo-led floating card, photo controls, direct room choices and visible listing/compare actions. Listing maps load immediately; only walking-route calculation is explicitly requested. Campus search copy is campus-specific. Gallery surfaces are opaque navy with contrasting headings and controls. Detailed charges and the owner viewing-reply field are visible; suggesting a new viewing time uses a named action.
+
+Owners can save changes while staying in the editor. Internal navigation offers Save and leave for a single saveable listing/location or room form, with pending and failure protection; multiple dirty forms and unfinished uploads retain the existing Stay/Discard safeguards. Browser close/reload retains its native unsaved warning. The signed-in landlord home link opens listing creation; duplicate body browse links are removed. Home filters use a labeled control with an active count. Decorative cream/yellow surfaces become slate blue, while actual warnings and incomplete states retain warning colors.
+
+Local verification passes 107 unit tests, lint/build and all 102 distinct scoped Chromium/WebKit scenarios across recorded runs. The first 40-case run passes; a 70-case regression identified two mobile route-label overlaps, corrected by reserving space around the floating card. Both affected geometry cases pass afterward. An additional explicit zoom/recenter check exposed a null-handling error in the new route-fit calculation; it was corrected before release, and both direct-listing resize/recenter cases pass. Final built map regression and deployment acceptance are being completed. No backend, schema, dependency or environment changes are required. Existing production data and private user artifacts are preserved.
+
+
 ## Connected owner location, availability and campus management - October 27, 2026
 
 The local backend suite passes 177 tests / 1953 assertions. A subsequent focused run after migration-permission additions passes 22 tests / 164 assertions. Frontend unit tests pass 106 tests across 30 files; Pint, lint and the production build pass. Browser evidence covers the complete landlord directory/editor, bulk vacancy confirmation with failure/revision handling, fully occupied/pause/resume/archive distinctions, campus editing/review/history and private suggestions. All 126 distinct scoped local Chromium/WebKit scenarios have passing evidence across the recorded runs. An initial broad 88-case run passed 87: the remaining Chromium history case revealed that form.reset could overwrite the controlled search input. Advanced-filter controls now remount when URL parameters change, while the controlled search remains intact. Both isolated Back/Forward checks and the final 62-case affected admin/campus/owner-directory run pass. Earlier obsolete action/listbox selectors and premature campus-selection assertions were corrected without weakening the saved-data checks.

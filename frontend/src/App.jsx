@@ -75,9 +75,10 @@ function Layout({ children }) {
 }
 
 function Home() {
+  const { data: user } = useCurrentUser()
   return <>
     <RoomEntrance />
-    <section id="find-housing" tabIndex="-1" className="hero campus-hero home-discovery-hero"><div className="container"><div className="home-introduction"><span className="eyebrow">STUDENT HOUSING, CLOSE TO CAMPUS</span><h2>Find your place near campus.</h2><p>Choose where you study. Find a room that fits. Talk to the owner when you're ready.</p></div><HousingSearchForm home /><div className="home-secondary"><Link to="/listings">Explore all listings →</Link><span>Have a place to share? <Link to="/register?role=landlord">List your property</Link></span></div></div></section>
+    <section id="find-housing" tabIndex="-1" className="hero campus-hero home-discovery-hero"><div className="container"><div className="home-introduction"><span className="eyebrow">STUDENT HOUSING, CLOSE TO CAMPUS</span><h2>Find your place near campus.</h2><p>Choose where you study. Find a room that fits. Talk to the owner when you're ready.</p></div><HousingSearchForm home /><div className="home-secondary"><span>{user?.role === 'landlord' ? 'Ready to add another property? ' : user?.role === 'admin' ? 'Housing directory: ' : user ? 'Your housing account: ' : 'Have a place to share? '}<Link to={user?.role === 'landlord' ? '/landlord/properties/new' : user?.role === 'admin' ? '/admin/listings' : user ? '/profile' : '/register?role=landlord'}>{user?.role === 'admin' ? 'Manage listings' : user?.role === 'student' ? 'View your account' : 'List your property'}</Link></span></div></div></section>
     <FeaturedHomes />
   </>
 }

@@ -1,5 +1,14 @@
 # Implementation status
 
+
+## Clearer listing, map, draft and viewing flows - October 27
+
+The local UI revision replaces the bottom map strip with a photo-led floating card, photo controls, direct room choices and visible listing/compare actions. Listing maps load immediately; only walking-route calculation is explicitly requested. Campus search copy is campus-specific. Gallery surfaces are opaque navy with contrasting headings and controls. Detailed charges and the owner viewing-reply field are visible; suggesting a new viewing time uses a named action.
+
+Owners can save changes while staying in the editor. Internal navigation offers Save and leave for a single saveable listing/location or room form, with pending and failure protection; multiple dirty forms and unfinished uploads retain the existing Stay/Discard safeguards. Browser close/reload retains its native unsaved warning. The signed-in landlord home link opens listing creation; duplicate body browse links are removed. Home filters use a labeled control with an active count. Decorative cream/yellow surfaces become slate blue, while actual warnings and incomplete states retain warning colors.
+
+Local verification passes 107 unit tests, lint/build and all 102 distinct scoped Chromium/WebKit scenarios across recorded runs. The first 40-case run passes; a 70-case regression identified two mobile route-label overlaps, corrected by reserving space around the floating card. Both affected geometry cases pass afterward. An additional explicit zoom/recenter check exposed a null-handling error in the new route-fit calculation; it was corrected before release, and both direct-listing resize/recenter cases pass. Final built map regression and deployment acceptance are being completed. No backend, schema, dependency or environment changes are required. Existing production data and private user artifacts are preserved.
+
 ## Owner availability, campus management and connected address picker - released October 27
 
 The live application adds one vacancy panel per property, complete room-count confirmation, a fully occupied action and separate pause/resume/archive flows. Pausing retains approval, conversations and existing viewing requests. Resuming requires current positive vacancies. My space has Properties, Needs attention and Archived views, one status filter and task counters only when work exists. Fully occupied listings leave default discovery results; in-app freshness reminders skip paused and fully occupied properties. The existing fourteen-day reminder, twenty-seven-day warning and thirty-day expiry remain in-app only.

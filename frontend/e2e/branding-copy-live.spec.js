@@ -16,7 +16,6 @@ test('the real public catalog displays the new branding and clean listing copy w
   await expect(page.locator('main')).not.toContainText(/\b(demo|fictional|illustrative|synthetic)\b/i)
   const photo = page.getByRole('region', { name: 'Property photo gallery' }).locator('figure img').first()
   await expect.poll(() => photo.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true)
-  await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Open property in OpenStreetMap' })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Report a map issue' })).toHaveCount(0)
   await expect(page.getByRole('region', { name: 'Listing map', exact: true }).locator('.listing-marker')).toHaveCount(1)

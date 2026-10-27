@@ -78,7 +78,7 @@ test('same-origin sessions, private drafts, image persistence and logout', async
 
   await page.goto('/landlord/properties/' + propertyId + '#location')
   await page.getByLabel('Street address').fill('Synthetic address for testing')
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(page).toHaveURL(/\/landlord$/)
   await page.goto('/landlord/properties/' + propertyId + '#photos')
   const outsider = await browser.newContext({ baseURL })

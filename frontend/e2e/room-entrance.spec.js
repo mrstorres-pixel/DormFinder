@@ -87,7 +87,7 @@ test('the real room enters and reverses on scroll, adapts to mobile, and leads t
   await expect(campus).toBeInViewport()
   await campus.fill('TIP Manila')
   await campus.press('ArrowDown'); await campus.press('ArrowDown'); await campus.press('Enter')
-  await page.getByText('Set a rent budget or preferences', { exact: true }).click()
+  await page.getByRole('button', { name: 'Filters', exact: true }).click()
   await page.getByLabel('Room type and price basis').selectOption('bedspace')
   await page.getByLabel('Maximum monthly base rent (PHP)').fill('7000')
   await page.getByRole('button', { name: 'Find housing' }).click()

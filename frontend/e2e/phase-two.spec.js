@@ -128,7 +128,7 @@ test('landlord, administrator and student complete the listing and private inqui
     await landlord.getByRole('button', { name: 'Submit for review', exact: true }).click()
     await expect(landlord.getByText('Your listing is waiting for administrator review. Edits are locked during review.', { exact: true })).toBeVisible()
     await landlord.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Location & details', exact: true }).click()
-    await expect(landlord.getByRole('button', { name: 'Save draft', exact: true })).toBeDisabled()
+    await expect(landlord.getByRole('button', { name: 'Save changes', exact: true })).toBeDisabled()
 
     const reviewer = await pageFor()
     await reviewer.goto('/login')
@@ -201,7 +201,7 @@ test('landlord, administrator and student complete the listing and private inqui
     await landlord.goto('/landlord/properties/' + propertyId)
     await landlord.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Location & details', exact: true }).click()
     await landlord.getByLabel('Property name').fill(title + ' edited')
-    await landlord.getByRole('button', { name: 'Save draft', exact: true }).click()
+    await landlord.getByRole('button', { name: 'Save changes', exact: true }).click()
     await expect(landlord.getByRole('status').filter({ hasText: 'Your draft has been saved.' })).toBeVisible()
     expect((await guest.request.get('/api/v1/listings/' + propertyId, { headers: { Accept: 'application/json' } })).status()).toBe(404)
     await student.reload()

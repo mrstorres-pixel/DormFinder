@@ -16,7 +16,6 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   page.on('response', response => { if (response.url().startsWith('https://tile.openstreetmap.org/')) tiles[response.ok() ? 'ok' : 'failed']++ })
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.goto('/listings/' + property.id)
-  await page.getByRole('button', { name: 'Show map', exact: true }).click()
   const map = page.getByRole('region', { name: 'Listing map', exact: true })
   await expect(map.locator('.listing-marker')).toHaveCount(1)
   expect((await map.boundingBox()).height).toBeGreaterThanOrEqual(320)
@@ -36,6 +35,14 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   expect(route.duration_seconds).toBeGreaterThan(0)
   await expect(page.getByText(new RegExp('About ' + Math.ceil(route.duration_seconds / 60) + ' min walk'))).toBeVisible()
   await expect(map.locator('.walking-route-path')).toHaveCount(1)
+  await expect(page.getByRole('region', { name: 'Costs and room terms' })).toBeVisible()
+  if (property.photos.length) {
+    await page.getByRole('button', { name: /^Enlarge photo 1/ }).click()
+    const gallery = page.getByRole('dialog', { name: 'Listing photos' })
+    await expect(gallery).toHaveCSS('background-color', 'rgb(16, 29, 49)')
+    await expect(gallery.locator('header')).toHaveCSS('background-color', 'rgb(24, 44, 72)')
+    await gallery.getByRole('button', { name: 'Close listing photos', exact: true }).click()
+  }
   await map.scrollIntoViewIfNeeded()
   await expect.poll(() => map.evaluate(node => {
     const route = node.querySelector('.walking-route-path').getBoundingClientRect(), box = node.getBoundingClientRect()
@@ -44,7 +51,6 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))
   await page.screenshot({ path: `../.local/listing-map-real-${testInfo.project.name}.png` })
   await page.goto('/listings/' + property.id + '?campus_id=' + campus.id)
-  await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await expect(page.getByRole('combobox', { name: 'Walking destination' })).toHaveValue(campus.name)
   await expect(map.locator('.campus-marker')).toHaveAttribute('title', new RegExp(campus.name))
   expect(tiles.failed).toBe(0)

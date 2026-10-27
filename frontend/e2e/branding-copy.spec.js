@@ -38,7 +38,6 @@ test('tab branding and listing presentation stay clean while maps retain routes,
   await expect(page.getByRole('heading', { name: 'Student House 1', exact: true })).toBeVisible()
   await expect(page.locator('main')).not.toContainText(/\b(demo|fictional|illustrative|synthetic)\b/i)
   await expect(page.getByRole('figure').first()).toContainText('2-person room')
-  await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()
   await expect(page.getByText('About 7 min walk · 522 m', { exact: true })).toBeVisible()
   await expect(page.locator('.walking-route-path')).toHaveCount(1)

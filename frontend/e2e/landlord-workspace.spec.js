@@ -164,7 +164,7 @@ test('Continue saves a valid room once, retains failed edits and focuses missing
   expect(state.property.room_options[0].monthly_rent_centavos).toBe(900000)
 })
 
-test('partial draft save returns to My space; failed save retains details and pin', async ({ page }) => {
+test('partial draft save stays in the editor; failed save retains details and pin', async ({ page }) => {
   const state = await owner(page)
   await page.goto('/landlord/properties/55#location')
   await page.getByLabel('Property name').fill('Saved partial draft')
@@ -172,16 +172,14 @@ test('partial draft save returns to My space; failed save retains details and pi
   await page.getByLabel('Street address').fill('')
   await page.getByLabel('Latitude').fill('14.61')
   state.failSave = true
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Synthetic save failure.')
   await expect(page.getByLabel('Property name')).toHaveValue('Saved partial draft')
   await expect(page.getByLabel('Latitude')).toHaveValue('14.61')
   state.failSave = false
-  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
-  await expect(page).toHaveURL(/\/landlord$/)
-  await expect(page.locator('.owner-workspace-notice').getByRole('status')).toContainText('Your draft has been saved.')
-  await expect(page.getByRole('heading', { name: 'Saved partial draft' })).toBeVisible()
-  await page.getByRole('link', { name: 'Manage property', exact: false }).click()
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(page).toHaveURL(/properties\/55#location/)
+  await expect(page.getByRole('status').filter({ hasText: 'Your changes have been saved.' })).toBeVisible()
   await expect(page.getByLabel('About the property')).toHaveValue('')
 })
 

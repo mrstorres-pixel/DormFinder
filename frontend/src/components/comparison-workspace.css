@@ -9,17 +9,17 @@
 .comparison-routing-retry p { margin: 0; font-size: .83rem; }
 .comparison-recovery { display: flex; flex-wrap: wrap; gap: .75rem; }
 .comparison-empty h2 { font-size: 1.3rem; }
-.app-layout .comparison-page .comparison-scroll { width: 100%; max-width: none; border-radius: 10px; box-shadow: none; background: #f5f1e8; overflow: auto; }
+.app-layout .comparison-page .comparison-scroll { width: 100%; max-width: none; border-radius: 10px; box-shadow: none; background: var(--theme-surface); overflow: auto; }
 .app-layout .comparison-page .comparison-table { width: 100%; table-layout: fixed; min-width: calc(160px + var(--comparison-count) * 270px); --bs-table-bg: transparent; --bs-table-color: var(--ink); --bs-table-border-color: var(--line); }
 .comparison-label-column { width: 160px; }
-.app-layout .comparison-page .comparison-table thead th { background: #f5f1e8; vertical-align: top; }
+.app-layout .comparison-page .comparison-table thead th { background: var(--theme-surface); vertical-align: top; }
 .app-layout .comparison-page .comparison-table .comparison-column-label, .app-layout .comparison-page .comparison-table tbody th { background: #dce7f5; color: #264467; font-size: .82rem; width: 160px; }
-.app-layout .comparison-page .comparison-table thead .comparison-selected-cell { background: #f5f1e8; width: auto; padding: 1rem; }
+.app-layout .comparison-page .comparison-table thead .comparison-selected-cell { background: var(--theme-surface); width: auto; padding: 1rem; }
 .comparison-selected-places { display: grid; grid-template-columns: repeat(var(--comparison-count), minmax(0, 1fr)); gap: 1.2rem; }
 .comparison-choice { display: grid; grid-template-rows: subgrid; grid-row: span 5; gap: .8rem; min-width: 0; font-weight: 400; }
 .comparison-choice .comparison-column-actions { margin-top: 0; }
-.app-layout .comparison-page .comparison-room-row td { background: #f5f1e8; }
-.app-layout .comparison-page .comparison-table tbody td { background: #f5f1e8; vertical-align: top; }
+.app-layout .comparison-page .comparison-room-row td { background: var(--theme-surface); }
+.app-layout .comparison-page .comparison-table tbody td { background: var(--theme-surface); vertical-align: top; }
 .app-layout .comparison-page .comparison-table tbody tr:nth-child(even) td { background: #eaf0f8; }
 .app-layout .comparison-page .comparison-table h2 { line-height: 1.45; font-size: 1rem; }
 .app-layout .comparison-page .comparison-photo { display: block; width: 100%; height: 280px; max-height: none; object-fit: cover; border-radius: 7px; margin: 0; }

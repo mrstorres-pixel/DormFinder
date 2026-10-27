@@ -22,7 +22,7 @@ describe('shared housing search', () => {
     render(<HousingSearchForm home />)
     await user.type(screen.getByRole('combobox', { name: 'Campus, location or listing' }), 'TIP Manila')
     await user.click(screen.getByRole('button', { name: /Campus TIP.*Manila/ }))
-    await user.click(screen.getByText('Set a rent budget or preferences'))
+    await user.click(screen.getByRole('button', { name: 'Filters', exact: true }))
     await user.type(screen.getByLabelText('Maximum monthly base rent (PHP)'), '6000.29')
     await user.click(screen.getByRole('button', { name: 'Find housing' }))
     expect(screen.getByRole('alert')).toHaveTextContent('clear price basis')

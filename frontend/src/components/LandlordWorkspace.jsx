@@ -60,7 +60,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
   const locationForm = useRef(null)
   const roomForm = useRef(null)
   const stepMessage = useRef(null)
-  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
+  const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty, saveBeforeLeave)
   const client = useQueryClient()
   const navigateRoute = useNavigate()
   const workspacePath = ownerReturnPath(location.state?.ownerReturn)
@@ -81,6 +81,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
       client.setQueryData(['property', String(saved.id)], saved)
       await Promise.all(['properties', 'dashboard'].map(key => client.invalidateQueries({ queryKey: [key] })))
       setStepError('')
+      if (intent === 'leave' || intent === 'stay') return
       if (intent === 'exit') navigate(workspacePath, { state: { notice: 'Your draft has been saved. You can continue editing it here.', savedPropertyId: saved.id } })
       else navigate('/landlord/properties/' + saved.id + (property ? '#preview' : '#photos'))
     },
@@ -89,14 +90,22 @@ function PropertyForm({ property, onRefresh, refreshing }) {
     event.preventDefault()
     if (locationLookup) { explain('Wait for the address lookup, or type the address to cancel it, before saving.'); return }
     if (!canReplaceOthers()) return
-    const form = new FormData(event.currentTarget)
+    mutation.mutate({ values: formValues(event.currentTarget), intent: event.nativeEvent.submitter?.value || (property ? 'continue' : 'start') })
+  }
+  function formValues(element) {
+    const form = new FormData(element)
     const values = Object.fromEntries(form)
     if (property) {
       values.amenities = form.getAll('amenities')
       values.latitude = values.latitude || null; values.longitude = values.longitude || null
       values.revision = ownerDetailsFingerprint(property) === locationBaseline.fingerprint ? property.revision : locationBaseline.revision
     }
-    mutation.mutate({ values, intent: event.nativeEvent.submitter?.value || (property ? 'continue' : 'start') })
+    return values
+  }
+  async function saveBeforeLeave() {
+    if (locationLookup || busy || !locationForm.current || !canReplaceOthers()) return false
+    await mutation.mutateAsync({ values: formValues(locationForm.current), intent: 'leave' })
+    return true
   }
   function explain(message) {
     const initiator = document.activeElement
@@ -137,7 +146,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
   if (!property) return <section className="container page-space owner-create">
     <Link className="back-link" to={workspacePath}>← Your properties</Link>
     <div className="owner-create-intro"><span className="eyebrow">YOUR NEXT LISTING</span><h1>Start with a name.</h1><p>Create a private draft, then add photos, rooms and your location.</p></div>
-    <form className="panel" data-tour="listing-basics" onSubmit={submit} onChange={() => setDirty(true)}><ErrorNotice error={mutation.error} /><fieldset disabled={mutation.isPending}>
+    <form ref={locationForm} className="panel" data-tour="listing-basics" onSubmit={submit} onChange={() => setDirty(true)}><ErrorNotice error={mutation.error} /><fieldset disabled={mutation.isPending}>
       <Field label="Property name" name="title" required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
       <label className="form-label" htmlFor="property_type">Property type</label><select className="form-select mb-3" id="property_type" name="property_type" defaultValue="dormitory"><option value="dormitory">Dormitory</option><option value="apartment">Apartment</option><option value="boarding_house">Boarding house</option><option value="rental_room">Rental room</option></select>
       <Field label="City" name="city" defaultValue="Manila" required maxLength={100} error={errors} />
@@ -153,8 +162,8 @@ function PropertyForm({ property, onRefresh, refreshing }) {
     {stepError && <p className="alert alert-warning editor-step-message" role="alert" ref={stepMessage} tabIndex={-1}>{stepError}</p>}
     <div className="editor-stage" id="editor-photos" tabIndex={-1} hidden={step !== 'photos'}><PhotoManager property={property} onDirtyChange={setPhotosDirty} /></div>
     <div className="editor-stage" id="editor-rooms" tabIndex={-1} hidden={step !== 'rooms'}><RoomManager property={property} onDirtyChange={setRoomsDirty} saveRef={roomForm} /></div>
-    <div className="editor-stage" id="editor-location" tabIndex={-1} hidden={step !== 'location'}><section className="panel"><h2>Location and property details</h2><ErrorNotice error={mutation.error} />{mutation.isSuccess && <p className="alert alert-success" role="status">Your draft has been saved.</p>}
-      <p className="owner-fine-print">Required to continue: a description of at least 40 characters, the street address, city and property pin. Save draft keeps partial details and returns to My space.</p>
+    <div className="editor-stage" id="editor-location" tabIndex={-1} hidden={step !== 'location'}><section className="panel"><h2>Location and property details</h2><ErrorNotice error={mutation.error} />{mutation.isSuccess && !dirty && <p className="alert alert-success" role="status">Your changes have been saved.</p>}
+      <p className="owner-fine-print">Required to continue: a description of at least 40 characters, the street address, city and property pin. Save changes keeps partial details. Continue checks the required fields.</p>
       <form ref={locationForm} className={validationAttempted ? 'was-validated' : ''} onInvalidCapture={() => { setValidationAttempted(true); setStepError('Complete the highlighted required fields before continuing.') }} onSubmit={submit} onChange={event => { event.target.setCustomValidity?.(''); setDirty(true); setStepError('') }}><fieldset key={locationBaseline.revision} disabled={!editable || mutation.isPending}>
         <Field label="Property name" name="title" defaultValue={property?.title} required maxLength={150} placeholder="e.g. Casal Student Residence" error={errors} />
         <div className="mb-3"><label className="form-label" htmlFor="property_type">Property type</label><select className="form-select" id="property_type" name="property_type" defaultValue={property?.property_type || 'dormitory'}>
@@ -166,9 +175,9 @@ function PropertyForm({ property, onRefresh, refreshing }) {
         <fieldset className="mb-3"><legend className="h3">Shared facilities <small>(optional)</small></legend><p className="small">Select only facilities available at this property.</p><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input type="checkbox" name="amenities" value={value} defaultChecked={property?.amenities?.includes(value)} /> {label}</label>)}</div></fieldset><Field label="House rules (optional)" name="house_rules" as="textarea" defaultValue={property?.house_rules} maxLength={2000} rows={3} hint="Include quiet hours, visitor policies, smoking rules or other restrictions." error={errors} /><h3 className="h5 mt-4">Property location <span className="required-field-mark">Required to continue</span></h3><p className="small">Search the street address or click the map, then check the pin at the property entrance.</p>
         {step === 'location' && <MapPinPicker addressLabel={[property.address, property.city].filter(Boolean).join(', ')} resetToken={locationReset} onLookupStateChange={setLocationLookup} latitude={coordinates.latitude} longitude={coordinates.longitude} onChange={value => { setCoordinates(value); setDirty(true) }} onAddressSelected={place => { for (const [name, value] of [['address', place.street_address], ['city', place.city]]) { if (value && locationForm.current?.elements[name]) { locationForm.current.elements[name].value = value; locationForm.current.elements[name].setCustomValidity('') } } setDirty(true); setStepError('') }} />}
         <div className="row"><div className="col-sm-6"><Field label="Latitude" name="latitude" type="number" step="any" min="-90" max="90" value={coordinates.latitude} onChange={event => setCoordinates(current => ({ ...current,latitude:event.target.value }))} error={errors} /></div><div className="col-sm-6"><Field label="Longitude" name="longitude" type="number" step="any" min="-180" max="180" value={coordinates.longitude} onChange={event => setCoordinates(current => ({ ...current,longitude:event.target.value }))} error={errors} /></div></div>
-        <button type="submit" value="exit" formNoValidate className="btn btn-outline-primary" disabled={mutation.isPending || locationLookup}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
+        <button type="submit" value="stay" formNoValidate className="btn btn-outline-primary" disabled={!dirty || mutation.isPending || locationLookup}>{mutation.isPending ? 'Saving…' : 'Save changes'}</button>
             {dirty && <button type="button" className="btn btn-outline-secondary ms-2" disabled={mutation.isPending} onClick={() => { clearUnsaved(); setDirty(false); setLocationReset(current => current + 1); setLocationLookup(false); setCoordinates({ latitude: property.latitude ?? '', longitude: property.longitude ?? '' }); for (const field of locationForm.current.elements) field.setCustomValidity?.(''); locationForm.current.reset(); mutation.reset(); setStepError(''); setValidationAttempted(false) }}>Cancel location changes</button>}
-      {dirty && <p className="owner-save-feedback" aria-live="polite">Location changes are not saved yet. Save draft keeps your work and returns to My space.</p>}
+      {dirty && <p className="owner-save-feedback" aria-live="polite">Location changes are not saved yet. Save now, or choose Save and leave when you open another menu.</p>}
       </fieldset></form>
     </section></div>
     <div className="editor-stage" id="editor-preview" tabIndex={-1} hidden={step !== 'preview'}>

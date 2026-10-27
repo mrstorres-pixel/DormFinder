@@ -2,7 +2,7 @@ import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { campusResults } from '../lib/housing'
 
-export default function CampusSearch({ campuses = [], value = '', onChange, name = 'campus_id', label = 'College or university', helper = 'Choose the specific campus. Nearby housing may not be available yet.', placeholder = 'Search your university, campus, or city', disabled = false, requireQuery = false, allowSuggestion = true }) {
+export default function CampusSearch({ campuses = [], value = '', onChange, name = 'campus_id', label = 'College or university', helper = 'Choose the specific campus. Nearby housing may not be available yet.', placeholder = 'Search campus', disabled = false, requireQuery = false, allowSuggestion = true }) {
   const id = useId()
   const selected = campuses.find(campus => String(campus.id) === String(value))
   const [query, setQuery] = useState('')

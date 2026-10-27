@@ -94,8 +94,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await expect(student.getByRole('row', { name: /Price basis/ })).toContainText('Per room')
     const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
     await student.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
-    await student.getByRole('button', { name: 'Show map', exact: true }).click()
-    await expect(student.getByRole('region', { name: 'Listing map' }).locator('.leaflet-marker-icon')).toHaveCount(4)
+      await expect(student.getByRole('region', { name: 'Listing map' }).locator('.leaflet-marker-icon')).toHaveCount(4)
     await expect(student.getByRole('region', { name: 'Listing map' }).locator('.leaflet-control-attribution')).toContainText('OpenStreetMap')
     for (const width of [360, 768, 1440]) {
       await student.setViewportSize({ width, height: 900 })

@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useCampuses } from '../lib/discovery'
 import { campusIcon } from '../lib/mapMarkers'
 import { mapLabelLayout } from '../lib/mapLabelLayout'
@@ -12,20 +12,18 @@ import './listing-location-map.css'
 
 const hasPin = place => place.latitude != null && place.longitude != null && Number.isFinite(Number(place.latitude)) && Number.isFinite(Number(place.longitude))
 
-export default function ListingLocationMap({ properties, campus, initiallyShown = false, showDestinationSearch = true, walkingComparison }) {
-  const [shown, setShown] = useState(initiallyShown)
+export default function ListingLocationMap({ properties, campus, showDestinationSearch = true, walkingComparison }) {
   const [destination, setDestination] = useState(null)
   const [attempt, setAttempt] = useState(0)
   const campuses = useCampuses()
-  const id = useId()
   const context = properties.map(property => property.id).join(',') + ':' + (campus?.id || '')
   const selectedCampus = destination?.context === context ? campuses.data?.find(item => String(item.id) === destination.id) : campus
   const pinned = properties.filter(hasPin)
   const reference = pinned[0]
   return <section className="panel mb-4 listing-location" data-tour="location" aria-label="Property location">
-    <div className="listing-location-heading"><h2>{selectedCampus ? 'Location and campus' : 'Location'}</h2>{reference && <button type="button" className="btn btn-outline-primary" aria-expanded={shown} aria-controls={id + '-map'} onClick={() => setShown(value => !value)}>{shown ? 'Hide map' : 'Show map'}</button>}</div>
-    {!reference ? <p className="small text-secondary">A location pin is not available for this property. Use the listing address or ask the owner for directions.</p> : shown && <div id={id + '-map'}>
-      {showDestinationSearch && <div className="listing-map-destination"><CampusSearch campuses={campuses.data || []} value={String(selectedCampus?.id || '')} onChange={id => setDestination({ context, id })} label="Walking destination" requireQuery disabled={campuses.isPending || !!campuses.error} helper="Type a university, campus or city, then choose a suggestion for walking directions." />
+    <div className="listing-location-heading"><h2>{selectedCampus ? 'Location and campus' : 'Location'}</h2></div>
+    {!reference ? <p className="small text-secondary">A location pin is not available for this property. Use the listing address or ask the owner for directions.</p> : <div>
+      {showDestinationSearch && <div className="listing-map-destination"><CampusSearch campuses={campuses.data || []} value={String(selectedCampus?.id || '')} onChange={id => setDestination({ context, id })} label="Walking destination" requireQuery disabled={campuses.isPending || !!campuses.error} placeholder="Search campus" helper="Choose a campus from the suggestions for walking distance and estimated time." />
         {campuses.isPending && <p role="status" className="form-text">Loading campuses…</p>}
         <ErrorNotice error={campuses.error} retry={() => campuses.refetch()} />
       </div>}
