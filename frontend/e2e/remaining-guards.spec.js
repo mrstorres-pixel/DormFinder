@@ -70,6 +70,7 @@ test('report filters protect unsaved resolution notes on the same page', async (
   await expect(page.getByLabel('Private resolution notes')).toHaveValue('Unsaved investigation notes')
   page.once('dialog', dialog => dialog.accept())
   await page.getByRole('button', { name: 'Close review report' }).click()
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
   await page.getByLabel('Report status', { exact: true }).selectOption('resolved')
   await page.getByRole('button', { name: 'Apply filters' }).click()
   await expect(page).toHaveURL(/status=resolved/)

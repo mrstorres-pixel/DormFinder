@@ -1,5 +1,13 @@
 # Deployment runbook — Codex execution
 
+## Admin record context and review feedback - October 27, 2026
+
+Frontend application source 960e6d64e5ae943d5a16124e8b73c3029af05d07 is READY in dpl_97JTp2RfAmDkpyAz1tvJ6UT3ckMb at https://dormfinder-8d6o24mxw-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. The release used a clean committed-source archive, the existing verified project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1 / team team_lakGFdG84Dlw3s6qfEG8IKQc, frontend root, Node 24 and established build configuration. Deployment Protection was retained.
+
+All 32 staged JS/CSS files and three favicon files match the tested build byte for byte through authenticated CLI access; staged HTML is equivalent apart from carriage-return encoding. After promotion, all six public entry assets and three icons match. Direct and proxied API readiness return 200. Entry index-DDnVlcii.js and stylesheet index-DoC8KlRn.css identify the release. Both strengthened actual-account read-only Chromium/WebKit cases pass in 57 seconds, including live listing context/history, results refresh, account-history links and Profile/avatar/password reads. Business writes were blocked. The bounded post-acceptance runtime-error query returns zero events. Follow-up documentation and test-selector corrections do not alter the deployed app source.
+
+The immediately prior frontend application source is c86d34ea44f83c5bd7e2bfaab34f1f77feae96d1 in dpl_5bu1Lcx5C48UCSX1t8wnywXo2cEb. Re-inspect retained artifacts and current routing before recovery. Backend 696c8e5 / Render dep-dbc191navr4c73egb1d0 is unchanged. No schema, business-data, dependency, credential or provider-setting change accompanied this frontend release. Private artifacts and the user's certificate remain excluded.
+
 ## Admin workflow and Profile recovery - October 27, 2026
 
 Frontend application source c86d34ea44f83c5bd7e2bfaab34f1f77feae96d1 is READY in dpl_5bu1Lcx5C48UCSX1t8wnywXo2cEb at https://dormfinder-nbaboob2s-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. A clean committed-source archive used the verified existing project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1 / team team_lakGFdG84Dlw3s6qfEG8IKQc, frontend root, Node 24, npm ci and the established build command. Deployment Protection was retained; authenticated CLI access verified the staged files before promotion.

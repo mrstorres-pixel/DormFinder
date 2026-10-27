@@ -59,7 +59,7 @@ test('an unavailable profile photo can be retried without blocking personal deta
 
 test('failed page download retains navigation and offers recovery instead of a blank error screen', async ({ page }) => {
   await fixture(page)
-  await page.route('**/assets/ReviewPages-*.js', route => route.abort('failed'))
+  await page.route(/\/(?:assets\/ReviewPages-[^/]+\.js|src\/components\/ReviewPages\.jsx)(?:\?.*)?$/, route => route.abort('failed'))
   await page.goto('/admin/listings')
   await page.getByRole('navigation', { name: 'Administrator sections' }).getByRole('link', { name: /^Reviews/ }).click()
   await expect(page.getByRole('heading', { name: 'This page needs a refresh.' })).toBeVisible()
