@@ -13,7 +13,7 @@ test('the real public catalog displays the new branding and clean listing copy w
   await page.goto('/listings/' + listing.id)
   await expect(page).toHaveTitle('DormFinder')
   await expect(page.getByRole('heading', { name: listingTitle(listing.title), exact: true })).toBeVisible()
-  await expect(page.locator('main')).not.toContainText(/\[DEMO\]|FICTIONAL DEMO LISTING|Synthetic demo|Campus demo v2|AI-generated demo interior|Prices, charges and availability are illustrative/i)
+  await expect(page.locator('main')).not.toContainText(/\b(demo|fictional|illustrative|synthetic)\b/i)
   const photo = page.getByRole('region', { name: 'Property photo gallery' }).locator('figure img').first()
   await expect.poll(() => photo.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true)
   await page.getByRole('button', { name: 'Show map', exact: true }).click()

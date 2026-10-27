@@ -21,6 +21,13 @@ function caption(value) {
   return capacity?.[0] || (value.startsWith('Synthetic study-space') ? 'Study area' : 'Room interior')
 }
 
+function address(value) {
+  if (typeof value !== 'string') return value
+  const street = value.match(/^Demo pin near (.+) \(fictional rental\)$/)
+  if (street) return 'Near ' + street[1]
+  return /^Fictional sample address \d+, Demo Zone [A-D]$/.test(value) ? 'Address not provided' : value
+}
+
 // Keep transport/storage values intact; normalize only known listing presentation fields.
 // IDs, inventory, prices, private message bodies and owner-authored descriptions are preserved.
 export function presentListingData(value, inheritedSample = false) {
@@ -31,6 +38,7 @@ export function presentListingData(value, inheritedSample = false) {
     if (key === 'geometry') return [key, item]
     if (key === 'title' || key === 'listing_title' || (key === 'label' && value.kind === 'Listing')) return [key, listingTitle(catalogMessages.get(item) || item)]
     if (key === 'reason' || key === 'moderation_reason') return [key, catalogMessages.get(item) || item]
+    if (key === 'address') return [key, address(item)]
     if (sample && key === 'description') return [key, description(item)]
     if (sample && key === 'caption') return [key, caption(item)]
     if (sample && key === 'utilities_notes' && typeof item === 'string') return [key, item.replace(/^Illustrative terms:\s*/i, '')]

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const campus = { id: 8, name: 'City University', city: 'Manila', latitude: 14.6, longitude: 120.985 }
 const room = { id: 21, name: 'Twin beds', capacity: 2, inventory_type: 'bedspace', price_basis: 'per_person', monthly_rent_centavos: 400000, monthly_fixed_total_centavos: 400000, move_in_fixed_total_centavos: 800000, deposit_centavos: 400000, advance_months: 1, available_units: 1, total_units: 2, availability_stale: false, fees: [], utilities_notes: 'Illustrative terms: water included.' }
-const listings = [1, 2].map(id => ({ id, title: '[DEMO] Student House ' + id, is_demo: true, status: 'approved', property_type: 'dormitory', description: 'FICTIONAL DEMO LISTING — not a real rental offer. A sample 2-person student rooms for City University. The room options represent separate, nonoverlapping inventory. Interior images are illustrative. [Campus demo v2/test]', address: 'Student Street', city: 'Manila', latitude: 14.601 + id * .001, longitude: 120.983, amenities: ['wifi'], house_rules: 'Quiet after 10pm.', photos: [{ id, url: '/images/demo/twin-room.webp', caption: 'AI-generated demo interior — illustrative 2-person room, not an actual property photo' }], room_options: [{ ...room, id: 20 + id }], alternative_room_options: [{ ...room, id: 20 + id }] }))
+const listings = [1, 2].map(id => ({ id, title: '[DEMO] Student House ' + id, is_demo: true, status: 'approved', property_type: 'dormitory', description: 'FICTIONAL DEMO LISTING — not a real rental offer. A sample 2-person student rooms for City University. The room options represent separate, nonoverlapping inventory. Interior images are illustrative. [Campus demo v2/test]', address: 'Demo pin near Student Street (fictional rental)', city: 'Manila', latitude: 14.601 + id * .001, longitude: 120.983, amenities: ['wifi'], house_rules: 'Quiet after 10pm.', photos: [{ id, url: '/images/demo/twin-room.webp', caption: 'AI-generated demo interior — illustrative 2-person room, not an actual property photo' }], room_options: [{ ...room, id: 20 + id }], alternative_room_options: [{ ...room, id: 20 + id }] }))
 const tile = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGxkAAAAASUVORK5CYII=', 'base64')
 async function fixture(page) {
   await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ contentType: 'image/png', body: tile }))
@@ -36,7 +36,7 @@ test('tab branding and listing presentation stay clean while maps retain routes,
 
   await page.goto('/listings/1?campus_id=8')
   await expect(page.getByRole('heading', { name: 'Student House 1', exact: true })).toBeVisible()
-  await expect(page.locator('.listing-detail-main')).not.toContainText(/FICTIONAL DEMO|Campus demo|illustrative/i)
+  await expect(page.locator('main')).not.toContainText(/\b(demo|fictional|illustrative|synthetic)\b/i)
   await expect(page.getByRole('figure').first()).toContainText('2-person room')
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await page.getByRole('button', { name: 'Walk to campus', exact: true }).click()

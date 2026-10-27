@@ -8,6 +8,8 @@ All 106 scoped production-build Chromium/WebKit cases pass in one 3.5-minute run
 
 After including the remaining exact seeded review/notification messages, all fourteen affected branding/admin-review browser cases pass again on the final build. The first staged candidate's 35 JS/CSS files matched, but its SVG hash differed only because archive export used CRLF while the local build used LF. That candidate was not promoted. The favicon now has an explicit LF rule and the clean release archive disables automatic CRLF conversion.
 
+Visual inspection of the initial live screenshots caught a remaining seeded address label despite the earlier targeted assertions passing. Known address templates now show the nearby street or a neutral missing-address value; ordinary addresses and stored data remain unchanged. Both fixture and actual-catalog checks now reject demo/fictional/illustrative/synthetic wording throughout the public listing's main content. All 101 unit tests, lint/build and four affected browser cases pass after this final correction. Production dependencies report zero vulnerabilities with npm audit --omit=dev; build-time tooling advisories were not changed by this UI task.
+
 ## Comparison minimum, walking destinations and admin card alignment - October 21, 2026
 
 Scoped PHP verification passes 42 tests / 339 assertions across StudentDiscoveryTest, PhaseTwoTest, PhaseThreeTest and AvailabilityFreshnessTest. Cases now use two valid listings when checking option ownership, privacy, campus neutrality and expiry, so the new minimum cannot accidentally mask those checks. One-item comparison is explicitly rejected. Pint passes. The stopped local database was started before the final test run; only the isolated dormfinder_test database was used.

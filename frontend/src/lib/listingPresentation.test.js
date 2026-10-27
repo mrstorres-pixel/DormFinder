@@ -12,6 +12,9 @@ describe('listing presentation', () => {
     expect(result.data.room_options[0]).toEqual({ ...source.data.room_options[0], utilities_notes: 'water included.' })
     expect(source.data.title).toBe('[DEMO] Arlegui Shared Dorm')
     expect(result.data.is_demo).toBe(true)
+    expect(presentListingData({ address: 'Demo pin near Potsdam Street (fictional rental)' }).address).toBe('Near Potsdam Street')
+    expect(presentListingData({ listing_snapshot: { address: 'Fictional sample address 1, Demo Zone A' } }).listing_snapshot.address).toBe('Address not provided')
+    expect(presentListingData({ address: '12 Real Street' }).address).toBe('12 Real Street')
   })
 
   it('keeps owner-authored descriptions, private messages and ordinary text unchanged', () => {
