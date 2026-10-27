@@ -1,5 +1,15 @@
 # Implementation status
 
+## Owner address search, visibility actions and clearer availability - locally verified October 27
+
+The location step now displays the map immediately. A deliberate Find address search looks up Philippine streets, buildings and places through a bounded server-side Photon adapter, independently of the campus directory. Selecting a result places the pin; the owner checks and adjusts the entrance before saving. Typing/searching alone does not dirty or submit the property form. Empty results, service failure, retry and manual map/coordinate placement remain available; stale search responses are ignored. Requests are authenticated, cached, globally spaced and capped, with no browser credentials forwarded to the geocoder.
+
+Property status is selected through the tabs; duplicated Show properties and Listing status dropdowns are removed from secondary filters. Availability filtering appears only for applicable views. Owner listing visibility uses explicit Remove listing and Restore as draft confirmation dialogs, preserving history and server revision checks without asking for a staff reason. Administrative moderation controls retain their existing reason/confirmation requirements. Restoring an owner draft does not present its audit reason as review feedback. Long preview text wraps within its column; programmatic step focus no longer outlines the whole stage.
+
+Published-room guidance explains manual confirmation, the date students see, fourteen-day in-app reminders, the twenty-seven-day warning and thirty-day per-room expiry. Reminders are generated during owner visits/notification checks, with no scheduled email/SMS. Campus additions still use the sourced campus-directory.json file and dormfinder:campuses preview/--apply command; an admin campus-management screen has not been added. Existing campus IDs/coordinates are preserved by that import.
+
+Local checks pass 106 frontend tests, 13 scoped backend tests / 118 assertions, lint/build, Pint and 86 distinct scoped browser cases across recorded runs, followed by four final visual checks. A real public street lookup returned a Philippine result. Production release and guarded live acceptance are next; no schema, dependency, campus record or provider-account setting change is needed.
+
 ## Landlord workspace and safer listing management - released October 27
 
 The landlord's My space now starts with actual availability, unanswered-message and viewing tasks, then a searchable property directory with Current, Drafts, In review, Approved and Removed views. Server-owned search, filters, sorting and pagination retain owner authorization and URL state. Each property has a status, inventory, a specific next action and an explicit removal confirmation; editor navigation returns to the same filtered results. Solid slate, navy, warm paper and sage surfaces retain the existing theme without gradients or decorative accent bars.

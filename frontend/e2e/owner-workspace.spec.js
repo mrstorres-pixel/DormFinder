@@ -1,5 +1,127 @@
 import { test, expect } from '@playwright/test'
 
+test('address search is visible, deliberate and saves the chosen pin without replacing the typed address', async ({ page }, testInfo) => {
+  const state = await fixture(page), requests = []
+  await page.route('**/api/v1/landlord/address-search?**', route => { requests.push(new URL(route.request().url()).searchParams.get('q')); return route.fulfill({ json: { data: [{ label: '12 College Street, Manila', latitude: 14.5991, longitude: 120.9922 }] } }) })
+  await page.goto('/landlord/properties/1#location')
+  const map = page.getByRole('region', { name: 'Property location picker' })
+  await expect(map).toHaveClass(/leaflet-container/)
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.locator('.owner-pin-picker').screenshot({ path: `../.local/owner-address-picker-${testInfo.project.name}-${width}.png` })
+  }
+  await expect(page.getByRole('button', { name: 'Choose location on map' })).toHaveCount(0)
+  await page.getByLabel('Find the property address').fill('12 College Street, Manila')
+  expect(requests).toEqual([])
+  await expect(page.getByRole('button', { name: 'Cancel location changes' })).toHaveCount(0)
+  await page.getByLabel('Find the property address').press('Enter')
+  await expect(page.getByRole('list', { name: 'Address search results' })).toBeVisible()
+  expect(state.writes).toHaveLength(0)
+  await page.getByRole('button', { name: /12 College Street, Manila.*Place pin here/ }).click()
+  await expect(page.getByLabel('Latitude', { exact: true })).toHaveValue('14.599100')
+  await expect(page.getByLabel('Longitude', { exact: true })).toHaveValue('120.992200')
+  await expect(map.locator('.owner-property-pin svg')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click()
+  await expect(page).toHaveURL(/\/landlord$/)
+  expect(state.writes.at(-1).payload).toMatchObject({ latitude: '14.599100', longitude: '120.992200', address: 'College Street' })
+  expect(requests).toEqual(['12 College Street, Manila'])
+})
+
+test('address errors and empty results retain manual pin placement and allow a successful retry', async ({ page }) => {
+  const state = await fixture(page)
+  state.properties[0].latitude = null; state.properties[0].longitude = null
+  let attempts = 0
+  await page.route('**/api/v1/landlord/address-search?**', route => ++attempts === 1 ? route.fulfill({ status: 503, json: { message: 'Address lookup unavailable. Click the map to place the pin.' } }) : route.fulfill({ json: { data: [] } }))
+  await page.goto('/landlord/properties/1#location')
+  await page.getByLabel('Find the property address').fill('Unknown address')
+  await page.getByRole('button', { name: 'Find address', exact: true }).click()
+  await expect(page.getByText('Address lookup unavailable. Click the map to place the pin.')).toBeVisible()
+  await expect(page.getByLabel('Find the property address')).toHaveValue('Unknown address')
+  await page.getByRole('button', { name: 'Find address', exact: true }).click()
+  await expect(page.getByText(/No matching addresses found/)).toBeVisible()
+  await page.getByRole('region', { name: 'Property location picker' }).click({ position: { x: 180, y: 180 } })
+  await expect(page.getByLabel('Latitude', { exact: true })).not.toHaveValue('')
+  expect(attempts).toBe(2)
+  expect(state.writes).toHaveLength(0)
+})
+
+test('an obsolete address response cannot replace a changed search', async ({ page }) => {
+  await fixture(page)
+  let release
+  const waiting = new Promise(resolve => { release = resolve })
+  await page.route('**/api/v1/landlord/address-search?**', async route => { await waiting; await route.fulfill({ json: { data: [{ label: 'Old address result', latitude: 14.6, longitude: 121 }] } }).catch(() => {}) })
+  await page.goto('/landlord/properties/1#location')
+  await page.getByLabel('Find the property address').fill('Old address')
+  await page.getByRole('button', { name: 'Find address', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Searching…', exact: true })).toBeVisible()
+  await page.getByLabel('Find the property address').fill('A different street')
+  release()
+  await expect(page.getByLabel('Find the property address')).toHaveValue('A different street')
+  await expect(page.getByRole('list', { name: 'Address search results' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Find address', exact: true })).toBeEnabled()
+})
+
+test('owner removal and restoration are direct confirmed actions without staff reason fields', async ({ page }) => {
+  const state = await fixture(page)
+  await page.goto('/landlord/properties/1#preview')
+  const actions = page.getByRole('region', { name: 'Listing visibility' })
+  await expect(page.getByLabel('Reason for listing action')).toHaveCount(0)
+  await expect(page.getByLabel('Listing action', { exact: true })).toHaveCount(0)
+  await actions.getByRole('button', { name: 'Remove listing', exact: true }).click()
+  let dialog = page.getByRole('dialog', { name: 'Remove listing', exact: true })
+  await dialog.getByRole('button', { name: 'Keep listing', exact: true }).click()
+  expect(state.writes).toHaveLength(0)
+  await actions.getByRole('button', { name: 'Remove listing', exact: true }).click()
+  dialog = page.getByRole('dialog', { name: 'Remove listing', exact: true })
+  await dialog.getByRole('button', { name: 'Remove listing', exact: true }).click()
+  await expect(actions.getByRole('button', { name: 'Restore as draft', exact: true })).toBeVisible()
+  expect(state.properties[0].status).toBe('archived')
+  await actions.getByRole('button', { name: 'Restore as draft', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Restore as draft', exact: true }).getByRole('button', { name: 'Restore as draft', exact: true }).click()
+  await expect(actions.getByRole('status')).toContainText('Restored as a draft')
+  await expect(page.getByText(/^Review feedback:/)).toHaveCount(0)
+  expect(state.properties[0].status).toBe('draft')
+  expect(state.writes.map(write => write.payload.action)).toEqual(['archive', 'restore'])
+})
+
+test('property tabs own status while secondary filters only refine availability and order', async ({ page }) => {
+  await fixture(page)
+  await page.goto('/landlord')
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
+  await expect(page.getByLabel('Show properties', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('Listing status', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('Availability', { exact: true })).toBeVisible()
+  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Needs changes', exact: true }).click()
+  await expect(page).toHaveURL(/status=rejected/)
+  await expect(page.locator('.owner-property-card')).toHaveCount(1)
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
+  await expect(page.getByLabel('Availability', { exact: true })).toHaveCount(0)
+  await expect(page.getByLabel('Sort by')).toBeVisible()
+})
+
+test('long preview content and owner actions fit narrow screens and availability instructions explain refresh', async ({ page }, testInfo) => {
+  const state = await fixture(page)
+  state.properties[0].description = 'LongDescriptionWithoutSpaces'.repeat(18)
+  await page.goto('/landlord/properties/1#preview')
+  await expect(page.locator('.owner-preview-details')).toBeVisible()
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    const blocks = await page.locator('.owner-preview-details > *').evaluateAll(nodes => nodes.map(node => { const rect = node.getBoundingClientRect(); return { x: rect.x, right: rect.right, y: rect.y, bottom: rect.bottom } }))
+    expect(blocks[0].right <= blocks[1].x + 1 || blocks[0].bottom <= blocks[1].y + 1).toBe(true)
+    if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/owner-preview-refined-${testInfo.project.name}-${width}.png`, fullPage: true })
+  }
+  await page.goto('/landlord/properties/17#rooms')
+  await expect(page.locator('.owner-availability-explainer')).toContainText('14 days')
+  await expect(page.locator('.owner-availability-explainer')).toContainText('30 days')
+  await expect(page.locator('.owner-availability-explainer')).toContainText('when you return')
+  await page.getByRole('button', { name: 'Confirm vacancies today', exact: true }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Availability confirmed today.' })).toBeVisible()
+  expect(state.properties[16].status).toBe('approved')
+  expect(state.writes.at(-1).path).toMatch(/\/availability$/)
+})
+
 async function fixture(page) {
   const room = { name: 'Twin beds', inventory_type: 'bedspace', price_basis: 'per_person', capacity: 2, total_units: 4, available_units: 2, monthly_rent_centavos: 400000, deposit_centavos: 400000, advance_months: 1, fees: [], monthly_fixed_total_centavos: 400000, move_in_fixed_total_centavos: 800000, utilities_notes: 'Water included; electricity is metered.', availability_stale: false, availability_confirmed_at: new Date().toISOString() }
   const properties = Array.from({ length: 26 }, (_, index) => {
@@ -45,7 +167,7 @@ async function fixture(page) {
       if (state.failAvailability) return route.fulfill({ status: 503, json: { message: 'Vacancy update unavailable.' } })
       for (const option of payload.options) Object.assign(property.room_options.find(item => item.id === option.id), { available_units: option.available_units, availability_stale: false, availability_confirmed_at: new Date().toISOString() })
       property.availability = { status: 'current', rooms_needing_confirmation: 0 }
-    } else if (suffix === '/lifecycle') property.status = payload.action === 'archive' ? 'archived' : 'draft'
+    } else if (suffix === '/lifecycle') { property.status = payload.action === 'archive' ? 'archived' : 'draft'; property.moderation_reason = payload.reason }
     else if (suffix.startsWith('/room-options')) {
       const optionId = Number(suffix.split('/')[2])
       const saved = { ...room, ...payload, id: optionId || property.id * 10 + 1 }

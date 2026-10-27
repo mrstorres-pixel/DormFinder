@@ -7,7 +7,7 @@ import MapPinPicker from './MapPinPicker'
 import { amenities } from '../lib/housing'
 import { useFormChanges } from '../lib/useUnsavedChanges'
 import { RoomManager, SubmissionPanel } from './RoomOptions'
-import { LifecycleControls } from './ModerationPages'
+import OwnerListingActions from './OwnerListingActions'
 import ListingInformation from './ListingInformation'
 import { RoomCharges } from './RoomOptions'
 import PhotoGallery from './PhotoGallery'
@@ -159,7 +159,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
         <Field as="textarea" label="About the property" name="description" defaultValue={property?.description} rows={4} required minLength={40} maxLength={5000} hint="At least 40 characters. Describe the rooms, surroundings and what students should know." error={errors} />
         <Field label="Street address" name="address" defaultValue={property?.address} required maxLength={255} error={errors} />
         <Field label="City" name="city" defaultValue={property?.city || 'Manila'} required maxLength={100} error={errors} />
-        <fieldset className="mb-3"><legend className="h3">Shared facilities <small>(optional)</small></legend><p className="small">Select only facilities available at this property.</p><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input type="checkbox" name="amenities" value={value} defaultChecked={property?.amenities?.includes(value)} /> {label}</label>)}</div></fieldset><Field label="House rules (optional)" name="house_rules" as="textarea" defaultValue={property?.house_rules} maxLength={2000} rows={3} hint="Include quiet hours, visitor policies, smoking rules or other restrictions." error={errors} /><h3 className="h5 mt-4">Property location <span className="required-field-mark">Required to continue</span></h3><p className="small">Place a pin at the property. A nearby campus only helps you find the area.</p>
+        <fieldset className="mb-3"><legend className="h3">Shared facilities <small>(optional)</small></legend><p className="small">Select only facilities available at this property.</p><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input type="checkbox" name="amenities" value={value} defaultChecked={property?.amenities?.includes(value)} /> {label}</label>)}</div></fieldset><Field label="House rules (optional)" name="house_rules" as="textarea" defaultValue={property?.house_rules} maxLength={2000} rows={3} hint="Include quiet hours, visitor policies, smoking rules or other restrictions." error={errors} /><h3 className="h5 mt-4">Property location <span className="required-field-mark">Required to continue</span></h3><p className="small">Search the street address or click the map, then check the pin at the property entrance.</p>
         {step === 'location' && <MapPinPicker latitude={coordinates.latitude} longitude={coordinates.longitude} onChange={value => { setCoordinates(value); setDirty(true) }} />}
         <div className="row"><div className="col-sm-6"><Field label="Latitude" name="latitude" type="number" step="any" min="-90" max="90" value={coordinates.latitude} onChange={event => setCoordinates(current => ({ ...current,latitude:event.target.value }))} error={errors} /></div><div className="col-sm-6"><Field label="Longitude" name="longitude" type="number" step="any" min="-180" max="180" value={coordinates.longitude} onChange={event => setCoordinates(current => ({ ...current,longitude:event.target.value }))} error={errors} /></div></div>
         <button type="submit" value="exit" formNoValidate className="btn btn-outline-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
@@ -170,7 +170,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
     <div className="editor-stage" id="editor-preview" tabIndex={-1} hidden={step !== 'preview'}>
       <SubmissionPanel property={property} workspaceHref={workspacePath} onEditStep={go} />
       <OwnerPreview property={property} refresh={() => client.invalidateQueries({ queryKey: ['property', String(property.id)] })} />
-      <div className="owner-listing-settings"><LifecycleControls property={property} /></div>
+      <div className="owner-listing-settings"><OwnerListingActions property={property} /></div>
     </div>
     <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{editable && (step === 'location' || (step === 'rooms' && roomsDirty)) ? 'Save and continue' : 'Continue'}</button>}</div>
   </section>

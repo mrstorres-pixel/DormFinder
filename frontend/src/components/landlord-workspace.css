@@ -150,3 +150,26 @@
 }
 
 .owner-property-card .owner-next-step p {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.owner-address-search-row {display:flex;align-items:stretch;gap:.65rem}
+.owner-address-search-row .form-control {min-width:0;flex:1}
+.owner-address-search-row .btn {flex:none;min-height:44px}
+.owner-address-search .owner-fine-print {margin:.55rem 0;line-height:1.65}
+.owner-map-attribution {font-size:.68rem;color:#526a85;margin:.35rem 0 0}
+.owner-address-results {list-style:none;margin:.75rem 0;padding:0;border:1px solid #91a8c6;border-radius:9px;overflow:hidden}
+.owner-address-results li+li {border-top:1px solid #a4b7d0}
+.owner-address-results button {display:flex;flex-direction:column;gap:.3rem;padding:.8rem 1rem;width:100%;border:0;background:#f3efe6;text-align:left;color:#1c3555;font-size:.83rem;line-height:1.6;overflow-wrap:anywhere}
+.owner-address-results button:hover,.owner-address-results button:focus-visible {background:#dce6f3}
+.owner-address-results button span {font-size:.72rem;color:#315488}
+.owner-address-empty {font-size:.82rem;line-height:1.7;padding:.75rem;background:#f3efe6;border:1px solid #b8b29e;border-radius:8px}
+.owner-selected-address {display:block;margin-top:.3rem;overflow-wrap:anywhere}
+.owner-listing-actions {padding:1.35rem 0 0;margin-top:1.5rem;border-top:1px solid #91a8c6}
+.owner-listing-actions h2 {font-size:1.1rem;margin-bottom:.65rem}
+.owner-listing-actions>p {font-size:.85rem;line-height:1.7;max-width:75ch;color:#405a79}
+.owner-action-confirmation {display:flex;flex-wrap:wrap;gap:.7rem}
+.owner-preview-details>*,.owner-preview .photo-gallery {min-width:0}
+.owner-preview .preserve-lines {overflow-wrap:anywhere}
+.editor-stage:focus {outline:none}
+.owner-availability-explainer {margin:1rem 0;padding:.9rem 1rem;background:#e0ece4;border:1px solid #91ad9e;border-radius:9px;font-size:.82rem;line-height:1.7}
+.owner-availability-explainer p {margin:0 0 .5rem}
+.owner-availability-explainer p:last-child {margin-bottom:0}
+@media(max-width:575px){.owner-address-search-row{flex-direction:column}.owner-listing-actions>.btn{width:100%;margin:.35rem 0}.owner-action-confirmation>.btn{width:100%}}

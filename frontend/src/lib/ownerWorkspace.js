@@ -23,7 +23,7 @@ export function ownerListingState(property) {
     if (visibility === 'hidden') return { label: 'Hidden · confirm availability', tone: 'attention', step: 'rooms', action: 'Refresh availability', note: 'Availability expired. Confirm each room’s actual vacancies to show it again.' }
     if (taken) return { label: 'All taken', tone: 'quiet', step: 'rooms', action: 'Update vacancies', note: 'Every room option is currently taken. Update the count when spaces become available.' }
     if (visibility === 'needs_confirmation') return { label: 'Availability update due', tone: 'attention', step: 'rooms', action: 'Refresh availability', note: 'Confirm the actual vacancies, including rooms whose count has not changed.' }
-    return { label: 'Published', tone: 'live', step: 'rooms', action: 'Manage rooms', note: 'Update vacancies here. Changes to prices, photos or property details need another review.' }
+    return { label: 'Published', tone: 'live', step: 'rooms', action: 'Update availability', note: 'Confirm the vacancies in each room, even when the count is unchanged. Changes to prices, photos or property details need another review.' }
   }
   if (property.status === 'pending_review') return { label: 'In review', tone: 'review', step: 'preview', action: 'View submission', note: 'Your submission is awaiting administrator review. Editing is paused.' }
   if (property.status === 'rejected') return { label: 'Changes requested', tone: 'attention', step: 'preview', action: 'Read review feedback', note: property.moderation_reason || 'Read the feedback, make the requested changes and resubmit.' }

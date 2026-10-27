@@ -2,6 +2,10 @@
 
 return [
 
+    'geocoding' => [
+        'url' => env('GEOCODING_URL', 'https://photon.komoot.io/api/'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

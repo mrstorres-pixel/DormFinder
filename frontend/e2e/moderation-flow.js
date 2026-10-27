@@ -40,7 +40,12 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     if (name === 'Listing moderation') await page.locator('.review-moderation > summary').click()
     if (name === 'Archive and restore') {
       await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Preview & review', exact: true }).click()
-      if (!await page.locator('.owner-listing-settings').evaluate(node => node.open)) await page.locator('.owner-listing-settings > summary').click()
+      const label = value === 'restore' ? 'Restore as draft' : 'Remove listing'
+      await page.getByRole('region', { name: 'Listing visibility' }).getByRole('button', { name: label, exact: true }).click()
+      await page.getByRole('dialog', { name: label, exact: true }).getByRole('button', { name: label, exact: true }).click()
+      await expect(page.locator('.owner-editor-context')).toBeVisible()
+      await expect(page.getByRole('dialog', { name: label, exact: true })).toHaveCount(0)
+      return
     }
     await page.getByLabel('Listing action', { exact: true }).selectOption(value)
     await page.getByLabel('Reason for listing action').fill(reason)

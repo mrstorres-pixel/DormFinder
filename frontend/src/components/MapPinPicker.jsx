@@ -1,23 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { hasLocationPin } from '../lib/listingReadiness'
-import { useCampuses } from '../lib/discovery'
-import CampusSearch from './CampusSearch'
-import { ErrorNotice } from './Feedback'
+import AddressSearch from './AddressSearch'
 import 'leaflet/dist/leaflet.css'
 
 export default function MapPinPicker({ latitude, longitude, onChange }) {
-  const [shown, setShown] = useState(false)
-  return <section className="mb-3 owner-pin-picker"><button type="button" className="btn btn-outline-primary" aria-expanded={shown} onClick={() => setShown(value => !value)}>{shown ? 'Hide pin picker' : 'Choose location on map'}</button>{shown && <PinCanvas latitude={latitude} longitude={longitude} onChange={onChange} />}</section>
+  const [version, setVersion] = useState(0)
+  return <section className="mb-3 owner-pin-picker"><PinCanvas key={version} latitude={latitude} longitude={longitude} onChange={onChange} onRetry={() => setVersion(current => current + 1)} /></section>
 }
 
-function PinCanvas({ latitude, longitude, onChange }) {
+function PinCanvas({ latitude, longitude, onChange, onRetry }) {
   const element = useRef(null)
   const initial = useRef({ latitude, longitude })
   const callback = useRef(onChange)
   const [error, setError] = useState(false)
   const [engine, setEngine] = useState(null)
-  const [nearby, setNearby] = useState('')
-  const campuses = useCampuses()
+  const [selected, setSelected] = useState('')
   useEffect(() => { callback.current = onChange }, [onChange])
   useEffect(() => {
     let cancelled = false
@@ -55,10 +52,11 @@ function PinCanvas({ latitude, longitude, onChange }) {
       if (!engine.map.getBounds().contains(point)) engine.map.panTo(point)
     } else engine.clear()
   }, [engine, latitude, longitude])
-  function jump(id) {
-    setNearby(id)
-    const campus = campuses.data?.find(item => String(item.id) === id)
-    if (campus && engine) engine.map.setView([campus.latitude, campus.longitude], 16)
+  function choose(place) {
+    if (!engine) return
+    engine.map.setView([place.latitude, place.longitude], 17)
+    engine.update({ lat: place.latitude, lng: place.longitude })
+    setSelected(place.label)
   }
-  return <><div className="owner-pin-search"><CampusSearch campuses={campuses.data || []} value={nearby} onChange={jump} label="Find a nearby campus or city" helper="This moves the map only. Click your property's exact location to place its pin." requireQuery disabled={campuses.isPending || !!campuses.error} /><ErrorNotice error={campuses.error} retry={() => campuses.refetch()} /></div><p className="small mt-2">Click the property location, then drag the pin to adjust it. The coordinates below update automatically.</p>{error && <p role="status" className="alert alert-warning">Map imagery could not load. Enter latitude and longitude below, or reopen the pin picker to retry.</p>}<div ref={element} className="pin-picker" role="region" aria-label="Property location picker" /><p className="pin-status" role="status">{hasLocationPin({ latitude, longitude }) ? 'Location pin placed. Check that it matches the street address.' : 'No property pin yet. Click the map to place it.'}</p></>
+  return <><AddressSearch onSelect={choose} disabled={!engine} /><p className="small mt-2">Click the property location, then drag the pin to its entrance. Search results are approximate; check the pin before saving.</p>{error && <div role="status" className="alert alert-warning">Map imagery could not load. You can enter coordinates below.<button type="button" className="btn btn-outline-primary btn-sm ms-2" onClick={onRetry}>Reload map</button></div>}<div ref={element} className="pin-picker" role="region" aria-label="Property location picker" /><p className="pin-status" role="status">{hasLocationPin({ latitude, longitude }) ? 'Location pin placed. Check that it matches the street address.' : 'No property pin yet. Search for an address or click the map to place it.'}{selected && <span className="owner-selected-address">Search result: {selected}</span>}</p></>
 }

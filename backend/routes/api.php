@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AddressSearchController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AvatarController;
 use App\Http\Controllers\Api\DashboardController;
@@ -53,6 +54,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('landlord/properties/{property}/lifecycle', [ModerationController::class, 'archive'])->whereNumber('property');
         Route::patch('me', [AuthController::class, 'update']);
         Route::patch('me/password', [AuthController::class, 'password']);
+        Route::get('landlord/address-search', AddressSearchController::class);
         Route::get('landlord/properties', [PropertyController::class, 'index']);
         Route::post('landlord/properties', [PropertyController::class, 'store']);
         Route::get('landlord/properties/{property}', [PropertyController::class, 'show']);

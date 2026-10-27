@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, writeApi } from '../lib/api'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '../lib/api'
 import { useCurrentUser } from '../lib/auth'
 import { useDirectoryBrowse, adminDate } from '../lib/adminBrowse'
 import { listingReadiness } from '../lib/listingReadiness'
@@ -9,9 +8,9 @@ import { ownerInventory, ownerListingState, ownerSorts, ownerStatuses } from '..
 import { AdminFilterBar as DirectoryFilterBar, AdminPager as DirectoryPager, AdminResultsHeader as DirectoryResultsHeader, AdminListingImage as PropertyImage } from './AdminTools'
 import { ErrorNotice, Loading } from './Feedback'
 import { OwnerAvailability } from './AvailabilityStatus'
-import ActionDialog from './ActionDialog'
+import OwnerListingActions from './OwnerListingActions'
 
-const propertyViews = [['', 'Current properties'], ['draft', 'Drafts'], ['pending_review', 'In review'], ['approved', 'Approved'], ['archived', 'Removed']]
+const propertyViews = [['', 'Current properties'], ['draft', 'Drafts'], ['pending_review', 'In review'], ['approved', 'Approved'], ['rejected', 'Needs changes'], ['suspended', 'Restricted'], ['archived', 'Removed']]
 
 export default function OwnerDirectory() {
   const location = useLocation()
@@ -32,9 +31,9 @@ export default function OwnerDirectory() {
         return <button type="button" key={value} aria-current={current ? 'page' : undefined} onClick={() => browse.update({ view: value === 'archived' ? 'archived' : 'active', status: value === 'archived' ? '' : value, availability: '' })}>{label}</button>
       })}</nav>
       <DirectoryFilterBar browse={browse} searchLabel="Search your properties" sorts={ownerSorts} filters={[
-        { name: 'view', label: 'Show properties', defaultValue: 'active', options: [['active', 'Current properties'], ['archived', 'Removed properties'], ['all', 'All properties']] },
-        { name: 'status', label: 'Listing status', options: ownerStatuses },
-        { name: 'availability', label: 'Availability', options: [['', 'All availability'], ['needs_confirmation', 'Needs confirmation'], ['taken', 'All rooms taken']] },
+        { name: 'view', hidden: true, label: 'Show properties', defaultValue: 'active', options: [['active', 'Current properties'], ['archived', 'Removed properties'], ['all', 'All properties']] },
+        { name: 'status', hidden: true, label: 'Listing status', options: ownerStatuses },
+        { name: 'availability', hidden: removed || !!params.get('status') && params.get('status') !== 'approved', label: 'Availability', options: [['', 'All availability'], ['needs_confirmation', 'Needs confirmation'], ['taken', 'All rooms taken']] },
       ]} />
       <DirectoryResultsHeader browse={browse} noun="properties" order={ownerSorts.find(([value]) => value === (params.get('sort') || 'newest'))?.[1]} />
       {query.isPending ? <Loading>Loading your properties…</Loading> : query.error && !query.data ? <ErrorNotice error={query.error} retry={() => query.refetch()} /> : rows.length ? <div className={'owner-property-grid' + (rows.length === 1 ? ' is-single' : rows.length === 2 ? ' is-pair' : '')}>{rows.map(property => <OwnerPropertyCard key={property.id} property={property} workspacePath={workspacePath} refreshedAt={query.dataUpdatedAt} />)}</div> : <div className="owner-empty panel"><h3>{filtered ? 'No properties match this view' : browse.page > 1 ? 'No properties on this page' : removed ? 'No removed properties' : 'Create your first property draft'}</h3><p>{filtered ? 'Try a different name, address or city, or reset the filters.' : removed ? 'Properties you remove are kept here with their photos and conversation history.' : browse.page > 1 ? 'Return to the first page to see your current results.' : 'Start with a name and city. We’ll guide you through photos, rooms, location and review.'}</p><div>{browse.page > 1 && <button type="button" className="btn btn-outline-primary" onClick={() => browse.setPage(1)}>Back to first page</button>}{filtered || removed ? <button type="button" className="btn btn-outline-primary" onClick={browse.clear}>Show current properties</button> : browse.page === 1 && <Link className="btn btn-primary" to="/landlord/properties/new">Create your first draft</Link>}</div></div>}
@@ -66,17 +65,6 @@ function OwnerPropertyCard({ property, workspacePath, refreshedAt }) {
       <div className="owner-card-actions"><Link className="btn btn-primary" to={path + '#' + state.step} state={{ ownerReturn: workspacePath }} aria-label={state.action === 'Refresh availability' ? undefined : state.action + ' — Manage property: ' + property.title}>{state.action}</Link><Link to={path + '#preview'} state={{ ownerReturn: workspacePath }}>Preview saved listing</Link></div>
       {property.updated_at && <p className="owner-card-updated">Updated {adminDate(property.updated_at)}</p>}
     </div>
-    {!['archived', 'suspended'].includes(property.status) && <OwnerListingRemoval property={property} />}
+    {!['archived', 'suspended'].includes(property.status) && <OwnerListingActions property={property} compact />}
   </article>
-}
-
-function OwnerListingRemoval({ property }) {
-  const [open, setOpen] = useState(false)
-  const client = useQueryClient()
-  const remove = useMutation({ mutationFn: () => writeApi('post', `/landlord/properties/${property.id}/lifecycle`, { action: 'archive', revision: property.revision, reason: 'Removed by the property owner from their active listings.' }), onSuccess: async data => {
-    setOpen(false)
-    client.setQueryData(['property', String(property.id)], data)
-    await Promise.all(['properties', 'listings', 'listings-map', 'dashboard', 'notifications'].map(key => client.invalidateQueries({ queryKey: [key] })))
-  } })
-  return <div className="owner-card-removal"><button type="button" onClick={() => { remove.reset(); setOpen(true) }}>Remove listing</button><ActionDialog open={open} title="Remove listing" closeDisabled={remove.isPending} onClose={() => { if (!remove.isPending) setOpen(false) }}><p>Remove <strong>{property.title}</strong> from your current properties and public search?</p><p>It will be archived under Removed. Photos, messages and viewing history are kept. You can restore it as a draft later.</p><ErrorNotice error={remove.error} /><div className="d-flex gap-2"><button type="button" className="btn btn-outline-secondary" disabled={remove.isPending} onClick={() => setOpen(false)}>Keep listing</button><button type="button" className="btn btn-danger" disabled={remove.isPending} onClick={() => remove.mutate()}>{remove.isPending ? 'Removing…' : 'Remove listing'}</button></div></ActionDialog></div>
 }
