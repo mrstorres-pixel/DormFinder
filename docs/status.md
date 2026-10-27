@@ -1,12 +1,12 @@
 # Implementation status
 
-## Landlord workspace and safer listing management - locally verified October 27
+## Landlord workspace and safer listing management - released October 27
 
 The landlord's My space now starts with actual availability, unanswered-message and viewing tasks, then a searchable property directory with Current, Drafts, In review, Approved and Removed views. Server-owned search, filters, sorting and pagination retain owner authorization and URL state. Each property has a status, inventory, a specific next action and an explicit removal confirmation; editor navigation returns to the same filtered results. Solid slate, navy, warm paper and sage surfaces retain the existing theme without gradients or decorative accent bars.
 
 The editor explains saved status and required next steps, offers a guarded refresh, and retains edits after validation, request or revision failures. Independent saved room changes can coexist with unsaved location details; conflicting changes retain the original revision. Published listings open directly on vacancy management, with room editing separate. Set all as taken stages zero until the owner confirms vacancies. Cancelling edits, photo/save feedback, submission receipts and the save-draft return path are clearer. Drafts are described as not publicly listed, consistent with existing authorized administrator inspection.
 
-Local verification passes 106 frontend tests across 30 files, 18 scoped backend tests / 140 assertions, Pint, lint/build and 62 distinct scoped Chromium/WebKit scenarios across recorded runs, followed by four final layout checks. No schema, dependency, provider-setting or production business-data change is required. Release and actual-account read-only acceptance are next. Existing admin, student and privacy behavior is retained.
+Source cd690ca is live in Render dep-dbg5od2vcj2c73b8mhe0 and Vercel dpl_FhbStFVCdQiZHSdeiza9itiR99WY at https://dormfinder-pink.vercel.app. Verification passes 106 frontend tests across 30 files, 18 scoped backend tests / 140 assertions, Pint, lint/build and 62 distinct local Chromium/WebKit scenarios across recorded runs, followed by four final layout checks. All four distinct live owner/admin read-only cases pass across the main run and the affected two-case rerun, including the actual search, editor, filters, refresh and Profile. Staged/public asset hashes and direct/proxied readiness pass; bounded Render/Vercel runtime-error queries return zero events. No schema, dependency, provider-setting or production business-data change was made. Existing admin, student and privacy behavior is retained. Detailed evidence and recovery references are in validation.md and deployment.md.
 
 ## Admin record context and review feedback - October 27
 

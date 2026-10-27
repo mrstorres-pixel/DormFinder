@@ -15,7 +15,10 @@ test('existing landlord can search, inspect, refresh and return to owned propert
   })
   const page = await context.newPage()
   page.setDefaultTimeout(30_000)
-  const propertiesResponse = () => page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/landlord/properties' && response.request().method() === 'GET')
+  const propertiesResponse = (expected = {}) => page.waitForResponse(response => {
+    const url = new URL(response.url())
+    return url.pathname === '/api/v1/landlord/properties' && response.request().method() === 'GET' && Object.entries(expected).every(([key, value]) => url.searchParams.get(key) === value)
+  })
   try {
     await page.goto('/login')
     await page.getByLabel('Email address').fill(accounts.landlord.email)
@@ -32,7 +35,7 @@ test('existing landlord can search, inspect, refresh and return to owned propert
     if (result.data.length) {
       const term = (result.data[0].city || result.data[0].title).slice(0, 80)
       await page.getByLabel('Search your properties').fill(term)
-      loaded = propertiesResponse()
+      loaded = propertiesResponse({ q: term })
       await page.getByRole('button', { name: 'Search', exact: true }).click()
       response = await loaded
       expect(response.status()).toBe(200)
@@ -46,22 +49,24 @@ test('existing landlord can search, inspect, refresh and return to owned propert
       await page.getByRole('link', { name: '← Your properties', exact: true }).click()
       await expect.poll(() => new URL(page.url()).search).toBe(returnSearch)
       await expect(page.getByLabel('Search your properties')).toHaveValue(term)
-      loaded = propertiesResponse()
+      loaded = propertiesResponse({ q: term })
       await page.getByRole('button', { name: 'Refresh results', exact: true }).click()
       expect((await loaded).status()).toBe(200)
     }
-    loaded = propertiesResponse()
+    loaded = propertiesResponse({ availability: 'needs_confirmation' })
     await page.getByRole('link', { name: /Availability updates/ }).click()
     response = await loaded
     expect(response.status()).toBe(200)
     result = await response.json()
     expect(result.data.every(property => property.status === 'approved' && property.availability.rooms_needing_confirmation > 0)).toBe(true)
-    loaded = propertiesResponse()
+    loaded = propertiesResponse({ view: 'archived' })
     await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Removed', exact: true }).click()
     response = await loaded
     expect(response.status()).toBe(200)
     result = await response.json()
     expect(result.data.every(property => property.status === 'archived')).toBe(true)
+    await expect(page).toHaveURL(/view=archived/)
+    await expect(page.locator('.owner-property-card')).toHaveCount(result.data.length)
     await page.setViewportSize({ width: 390, height: 844 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await expect(page.getByRole('heading', { name: 'Something went wrong.' })).toHaveCount(0)
