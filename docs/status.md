@@ -1,6 +1,6 @@
 # Implementation status
 
-## Owner address search, visibility actions and clearer availability - locally verified October 27
+## Owner address search, visibility actions and clearer availability - released October 27
 
 The location step now displays the map immediately. A deliberate Find address search looks up Philippine streets, buildings and places through a bounded server-side Photon adapter, independently of the campus directory. Selecting a result places the pin; the owner checks and adjusts the entrance before saving. Typing/searching alone does not dirty or submit the property form. Empty results, service failure, retry and manual map/coordinate placement remain available; stale search responses are ignored. Requests are authenticated, cached, globally spaced and capped, with no browser credentials forwarded to the geocoder.
 
@@ -8,7 +8,7 @@ Property status is selected through the tabs; duplicated Show properties and Lis
 
 Published-room guidance explains manual confirmation, the date students see, fourteen-day in-app reminders, the twenty-seven-day warning and thirty-day per-room expiry. Reminders are generated during owner visits/notification checks, with no scheduled email/SMS. Campus additions still use the sourced campus-directory.json file and dormfinder:campuses preview/--apply command; an admin campus-management screen has not been added. Existing campus IDs/coordinates are preserved by that import.
 
-Local checks pass 106 frontend tests, 13 scoped backend tests / 118 assertions, lint/build, Pint and 86 distinct scoped browser cases across recorded runs, followed by four final visual checks. A real public street lookup returned a Philippine result. Production release and guarded live acceptance are next; no schema, dependency, campus record or provider-account setting change is needed.
+Source 05d33d0 is live in Render dep-dbg6fkhsrm7s73cllncg and Vercel dpl_EZdnHkqN73E5uC5cDXdJXcXPD7UW at https://dormfinder-pink.vercel.app. Checks pass 106 frontend tests, 13 scoped backend tests / 118 assertions, lint/build, Pint and 86 distinct local browser cases across recorded runs, followed by four final visual checks. All four live owner/admin Chromium/WebKit cases pass in one 1.4-minute run, including real map tiles, a real street-address lookup, selected-coordinate verification and cancellation without saving. Staged/public asset hashes and direct/proxied readiness pass. Both bounded provider error-log queries return zero events. No schema, dependency, listing/campus record or provider-account setting change was made. Detailed verification and recovery references are in validation.md and deployment.md.
 
 ## Landlord workspace and safer listing management - released October 27
 
