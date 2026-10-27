@@ -6,7 +6,7 @@ The admin area now shares a persistent sidebar across reviews, reports, listing 
 
 A fresh real admin session could open Profile before this change. Blocking its deferred module reproduced the user's whole-page error, making a failed/stale page download a plausible cause rather than a proven historical diagnosis. Profile is now part of the main app bundle, with role-appropriate photo help, name validation and no campus-directory request for admins/owners. A page-level recovery boundary keeps global/admin navigation available for other failed page downloads, offers an explicit refresh and a working alternate route, and leaves existing unsaved-change protections in place. Review/moderation reasons, confirmations, revision checks and privacy boundaries are preserved.
 
-Local verification and release evidence are recorded in validation.md and deployment.md. No API/schema, stored listing/account data, dependency or provider-setting change is required.
+Frontend application source c86d34e is live in Vercel dpl_5bu1Lcx5C48UCSX1t8wnywXo2cEb at https://dormfinder-pink.vercel.app. All 101 unit tests and 76 distinct scoped local browser scenarios pass across the recorded runs, with four final explicit role-redirect assertions also passing. All six distinct live read-only/public acceptance cases pass across Chromium/WebKit, including Account to Profile, a successful avatar lookup and the password section. The bounded post-release error-log query returns zero events. Verification/recovery details are recorded in validation.md and deployment.md. No API/schema, stored listing/account data, dependency or provider-setting change was made.
 
 ## Tab branding and listing copy cleanup - October 27
 

@@ -78,5 +78,6 @@ for (const role of ['student', 'landlord']) test(`${role} Profile remains usable
   await expect(page.getByLabel('Your name', { exact: true })).toHaveValue('Alex Reviewer')
   await expect(page.getByRole('navigation', { name: 'Administrator sections' })).toHaveCount(0)
   await page.goto('/admin')
+  await expect(page).toHaveURL(role === 'student' ? /\/account$/ : /\/landlord$/)
   await expect(page.getByRole('heading', { name: 'Listing review queue', exact: true })).toHaveCount(0)
 })
