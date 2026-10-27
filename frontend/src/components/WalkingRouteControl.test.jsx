@@ -21,14 +21,14 @@ function setup() {
 beforeEach(() => vi.resetAllMocks())
 
 describe('walking estimates', () => {
-  it('loads only on request, labels estimates and fictional pins, clears and reuses cached routes', async () => {
+  it('loads only on request, labels estimates, clears and reuses cached routes', async () => {
     api.get.mockResolvedValue({ data: { data: route } })
     const user = userEvent.setup()
     render(<Control />, { wrapper: setup() })
     expect(api.get).not.toHaveBeenCalled()
     await user.click(screen.getByRole('button', { name: 'Walk to campus' }))
     expect(await screen.findByText('About 7 min walk · 522 m')).toBeVisible()
-    expect(screen.getByText(/fictional listing pin/)).toBeVisible()
+    expect(screen.queryByText(/fictional listing pin/)).not.toBeInTheDocument()
     expect(screen.getByText(/approximate reference/)).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Clear route' }))
     expect(screen.queryByText('About 7 min walk · 522 m')).toBeNull()

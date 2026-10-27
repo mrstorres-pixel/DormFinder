@@ -35,7 +35,7 @@ export function ListingCard({ property, campus, chosenOptionId, selectedId, onSe
   const shortDistance = Number.isFinite(distance) ? (distance < 1000 ? `${distance} m` : `${(distance / 1000).toFixed(2)} km`) + ' · straight line to campus' : null
   const match = detailedMatches(property, params, option).find(reason => reason.startsWith('Base rent') || reason.startsWith('Required amenities'))
   return <article id={'listing-card-' + property.id} className={'property-card h-100 ' + (selectedId === property.id ? 'is-selected' : '')}>
-    <Link className="property-cover-link" aria-label={'Open listing: ' + property.title} to={destination} state={{ browse: '/listings?' + params.toString() }}><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}{property.is_demo && <span className="status-badge">Synthetic demo</span>}</div></Link>
+    <Link className="property-cover-link" aria-label={'Open listing: ' + property.title} to={destination} state={{ browse: '/listings?' + params.toString() }}><div className="property-cover">{property.photos[0] ? <img src={property.photos[0].url} alt={property.photos[0].caption} loading="lazy" /> : <span aria-hidden="true">⌂</span>}</div></Link>
     <div className="listing-card-body">
       <div className="listing-card-heading"><h2><Link to={destination} state={{ browse: '/listings?' + params.toString() }}>{property.title}</Link></h2>
       <p className="card-location" title={campus ? distanceLabel(property.distance_from_campus, campus) : undefined}>{property.city}{shortDistance && <> · {shortDistance}</>}</p>

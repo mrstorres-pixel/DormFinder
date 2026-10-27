@@ -40,7 +40,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await student.goto('/listings?q=DEMO')
     await check(student.getByText('16 listings found · Page 1 of 2', { exact: true })).toBeVisible()
     await expect(student.locator('.property-card')).toHaveCount(12)
-    await expect(student.getByText('Synthetic demo', { exact: true })).toHaveCount(12)
+    await expect(student.getByText('Synthetic demo', { exact: true })).toHaveCount(0)
     await student.getByRole('button', { name: 'Next', exact: true }).click()
     await expect(student.getByText('16 listings found · Page 2 of 2', { exact: true })).toBeVisible()
     await expect(student.locator('.property-card')).toHaveCount(4)
@@ -57,7 +57,7 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
     await openFilters(student)
     await student.getByLabel('Maximum monthly rent (PHP)').fill('9000')
     await student.getByRole('button', { name: 'Apply filters', exact: true }).click()
-    await expect(student.getByRole('heading', { name: '[DEMO] Mixed Availability Dorm', exact: true })).toBeVisible()
+    await expect(student.getByRole('heading', { name: 'Mixed Availability Dorm', exact: true })).toBeVisible()
     await expect(student.locator('.room-price')).toContainText('₱8,200.00')
     for (const query of ['Fully%20Booked', 'Needs%20Confirmation']) {
       await student.goto('/listings?q=' + query + '&available_only=1')
@@ -65,11 +65,11 @@ test('seeded samples support discovery, photos, favorites, comparison, maps and 
       await expect(student.getByText('0 matching listings across all pages', { exact: true })).toBeVisible()
     }
     await login(student, fixtures.student, 'student')
-    const names = ['[DEMO] Sampaguita Student Dorm', '[DEMO] Study Nook Residence', '[DEMO] Quiet Courtyard House']
+    const names = ['Sampaguita Student Dorm', 'Study Nook Residence', 'Quiet Courtyard House']
     for (const [index, name] of names.entries()) {
       await student.goto('/listings/' + manifest.ids[index])
       await expect(student.getByRole('heading', { name, exact: true })).toBeVisible()
-      await expect(student.getByText('Synthetic demo listing', { exact: true })).toBeVisible()
+      await expect(student.getByText('Synthetic demo listing', { exact: true })).toHaveCount(0)
       if (index === 1) await expect(student.locator('#rooms-and-costs .room-price')).toContainText('₱3,500.29')
       const gallery = student.getByRole('region', { name: 'Property photo gallery' })
       await expect(gallery.locator('figure img')).toBeVisible()

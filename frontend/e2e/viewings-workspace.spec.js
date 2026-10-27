@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 async function fixture(page, role = 'student') {
   const time = days => new Date(Date.now() + days * 86400000).toISOString()
   const room = { id: 42, name: 'Twin room', capacity: 2, monthly_rent_centavos: 400000, price_basis: 'per_person', inventory_type: 'bedspace', available_units: 2, total_units: 2, fees: [], monthly_fixed_total_centavos: 425000, move_in_fixed_total_centavos: 800000 }
-  const property = { id: 21, title: '[DEMO] Near Campus Twin Dorm', is_demo: true, property_type: 'dormitory', description: 'Fictional test residence.', address: 'Sample address', city: 'Manila', photos: [], room_options: [room, { ...room, id: 43, name: 'Solo room' }] }
+  const property = { id: 21, title: 'Near Campus Twin Dorm', is_demo: true, property_type: 'dormitory', description: 'Fictional test residence.', address: 'Sample address', city: 'Manila', photos: [], room_options: [room, { ...room, id: 43, name: 'Solo room' }] }
   const snapshot = { title: property.title, room_name: room.name, address: property.address, city: property.city }
   const base = { property_id: 21, room_option_id: 42, listing_snapshot: snapshot, property_preview: property, participant_name: role === 'student' ? 'Jamie Owner' : 'Alex Student', participant_avatar_url: null, conversation_id: 7, starts_at: time(2), requested_start: time(1), time_passed: false, revision: 1, can_schedule: true, student_note: 'Please meet by the entrance.', owner_note: '' }
   const state = { failSend: true, failDecision: true, sends: [], decisions: [], rows: [{ ...base, id: 1, status: 'accepted' }, { ...base, id: 2, status: 'proposed' }, { ...base, id: 3, status: 'requested' }, { ...base, id: 4, status: 'cancelled' }, { ...base, id: 5, status: 'accepted', time_passed: true, starts_at: time(-1) }], active: false }
@@ -159,8 +159,8 @@ test('visible listing actions preserve dialog drafts and retry identity and expo
   await expect(page.locator('.listing-visit-action').getByRole('link', { name: 'View request' })).toHaveAttribute('href', '/viewings?group=requests#viewing-6')
   await page.getByRole('button', { name: /Compare$/, exact: true }).click()
   await expect(page.getByRole('button', { name: '✓ Added to compare' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('button', { name: 'Save place [DEMO] Near Campus Twin Dorm', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Unsave place [DEMO] Near Campus Twin Dorm', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Save place Near Campus Twin Dorm', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Unsave place Near Campus Twin Dorm', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await expect(page.getByRole('dialog', { name: 'Save to a shortlist' })).toHaveCount(0)
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.listing-mobile-action')).toBeInViewport()

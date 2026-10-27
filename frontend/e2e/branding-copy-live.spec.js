@@ -1,0 +1,30 @@
+import { test, expect } from '@playwright/test'
+import { listingTitle } from '../src/lib/listingPresentation.js'
+
+test('the real public catalog displays the new branding and clean listing copy with working photos', async ({ page, baseURL }, testInfo) => {
+  test.skip(!baseURL.startsWith('https:'), 'Read-only acceptance of the public deployment.')
+  test.setTimeout(120_000)
+  const errors = []
+  page.on('pageerror', error => errors.push(error.message))
+  const catalog = await page.request.get('/api/v1/listings', { params: { q: 'DEMO' } })
+  expect(catalog.ok()).toBe(true)
+  const listing = (await catalog.json()).data.find(item => item.is_demo && item.photos.length)
+  expect(listing).toBeTruthy()
+  await page.goto('/listings/' + listing.id)
+  await expect(page).toHaveTitle('DormFinder')
+  await expect(page.getByRole('heading', { name: listingTitle(listing.title), exact: true })).toBeVisible()
+  await expect(page.locator('main')).not.toContainText(/\[DEMO\]|FICTIONAL DEMO LISTING|Synthetic demo|Campus demo v2|AI-generated demo interior|Prices, charges and availability are illustrative/i)
+  const photo = page.getByRole('region', { name: 'Property photo gallery' }).locator('figure img').first()
+  await expect.poll(() => photo.evaluate(image => image.complete && image.naturalWidth > 0)).toBe(true)
+  await page.getByRole('button', { name: 'Show map', exact: true }).click()
+  await expect(page.getByRole('link', { name: 'Open property in OpenStreetMap' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Report a map issue' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Listing map', exact: true }).locator('.listing-marker')).toHaveCount(1)
+  const ico = await page.request.get('/favicon.ico')
+  expect(ico.ok()).toBe(true)
+  expect((await ico.body()).readUInt16LE(2)).toBe(1)
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({ path: `../.local/branding-real-${testInfo.project.name}.png`, fullPage: true })
+  expect(errors).toEqual([])
+})

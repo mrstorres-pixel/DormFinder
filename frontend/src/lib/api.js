@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { presentListingData } from './listingPresentation'
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
@@ -6,6 +7,11 @@ export const api = axios.create({
   withXSRFToken: true,
   timeout: 90_000,
   headers: { Accept: 'application/json' },
+})
+
+api.interceptors.response.use(response => {
+  response.data = presentListingData(response.data)
+  return response
 })
 
 export async function writeApi(method, url, data) {

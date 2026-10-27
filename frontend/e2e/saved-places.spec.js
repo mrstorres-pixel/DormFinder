@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const twin = { id: 42, name: 'Twin room', capacity: 2, monthly_rent_centavos: 400000, price_basis: 'per_person', inventory_type: 'bedspace', available_units: 2, total_units: 2, fees: [], monthly_fixed_total_centavos: 425000, move_in_fixed_total_centavos: 800000 }
 const solo = { ...twin, id: 43, name: 'Solo room', capacity: 1, monthly_rent_centavos: 900000, price_basis: 'per_room' }
-const property = { id: 21, title: '[DEMO] Near Campus Twin Dorm', is_demo: true, property_type: 'dormitory', description: 'Fictional test residence.', address: 'Sample address', city: 'Manila', photos: [], room_options: [twin, solo] }
+const property = { id: 21, title: 'Near Campus Twin Dorm', is_demo: true, property_type: 'dormitory', description: 'Fictional test residence.', address: 'Sample address', city: 'Manila', photos: [], room_options: [twin, solo] }
 const snapshot = { title: property.title, room_name: twin.name }
 const legacyContexts = [
   { id: 101, collection_id: 1, collection_name: 'Near campus', room_option_id: 42, note: 'Keep the twin by campus', revision: 2, listing_snapshot: snapshot },

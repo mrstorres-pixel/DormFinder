@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 const campus = { id: 8, name: 'TIP Manila — P. Casal', institution_name: 'Technological Institute of the Philippines', city: 'Manila', slug: 'tip-manila-casal' }
 const otherCampus = { id: 9, name: 'UP Diliman', institution_name: 'University of the Philippines', city: 'Quezon City', slug: 'up-diliman' }
 const room = { id: 21, name: 'Twin room', capacity: 2, price_basis: 'per_person', inventory_type: 'bedspace', monthly_rent_centavos: 400000, available_units: 1, availability_stale: false }
-const property = { id: 2, title: '[DEMO] Near Campus Twin Dorm', is_demo: true, room_options: [room], photos: [] }
+const property = { id: 2, title: 'Near Campus Twin Dorm', is_demo: true, room_options: [room], photos: [] }
 const snapshot = { title: 'Synthetic campus residence', room_name: 'Twin room', room_option: room, address: 'Fictional sample address', city: 'Manila' }
 const tomorrow = new Date(Date.now() + 86400000).toISOString()
 const viewing = { id: 10, property_id: 2, room_option_id: 21, starts_at: tomorrow, requested_start: tomorrow, status: 'proposed', revision: 1, time_passed: false, can_schedule: true, listing_snapshot: snapshot, participant_name: 'Synthetic owner', student_note: '', owner_note: '' }
@@ -45,7 +45,7 @@ test('student space connects real actions without counters, on desktop and mobil
   await expect(saved.getByText('₱4,000', { exact: true })).toBeVisible()
   await expect(saved.getByText('2-person room')).toBeVisible()
   await expect(saved.locator('h2 a').first()).toHaveAttribute('href', '/listings/2?option=21')
-  await expect(saved.getByText('AI demo illustration')).toBeVisible()
+  await expect(saved.getByText('AI demo illustration')).toHaveCount(0)
   await expect(page.locator('.space-conversation')).toHaveAttribute('href', '/inquiries/7')
   await page.evaluate(() => document.fonts.ready)
   for (const width of [1440, 768, 390, 360]) {

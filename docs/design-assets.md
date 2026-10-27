@@ -8,7 +8,7 @@ Final assets:
 - `frontend/public/images/demo/studio-room.webp` — Premium Study Loft, 106,976 bytes.
 - `frontend/public/images/demo/shared-room.webp` — Mixed Availability Dorm, 98,656 bytes.
 
-Each cover is 960px wide, WebP quality 0.86. The generated PNG originals are retained in the ignored `.local/demo-image-originals` directory and the generator's original output directory. The application retains exact selected-room links and displays an AI demo illustration badge. The alternative text and badge tooltip identify fictional generated interiors. Covers are selected only when both the specific sample title and `is_demo` match.
+Each cover is 960px wide, WebP quality 0.86. The generated PNG originals are retained in the ignored `.local/demo-image-originals` directory and the generator's original output directory. The application retains exact selected-room links. The original release displayed an AI demo illustration badge; the October 27 presentation cleanup removes that badge and uses concise room-interior captions. These assets remain generated fictional interiors, not photographs of actual rentals. Covers are selected only when both the specific normalized catalog title and `is_demo` match; internal flags and provenance are retained.
 
 ## Final prompt set
 

@@ -57,7 +57,7 @@ export function ReviewDetails() {
       <div className="review-content">
         <nav className="review-section-links" aria-label="Listing review sections"><a href="#review-photos">Photos</a><a href="#review-rooms">Rooms & costs</a><a href="#review-location">Location</a><a href="#review-decision-panel">Decision</a></nav>
         <section id="review-photos" className="review-photos" aria-labelledby="review-photos-title"><h2 id="review-photos-title" className="visually-hidden">Listing photos</h2><PhotoGallery key={property.id} photos={property.photos} refresh={() => query.refetch()} /></section>
-        <section className="review-description"><h2>About this property</h2><p className="preserve-lines">{property.description || 'No property description provided.'}</p>{property.is_demo && <p className="review-demo">Fictional demo listing · images and details are illustrative.</p>}</section>
+        <section className="review-description"><h2>About this property</h2><p className="preserve-lines">{property.description || 'No property description provided.'}</p></section>
         <ReviewRooms key={property.id} options={property.room_options} />
         <ListingInformation property={property} />
         <section id="review-location" className="panel review-location" aria-labelledby="review-location-title"><h2 id="review-location-title">Location</h2><p>{[property.address, property.city].filter(Boolean).join(', ')}</p><ReviewLocationMap key={`${property.id}:${property.latitude}:${property.longitude}`} latitude={property.latitude} longitude={property.longitude} /><p className="review-scope-note">The pin is supplied by the owner. Check that it agrees with the address.</p></section>

@@ -4,7 +4,7 @@ const campus = { id: 8, name: 'Test University', institution_name: 'Test Univers
 const shared = { id: 21, name: 'Twin room', capacity: 2, monthly_rent_centavos: 400000, monthly_fixed_total_centavos: 425000, move_in_fixed_total_centavos: 800000, price_basis: 'per_person', inventory_type: 'bedspace', available_units: 2, availability_stale: false, fees: [] }
 const rooms = [shared, { ...shared, id: 22, name: 'Solo room', capacity: 1, price_basis: 'per_room' }]
 const photos = [{ id: 1, url: '/test-photo/first.svg', caption: 'Fictional twin room illustration' }, { id: 2, url: '/test-photo/portrait.svg', caption: 'Fictional portrait room illustration' }]
-const property = { id: 1, title: '[DEMO] Gallery residence', description: 'Fictional test property.', is_demo: true, property_type: 'dormitory', address: 'Test address', city: 'Manila', latitude: 14.601, longitude: 120.98, room_options: rooms, distance_from_campus: { campus_id: 8, meters: 200 } }
+const property = { id: 1, title: 'Gallery residence', description: 'Fictional test property.', is_demo: true, property_type: 'dormitory', address: 'Test address', city: 'Manila', latitude: 14.601, longitude: 120.98, room_options: rooms, distance_from_campus: { campus_id: 8, meters: 200 } }
 async function fixture(page, { failed = false, count = 2 } = {}) {
   const state = { fresh: false }
   await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { listingTitle } from '../src/lib/listingPresentation.js'
 
 test('real comparison calculates both walks to CEU and switches the highlighted route', async ({ page }, testInfo) => {
   test.setTimeout(180_000)
@@ -23,8 +24,8 @@ test('real comparison calculates both walks to CEU and switches the highlighted 
   await expect(walk).not.toContainText('straight-line')
   const map = page.getByRole('region', { name: 'Listing map', exact: true })
   await expect(map.locator('.walking-route-path')).toHaveCount(1)
-  await walk.getByRole('button', { name: 'Show walking route from ' + listings[1].title, exact: true }).click()
-  await expect(page.locator('.comparison-route-summary')).toContainText(listings[1].title + ' to ' + campus.name)
+  await walk.getByRole('button', { name: 'Show walking route from ' + listingTitle(listings[1].title), exact: true }).click()
+  await expect(page.locator('.comparison-route-summary')).toContainText(listingTitle(listings[1].title) + ' to ' + campus.name)
   await page.screenshot({ path: `../.local/comparison-real-${testInfo.project.name}-desktop.png`, fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

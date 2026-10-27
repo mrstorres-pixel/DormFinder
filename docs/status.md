@@ -1,5 +1,11 @@
 # Implementation status
 
+## Tab branding and listing copy cleanup - October 27
+
+The tab title is now exactly DormFinder. The existing house mark is linked as an SVG favicon, with matching 32 px PNG and ICO fallbacks. The optional OpenStreetMap property/area and report-issue footer links are removed from detail, comparison and browse maps; map-engine and routing attribution remain. Tile-error recovery now directs users to the address/owner instead of a removed link.
+
+Visible catalog badges and route notices are removed. A shared client presentation adapter removes the leading catalog marker from listing titles, historical snapshots and listing suggestions, and replaces only recognized seeded description/caption/utility templates with concise listing copy. It preserves stored/API data, internal flags, IDs, prices, inventory, signed photo URLs, route geometry, private messages and ordinary owner-authored descriptions. Existing cover imagery still resolves after title cleanup. Local unit checks pass all 100 tests across 29 files, with lint/build passing; scoped browser/release evidence follows in validation.md.
+
 ## Comparison walking destinations and aligned listing actions - October 21
 
 Comparison now requires two or three distinct listings in the tray, direct URL guard and API. Removing a listing preserves the remaining selection and prompts for another. One searchable, URL-backed campus destination drives both the comparison table and map; no campus is supplied by default. Each selected listing receives a pedestrian distance and estimated time, with a selectable highlighted route. Campus changes cancel obsolete requests, clear old paths and update room links. Routing is sequential, bounded to the selected listings, cached by exact coordinates/campus and supports partial failures and retry without repeating successful estimates. Existing provider limits and approximate-campus references remain.

@@ -41,11 +41,11 @@ describe('homepage room discovery', () => {
     expect(screen.getByRole('heading', { name: 'Fresh residence' }).closest('a')).toHaveAttribute('href', '/listings/1?option=11')
   })
 
-  it('uses clearly labeled concept imagery only for the approved fictional demos', () => {
+  it('uses the existing catalog cover without an extra demo badge and preserves owner photos', () => {
     mocks.data = [{ ...property(1, '[DEMO] Near Campus Twin Dorm', [room(11, 400000, 2)]), is_demo: true }]
     const { rerender } = render(<MemoryRouter><FeaturedHomes /></MemoryRouter>)
-    expect(screen.getByAltText('AI-generated illustration of a fictional twin student dorm')).toHaveAttribute('src', '/images/demo/twin-room.webp')
-    expect(screen.getByText('AI demo illustration')).toBeInTheDocument()
+    expect(screen.getByAltText('Twin student room interior')).toHaveAttribute('src', '/images/demo/twin-room.webp')
+    expect(screen.queryByText('AI demo illustration')).not.toBeInTheDocument()
     mocks.data[0].is_demo = false
     rerender(<MemoryRouter><FeaturedHomes /></MemoryRouter>)
     expect(screen.getByAltText('Fictional room illustration')).toHaveAttribute('src', '/room-1.jpg')

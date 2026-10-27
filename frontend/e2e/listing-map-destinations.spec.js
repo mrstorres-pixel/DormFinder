@@ -138,7 +138,8 @@ test('campus, tile and routing failures offer recovery instead of an empty map o
   await page.getByRole('button', { name: 'Show map', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('Synthetic campus directory outage')
   await expect(page.getByRole('button', { name: 'Retry map', exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Open property in OpenStreetMap' })).toHaveAttribute('href', /mlat=14\.6014&mlon=120\.983/)
+  await expect(page.getByRole('link', { name: 'Open property in OpenStreetMap' })).toHaveCount(0)
+  await expect(page.getByText('Map imagery is unavailable. Use the listing address or ask the owner for directions.')).toBeVisible()
   state.failCampuses = false; state.failTiles = false
   await page.getByRole('button', { name: 'Try again', exact: true }).click()
   await page.getByRole('button', { name: 'Retry map', exact: true }).click()

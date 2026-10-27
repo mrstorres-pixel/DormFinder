@@ -33,7 +33,6 @@ export default function ListingLocationMap({ properties, campus, initiallyShown 
       <LocationCanvas key={context + ':' + (selectedCampus?.id || 'none') + ':' + attempt} properties={pinned} campus={selectedCampus} retry={() => setAttempt(value => value + 1)} walkingComparison={walkingComparison} />
       {properties.length !== pinned.length && <p className="small text-secondary">{properties.length - pinned.length} compared listing(s) have no location pin.</p>}
       <p className="listing-location-note">{!properties.some(property => property.is_demo) && 'Property locations are supplied by owners. '}{selectedCampus ? 'The campus pin is an approximate reference.' : 'Choose a campus above for walking directions.'}</p>
-      <p className="listing-location-links"><a href={`https://www.openstreetmap.org/?mlat=${reference.latitude}&mlon=${reference.longitude}#map=16/${reference.latitude}/${reference.longitude}`} target="_blank" rel="noreferrer">Open {pinned.length === 1 ? 'property' : 'area'} in OpenStreetMap</a><a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noreferrer">Report a map issue</a></p>
     </div>}
   </section>
 }
@@ -104,7 +103,7 @@ function LocationCanvas({ properties, campus, retry, walkingComparison }) {
       {!engine && !error && <p role="status" className="listing-map-loading">Loading map…</p>}
       {engine && moved && <button type="button" className="btn btn-light btn-sm listing-map-reset" onClick={() => route ? setRouteView(value => value + 1) : engine.fitLocations()}>{route ? 'Recenter route' : walkingComparison ? 'Fit compared places' : campus ? 'Show both locations' : property ? 'Back to property' : 'Fit compared places'}</button>}
     </div>
-    {error && <div role="status" className="listing-map-error"><p>Map imagery is unavailable. You can still use the address and the OpenStreetMap link below.</p><button type="button" className="btn btn-outline-primary btn-sm" onClick={retry}>Retry map</button></div>}
+    {error && <div role="status" className="listing-map-error"><p>Map imagery is unavailable. Use the listing address or ask the owner for directions.</p><button type="button" className="btn btn-outline-primary btn-sm" onClick={retry}>Retry map</button></div>}
     {!walkingComparison && <WalkingRouteControl walking={walking} property={property} campus={campus} />}
     {walkingComparison && route && <div className="comparison-route-summary" role="status"><strong>{walkingLabel(route)}</strong><p>{routeProperty.title} to {campus.name}. The campus reference is approximate; dashed connections are outside the walking estimate.</p><p>Walking routes: <a href="https://routing.openstreetmap.de/about.html" target="_blank" rel="noreferrer">FOSSGIS / OSRM</a> · <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a></p></div>}
     {campus && !property && !walkingComparison && <p className="small text-secondary">Open a listing to calculate its walking route to {campus.name}.</p>}
