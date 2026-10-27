@@ -53,7 +53,7 @@ test('existing cloud accounts read their role workspace and notification windows
       }
       await expect(page.getByRole('heading', { name: role === 'landlord' ? 'Your properties' : 'Listing review queue', exact: true })).toBeVisible()
       await expect(page.locator('.dashboard-counts')).toHaveCount(0)
-      if (role === 'landlord') await expect(page.getByRole('link', { name: '+ Add a property' })).toBeVisible()
+      if (role === 'landlord') await expect(page.getByRole('link', { name: 'Add a property' })).toBeVisible()
       else await expect(page.getByRole('navigation', { name: 'Administrator sections' })).toBeVisible()
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
     } finally { await context.close() }

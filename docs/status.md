@@ -1,5 +1,13 @@
 # Implementation status
 
+## Landlord workspace and safer listing management - locally verified October 27
+
+The landlord's My space now starts with actual availability, unanswered-message and viewing tasks, then a searchable property directory with Current, Drafts, In review, Approved and Removed views. Server-owned search, filters, sorting and pagination retain owner authorization and URL state. Each property has a status, inventory, a specific next action and an explicit removal confirmation; editor navigation returns to the same filtered results. Solid slate, navy, warm paper and sage surfaces retain the existing theme without gradients or decorative accent bars.
+
+The editor explains saved status and required next steps, offers a guarded refresh, and retains edits after validation, request or revision failures. Independent saved room changes can coexist with unsaved location details; conflicting changes retain the original revision. Published listings open directly on vacancy management, with room editing separate. Set all as taken stages zero until the owner confirms vacancies. Cancelling edits, photo/save feedback, submission receipts and the save-draft return path are clearer. Drafts are described as not publicly listed, consistent with existing authorized administrator inspection.
+
+Local verification passes 106 frontend tests across 30 files, 18 scoped backend tests / 140 assertions, Pint, lint/build and 62 distinct scoped Chromium/WebKit scenarios across recorded runs, followed by four final layout checks. No schema, dependency, provider-setting or production business-data change is required. Release and actual-account read-only acceptance are next. Existing admin, student and privacy behavior is retained.
+
 ## Admin record context and review feedback - October 27
 
 The second admin pass adds a clear next-review action, visible review criteria and a listing brief linking the owner and listing history. Successful review decisions return a named confirmation with a link to the recorded decision; it can be dismissed without changing the queue. Result headers explain the current order and last refresh, offer a manual refresh, and preserve the last successfully loaded records with a clear warning if that refresh fails. Single-page results omit disabled pagination. Search keeps keyboard focus and synchronizes with browser back/forward navigation.

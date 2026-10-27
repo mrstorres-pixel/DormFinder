@@ -148,7 +148,7 @@ test('owners remove a listing through confirmation and can find it in removed li
   await page.getByRole('button', { name: 'Remove listing', exact: true }).click()
   await dialog.getByRole('button', { name: 'Remove listing', exact: true }).click()
   await expect(page.locator('.property-card')).toHaveCount(0)
-  await page.getByLabel('Show properties').selectOption('archived')
+  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Removed', exact: true }).click()
   await expect(page.locator('.property-card')).toContainText(listing.title)
   expect(state.listing.room_options).toHaveLength(1)
 })

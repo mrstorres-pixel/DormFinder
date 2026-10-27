@@ -79,7 +79,7 @@ test('owners see hidden listings and can reconfirm actual vacancies with retry a
   await expect(form.getByLabel('Available units for Twin student beds')).toHaveValue('3')
   state.fail = false
   await form.getByRole('button', { name: 'Confirm vacancies today' }).click()
-  await expect(page.getByText('Availability is up to date', { exact: true })).toBeVisible()
+  await expect(page.locator('.owner-editor .owner-state')).toContainText('Published')
   await expect(form.getByText('Confirmed today', { exact: true })).toBeVisible()
   await expect(page.locator('.notification-unread-dot')).toHaveCount(0)
   expect(state.writes[1]).toEqual({ revision: 1, options: [{ id: 21, available_units: 3 }] })
@@ -96,7 +96,7 @@ test('owners can mark every room taken with zero vacancies and get an explicit s
   const form = page.locator('.vacancy-form')
   await form.getByLabel('Available units for Twin student beds').fill('0')
   await form.getByRole('button', { name: 'Confirm vacancies today' }).click()
-  await expect(page.getByText('All room options are taken', { exact: true })).toBeVisible()
+  await expect(page.locator('.owner-editor .owner-state')).toContainText('All taken')
   await expect(form.getByRole('status')).toContainText('Marked sold out')
   expect(state.writes).toEqual([{ revision: 1, options: [{ id: 21, available_units: 0 }] }])
   expect(state.property.status).toBe('approved')

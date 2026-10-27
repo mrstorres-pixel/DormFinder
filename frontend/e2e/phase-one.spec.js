@@ -50,7 +50,7 @@ test('same-origin sessions, private drafts, image persistence and logout', async
   })
   expect(missingCsrf).toBe(419)
 
-  await page.getByRole('link', { name: '+ Add a property' }).click()
+  await page.getByRole('link', { name: 'Add a property' }).click()
   await page.getByLabel('Property name').fill(`Demo Residence ${suffix}`)
   await page.getByRole('button', { name: 'Start listing', exact: true }).click()
   await expect(page).toHaveURL(/\/landlord\/properties\/\d+#photos$/)

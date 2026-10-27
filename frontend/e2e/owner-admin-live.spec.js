@@ -23,7 +23,7 @@ test('a real owner draft reaches admin review and publication with saved search 
   try {
     await login(owner, accounts.landlord)
     await expect(owner).toHaveURL(/\/landlord$/, { timeout: 45_000 })
-    await owner.getByRole('link', { name: '+ Add a property' }).click()
+    await owner.getByRole('link', { name: 'Add a property' }).click()
     await owner.getByLabel('Property name').fill(title)
     await owner.getByRole('button', { name: 'Start listing' }).click()
     await expect(owner).toHaveURL(/\/landlord\/properties\/\d+#photos$/)

@@ -6,6 +6,8 @@ import { ErrorNotice, Field } from './Feedback'
 import VacancyForm from './VacancyForm'
 import AvailabilityStatus from './AvailabilityStatus'
 import { listingReadiness } from '../lib/listingReadiness'
+import { ownerRoomFingerprint } from '../lib/ownerWorkspace'
+import { Link } from 'react-router-dom'
 import { useRequireSavedChanges, useFormChanges } from '../lib/useUnsavedChanges'
 
 export function RoomCharges({ option }) {
@@ -32,20 +34,27 @@ export function RoomManager({ property, onDirtyChange, saveRef }) {
   const requireSaved = useRequireSavedChanges()
   const confirmRoomReplacement = useRef(() => true)
   const [editing, setEditing] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const [notice, setNotice] = useState('')
+  const editor = useRef(null)
   const [formVersion, setFormVersion] = useState(0)
   const editable = ['draft', 'rejected', 'approved'].includes(property.status)
-  async function saved(data) {
+  async function saved(data, mode = 'rooms') {
+    setNotice(mode === 'availability' ? '' : property.status === 'approved' && data.status === 'draft' ? 'Room details saved. Your listing is now a draft and needs review before it is published again.' : 'Room information saved.')
     client.setQueryData(['property', String(property.id)], data)
     await Promise.all(['properties', 'listings', 'listing', 'listings-map', 'saved-places', 'favorites', 'featured-homes', 'comparison', 'notification-unread', 'notifications', 'dashboard'].map(key => client.invalidateQueries({ queryKey: [key] })))
     setEditing(null)
+    setAdding(false)
     setFormVersion(version => version + 1)
   }
   const remove = useMutation({ mutationKey: ['property-write', property.id], mutationFn: id => writeApi('delete', `/landlord/properties/${property.id}/room-options/${id}`, { revision: property.revision }), onSuccess: saved })
-  return <section className="panel mt-4"><h2 className="section-title">Room options and charges</h2>
-    <p className="text-secondary small">Describe separate groups of equivalent beds or whole rooms. Do not count the same inventory twice. Saving an option confirms today’s availability and returns a published listing to draft.</p>
+  return <section className="panel mt-4"><h2 className="section-title">{property.status === 'approved' ? 'Rooms and availability' : 'Room options and charges'}</h2>
+    <p className="text-secondary small">{property.status === 'approved' ? 'Confirm vacancies below to keep your listing current. Edit changes room details, prices or fees and requires another review.' : 'Describe separate groups of equivalent beds or whole rooms. Do not count the same inventory twice. Saving an option confirms today’s availability.'}</p>
     <ErrorNotice error={remove.error} />
-    {(property.room_options || []).map(option => <article className="room-option mb-4" key={option.id}><h3>{option.name}</h3><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small text-secondary">{option.capacity}-person room · {option.available_units} of {option.total_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p><details className="owner-room-terms"><summary>Costs and room terms</summary><RoomCharges option={option} /></details>{property.status === 'approved' && <VacancyForm confirmSave={() => confirmRoomReplacement.current()} key={option.id} property={property} option={option} onSaved={saved} />}{editable && <div className="d-flex gap-2"><button className="btn btn-sm btn-outline-primary" onClick={() => { if (editing?.id !== option.id && confirmRoomReplacement.current()) setEditing(option) }}>Edit {option.name}</button><button className="btn btn-sm btn-outline-danger" disabled={remove.isPending} onClick={() => { if (property.status === 'approved' && !requireSaved()) return; if (confirmRoomReplacement.current() && window.confirm(`Remove ${option.name}? Existing inquiries will be kept.`)) remove.mutate(option.id) }}>Remove option</button></div>}</article>)}
-    {editable ? <RoomOptionForm saveRef={saveRef} confirmReplacementRef={confirmRoomReplacement} key={editing ? 'edit-' + editing.id : 'new-' + formVersion} property={property} option={editing} onSaved={saved} onDirtyChange={onDirtyChange} onCancel={() => { setEditing(null); setFormVersion(value => value + 1) }} /> : <p className="alert alert-info">Room edits are locked while this listing is {property.status.replaceAll('_', ' ')}.</p>}
+    {notice && <p className="owner-save-feedback" aria-live="polite">{notice}</p>}
+    {(property.room_options || []).map(option => <article className="room-option mb-4" key={option.id}><h3>{option.name}</h3><p className="room-price">{pesos(option.monthly_rent_centavos)} <span>/ month · {option.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><p className="small text-secondary">{option.capacity}-person room · {option.available_units} of {option.total_units} {option.inventory_type === 'bedspace' ? 'beds' : 'rooms'} available{option.availability_stale ? ' · Needs confirmation' : ''}</p><details className="owner-room-terms"><summary>Costs and room terms</summary><RoomCharges option={option} /></details>{property.status === 'approved' && <VacancyForm confirmSave={() => confirmRoomReplacement.current()} key={option.id} property={property} option={option} onSaved={data => saved(data, 'availability')} />}{editable && <div className="d-flex gap-2"><button className="btn btn-sm btn-outline-primary" onClick={() => { if (editing?.id !== option.id && confirmRoomReplacement.current()) { setEditing(option); requestAnimationFrame(() => editor.current?.querySelector('input')?.focus()) } }}>Edit {option.name}</button><button className="btn btn-sm btn-outline-danger" disabled={remove.isPending} onClick={() => { if (property.status === 'approved' && !requireSaved()) return; if (confirmRoomReplacement.current() && window.confirm(`Remove ${option.name}? Existing inquiries will be kept.`)) remove.mutate(option.id) }}>Remove option</button></div>}</article>)}
+    {editable && property.status === 'approved' && property.room_options.length > 0 && !editing && !adding && <button type="button" className="btn btn-outline-primary" onClick={() => { setAdding(true); requestAnimationFrame(() => editor.current?.querySelector('input')?.focus()) }}>Add another room option</button>}
+    <div ref={editor}>{editable ? (property.status !== 'approved' || editing || adding || !property.room_options.length) && <RoomOptionForm saveRef={saveRef} confirmReplacementRef={confirmRoomReplacement} key={editing ? 'edit-' + editing.id : 'new-' + formVersion} property={property} option={editing} onSaved={saved} onDirtyChange={onDirtyChange} onCancel={() => { setEditing(null); setAdding(false); setFormVersion(value => value + 1) }} /> : <p className="alert alert-info">Room edits are locked while this listing is {property.status.replaceAll('_', ' ')}.</p>}</div>
   </section>
 }
 
@@ -54,6 +63,8 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   const saving = useRef(false)
   const [validationAttempted, setValidationAttempted] = useState(false)
   const [dirty, setDirty] = useState(false)
+  const baseline = useRef({ revision: property.revision, fingerprint: ownerRoomFingerprint(option) })
+  function markDirty() { if (!dirty && !option) baseline.current.revision = property.revision; setDirty(true) }
   useEffect(() => { onDirtyChange?.(dirty); return () => onDirtyChange?.(false) }, [dirty, onDirtyChange])
   const { clear: clearUnsaved, canReplaceOthers } = useFormChanges(dirty)
   const [inventory, setInventory] = useState(option?.inventory_type || 'bedspace')
@@ -67,7 +78,7 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   function editField(event) {
     const { name, value } = event.target
     setValues(current => ({ ...current, [name]: value }))
-    setDirty(true)
+    markDirty()
   }
   const [fees, setFees] = useState(() => (option?.fees || []).map(fee => ({ ...fee, key: crypto.randomUUID(), amount: String(fee.amount_centavos / 100) })))
   const mutation = useMutation({
@@ -82,7 +93,7 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
   }, [confirmReplacementRef, dirty, pending])
   const [amountError, setAmountError] = useState(null)
   const errors = fieldErrors(mutation.error)
-  useImperativeHandle(saveRef, () => ({ save: () => save(formRef.current) }))
+  useImperativeHandle(saveRef, () => ({ save: () => save(formRef.current), isValid: () => formRef.current?.checkValidity() ?? true }))
   async function save(form) {
     if (saving.current) return null
     setValidationAttempted(true)
@@ -92,14 +103,14 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
     if (Number(data.available_units) > Number(data.total_units)) { setAmountError(new Error('Available beds or rooms cannot exceed the total. Check both numbers.')); form.elements.available_units.focus(); return null }
     try {
       setAmountError(null)
-      const payload = { name: data.name, inventory_type: inventory, price_basis: inventory === 'bedspace' ? 'per_person' : 'per_room', capacity: Number(data.capacity), total_units: Number(data.total_units), available_units: Number(data.available_units), monthly_rent_centavos: toCentavos(data.rent), deposit_centavos: toCentavos(data.deposit), advance_months: Number(data.advance_months), utilities_notes: data.utilities_notes, revision: property.revision, fees: fees.map(fee => ({ name: fee.name, frequency: fee.frequency, amount_centavos: toCentavos(fee.amount) })) }
+      const payload = { name: data.name, inventory_type: inventory, price_basis: inventory === 'bedspace' ? 'per_person' : 'per_room', capacity: Number(data.capacity), total_units: Number(data.total_units), available_units: Number(data.available_units), monthly_rent_centavos: toCentavos(data.rent), deposit_centavos: toCentavos(data.deposit), advance_months: Number(data.advance_months), utilities_notes: data.utilities_notes, revision: option && ownerRoomFingerprint(property.room_options.find(item => item.id === option.id)) === baseline.current.fingerprint ? property.revision : baseline.current.revision, fees: fees.map(fee => ({ name: fee.name, frequency: fee.frequency, amount_centavos: toCentavos(fee.amount) })) }
       saving.current = true
       return await mutation.mutateAsync(payload)
     } catch (error) { if (!error.response) setAmountError(error); return null }
     finally { saving.current = false }
   }
   function changeFee(key, field, value) { setFees(current => current.map(fee => fee.key === key ? { ...fee, [field]: value } : fee)) }
-  return <form ref={formRef} onSubmit={event => { event.preventDefault(); void save(event.currentTarget) }} onInvalidCapture={() => setValidationAttempted(true)} onChange={() => setDirty(true)} className={'room-form' + (validationAttempted ? ' was-validated' : '')}><fieldset disabled={mutation.isPending}><h3>{option ? 'Edit room option' : 'Add a room option'}</h3>
+  return <form ref={formRef} onSubmit={event => { event.preventDefault(); void save(event.currentTarget) }} onInvalidCapture={() => setValidationAttempted(true)} onChange={markDirty} className={'room-form' + (validationAttempted ? ' was-validated' : '')}><fieldset disabled={mutation.isPending}><h3>{option ? 'Edit room option' : 'Add a room option'}</h3>
     <p className="small text-secondary">Fill in this option, then choose Save and continue below to save it and move to location details. Use {option ? 'Save room option' : 'Add room option'} to stay here and add another option.</p>
     {validationAttempted && <p className="small text-secondary" role="status">Required fields are marked. Check any highlighted fields before saving.</p>}
     <ErrorNotice error={mutation.error} />{amountError && <p role="alert" className="alert alert-danger">{amountError.message}</p>}
@@ -113,25 +124,26 @@ function RoomOptionForm({ property, option, onSaved, onCancel, confirmReplacemen
       <Field label={`Fee ${index + 1} name`} name={'fee-name-' + fee.key} value={fee.name} onChange={event => changeFee(fee.key, 'name', event.target.value)} required maxLength={100} />
       <Field label={`Fee ${index + 1} amount (PHP)`} name={'fee-amount-' + fee.key} type="number" min="0" max="1000000" step="0.01" value={fee.amount} onChange={event => changeFee(fee.key, 'amount', event.target.value)} required />
       <label className="form-label" htmlFor={'fee-frequency-' + fee.key}>Fee {index + 1} frequency</label><select className="form-select mb-2" id={'fee-frequency-' + fee.key} value={fee.frequency} onChange={event => changeFee(fee.key, 'frequency', event.target.value)}><option value="monthly">Monthly</option><option value="one_time">One time</option></select>
-      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => { setDirty(true); setFees(current => current.filter(item => item.key !== fee.key)) }}>Remove fee {index + 1}</button>
-    </div>)}{fees.length < 10 && <button className="btn btn-sm btn-outline-secondary mb-3" type="button" onClick={() => { setDirty(true); setFees(current => [...current, { key: crypto.randomUUID(), name: '', amount: '', frequency: 'monthly' }]) }}>Add fixed fee</button>}</fieldset>
-    <div className="d-flex gap-2 flex-wrap"><button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : option ? 'Save room option' : 'Add room option'}</button>{(option || dirty) && <button type="button" className="btn btn-outline-secondary" onClick={() => { if (!dirty || window.confirm('Discard your unsaved room edits?')) { clearUnsaved(); onCancel() } }}>{option ? 'Cancel edit' : 'Clear room form'}</button>}</div>
+      <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => { markDirty(); setFees(current => current.filter(item => item.key !== fee.key)) }}>Remove fee {index + 1}</button>
+    </div>)}{fees.length < 10 && <button className="btn btn-sm btn-outline-secondary mb-3" type="button" onClick={() => { markDirty(); setFees(current => [...current, { key: crypto.randomUUID(), name: '', amount: '', frequency: 'monthly' }]) }}>Add fixed fee</button>}</fieldset>
+    <div className="d-flex gap-2 flex-wrap"><button className="btn btn-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : option ? 'Save room option' : 'Add room option'}</button>{(option || dirty || property.status === 'approved') && <button type="button" className="btn btn-outline-secondary" onClick={() => { if (!dirty || window.confirm('Discard your unsaved room edits?')) { clearUnsaved(); onCancel() } }}>{option ? 'Cancel edit' : 'Clear room form'}</button>}</div>
   </fieldset></form>
 }
 
-export function SubmissionPanel({ property, onEditStep }) {
+export function SubmissionPanel({ property, onEditStep, workspaceHref = '/landlord' }) {
   const requireSaved = useRequireSavedChanges()
   const client = useQueryClient()
   const [confirmed, setConfirmed] = useState(false)
   const [confirmationError, setConfirmationError] = useState('')
   const confirmation = useRef(null)
-  const mutation = useMutation({ mutationKey: ['property-write', property.id], mutationFn: () => writeApi('post', `/landlord/properties/${property.id}/submit`, { revision: property.revision, inventory_confirmed: confirmed }), onSuccess: async data => { client.setQueryData(['property', String(property.id)], data); await client.invalidateQueries({ queryKey: ['properties'] }) } })
+  const mutation = useMutation({ mutationKey: ['property-write', property.id], mutationFn: () => writeApi('post', `/landlord/properties/${property.id}/submit`, { revision: property.revision, inventory_confirmed: confirmed }), onSuccess: async data => { client.setQueryData(['property', String(property.id)], data); await Promise.all(['properties', 'dashboard'].map(key => client.invalidateQueries({ queryKey: [key] }))) } })
   const missing = listingReadiness(property).filter(item => !item.ready)
   const submitting = ['draft', 'rejected'].includes(property.status)
   return <section className="panel review-preparation" data-tour="review-readiness" aria-label="Prepare for listing review"><h2>{submitting ? missing.length ? 'Before you submit' : 'Ready for review' : property.status === 'pending_review' ? 'In review' : 'Listing review'}</h2>
     {property.moderation_reason && <p className="alert alert-warning">Review feedback: {property.moderation_reason}</p>}
     {submitting && (missing.length ? <><p className="review-missing-summary">Finish these {missing.length} required items to enable review. Choose an item to go to its section.</p><ul className="completion-list">{missing.map(item => <li key={item.label}>{onEditStep ? <button type="button" onClick={() => onEditStep(item.step)}>{item.label} →</button> : item.label}</li>)}</ul></> : <p className="small text-secondary">Your saved photos, room options and property details are ready to send for review.</p>)}
     <ErrorNotice error={mutation.error} />
-    {submitting ? <>{!missing.length && <label className="review-confirmation mb-3"><input ref={confirmation} type="checkbox" checked={confirmed} onChange={event => { setConfirmed(event.target.checked); setConfirmationError('') }} /><span>These options describe separate inventory and do not double-count the same beds or rooms.</span></label>}{confirmationError && <p className="alert alert-warning" role="alert">{confirmationError}</p>}<button className="btn btn-primary" disabled={mutation.isPending} onClick={() => { if (missing.length) { onEditStep?.(missing[0].step); return } if (!confirmed) { setConfirmationError('Confirm that the room options describe separate inventory before submitting.'); confirmation.current?.focus(); return } if (requireSaved()) mutation.mutate() }}>{mutation.isPending ? 'Submitting…' : missing.length ? 'Finish required details' : 'Submit for review'}</button><p className="owner-fine-print review-boundary-note">Review covers listing details and charges. Ownership and safety are not verified.</p></> : <p className="small text-secondary">{property.status === 'pending_review' ? 'Your listing is waiting for administrator review. Edits are locked during review.' : property.status === 'approved' ? 'Your listing is public. Material edits return it to draft and require another review.' : 'This listing is currently locked.'}</p>}
+    {submitting ? <>{!missing.length && <label className="review-confirmation mb-3"><input ref={confirmation} type="checkbox" checked={confirmed} onChange={event => { setConfirmed(event.target.checked); setConfirmationError('') }} /><span>These options describe separate inventory and do not double-count the same beds or rooms.</span></label>}{confirmationError && <p className="alert alert-warning" role="alert">{confirmationError}</p>}<button className="btn btn-primary" disabled={mutation.isPending} onClick={() => { if (missing.length) { onEditStep?.(missing[0].step); return } if (!confirmed) { setConfirmationError('Confirm that the room options describe separate inventory before submitting.'); confirmation.current?.focus(); return } if (requireSaved()) mutation.mutate() }}>{mutation.isPending ? 'Submitting…' : missing.length ? 'Finish required details' : 'Submit for review'}</button><p className="owner-fine-print review-boundary-note">Review covers listing details and charges. Ownership and safety are not verified.</p></> : <p className="small text-secondary">{property.status === 'pending_review' ? 'Your listing has been submitted. We will notify you when the administrator records a decision. Edits are locked during review.' : property.status === 'approved' ? 'Your listing is public. Material edits return it to draft and require another review.' : 'This listing is currently locked.'}</p>}
+    {property.status === 'pending_review' && <Link className="btn btn-outline-primary" to={workspaceHref}>Return to your properties</Link>}
   </section>
 }

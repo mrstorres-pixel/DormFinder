@@ -62,7 +62,7 @@ test('landlord, administrator and student complete the listing and private inqui
     const landlord = await pageFor()
     ownerPage = landlord
     await register(landlord, 'landlord')
-    await landlord.getByRole('link', { name: '+ Add a property' }).click()
+    await landlord.getByRole('link', { name: 'Add a property' }).click()
     await landlord.getByLabel('Property name').fill(title)
     await landlord.getByRole('button', { name: 'Start listing', exact: true }).click()
     await expect(landlord).toHaveURL(/\/landlord\/properties\/\d+#photos$/)

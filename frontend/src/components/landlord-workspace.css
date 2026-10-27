@@ -1,5 +1,5 @@
 .owner-listings { max-width: 1320px; }
-.owner-listings .property-card .property-cover { height: auto; aspect-ratio: 4 / 3; }
+.owner-listings .property-card .property-cover { height: auto; aspect-ratio: 16 / 10; }
 .owner-listings .property-card .p-4 > p:not(:first-child) { font-size: .83rem; }
 .owner-create { max-width: 620px; }
 .owner-create-intro { margin: 2rem 0; }
@@ -62,7 +62,82 @@
 .owner-preview-details .panel { padding: 1.25rem; }
 .owner-listing-settings { margin-top: 2rem; }
 .owner-listing-settings > .panel { margin-top: 0 !important; padding: 1.6rem; }
+.app-layout .owner-listings {max-width:1380px;padding-top:2rem;padding-bottom:3rem}
+.owner-workspace-heading {padding-bottom:1.5rem;border-bottom:1px solid #91a8c6;margin-bottom:1.5rem}
+.owner-workspace-heading h1 {font-size:clamp(1.9rem,3vw,2.6rem);letter-spacing:-.035em}
+.owner-workspace-heading p {max-width:70ch;font-size:.9rem;line-height:1.65;margin-bottom:0}
+.owner-task-section {margin-bottom:2rem}
+.owner-task-section>h2,.owner-directory-title {font-size:1.15rem;margin:0 0 1rem;font-weight:650}
+.owner-task-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.owner-task-grid>a {position:relative;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1.1rem 1.2rem 1.5rem;background:#f3efe6;border:1px solid #9bafc8;border-radius:12px;color:#1c3555;text-decoration:none}
+.owner-task-grid h3 {font-size:.9rem;line-height:1.5;margin:0 0 .35rem;font-weight:650}
+.owner-task-grid p {font-size:.76rem;line-height:1.6;margin:0;color:#4c6380}
+.owner-task-grid strong {font-size:1.65rem;line-height:1.1;flex:none}
+.owner-task-open {position:absolute;right:.75rem;bottom:.35rem;font-size:.9rem;color:#526a85}
+.owner-property-views {display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:1rem;border-bottom:1px solid #91a8c6}
+.owner-property-views button {padding:.65rem .8rem;min-height:44px;font-size:.8rem;border:0;border-bottom:3px solid transparent;background:transparent;color:#405a79}
+.owner-property-views button[aria-current] {color:#172e4a;border-bottom-color:#1d3452;font-weight:650}
+.owner-property-views button:hover {background:#dce6f3}
+.app-layout .owner-listings .admin-filter-bar {padding:0;border:0;border-radius:0;background:transparent;margin-bottom:1.2rem}
+.owner-property-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem;align-items:stretch}
+.owner-property-grid.is-pair {grid-template-columns:repeat(2,minmax(0,1fr))}
+.owner-property-grid.is-single {grid-template-columns:minmax(0,1fr)}
+.owner-property-grid.is-single .owner-property-card {display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr)}
+.owner-property-grid.is-single .property-cover {grid-row:1/span 2;aspect-ratio:auto;height:100%;min-height:280px}
+.owner-property-grid.is-single .owner-card-removal {grid-column:2}
+.owner-property-grid.is-single .owner-card-actions .btn {width:auto;min-width:180px}
+.app-layout .owner-listings>.page-heading.owner-workspace-heading>.btn {background:#2554ef;border-color:#2554ef;color:#fff;display:flex;align-items:center;justify-content:center;min-height:44px}
+.app-layout .owner-property-card {display:flex;flex-direction:column;box-shadow:none}
+.app-layout .owner-property-card:hover {transform:none}
+.owner-property-card .property-cover {display:block;aspect-ratio:16/10;overflow:hidden;position:relative;flex:none}
+.owner-property-card .status-badge {top:.7rem;right:.7rem;left:auto;font-size:.69rem;max-width:calc(100% - 1.4rem);white-space:normal}
+.owner-property-copy {padding:1.2rem;display:flex;flex-direction:column;flex:1;min-width:0}
+.owner-property-type {font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:#526a85;margin:0 0 .45rem}
+.owner-property-card h3 {font-size:1.1rem;line-height:1.5;margin:0 0 .5rem;overflow-wrap:anywhere;letter-spacing:-.02em}
+.owner-property-card h3 a {color:#1c3555;text-decoration:none}
+.owner-property-address {font-size:.8rem;line-height:1.6;color:#526a85;margin-bottom:1rem;overflow-wrap:anywhere}
+.owner-card-facts {display:grid;grid-template-columns:90px minmax(0,1fr);gap:.9rem;margin:0 0 1rem;padding-top:.8rem;border-top:1px solid #a4b7d0}
+.owner-card-facts dt {font-size:.7rem;font-weight:500;color:#526a85;margin-bottom:.3rem}
+.owner-card-facts dd {font-size:.83rem;line-height:1.6;margin:0}
+.owner-next-step {padding:1rem;background:#e6edf5;border:1px solid #a4b7d0;border-radius:9px;margin-bottom:1rem}
+.owner-next-step>strong {font-size:.77rem;font-weight:650}
+.owner-next-step p {font-size:.79rem;line-height:1.65;margin:.35rem 0 0;overflow-wrap:anywhere}
+.owner-next-step small {display:block;font-size:.71rem;color:#526a85;margin-top:.5rem}
+.owner-next-step.tone-attention,.owner-editor-context.tone-attention {background:#f3ead8;border-color:#c4ad7d}
+.owner-property-card .owner-availability {margin-bottom:1rem;font-size:.78rem}
+.owner-card-actions {display:flex;flex-wrap:wrap;align-items:center;gap:.65rem 1rem;margin-top:auto}
+.owner-card-actions .btn {display:flex;justify-content:center;align-items:center;min-height:44px;font-size:.8rem;width:100%}
+.owner-card-actions>a:not(.btn) {display:flex;align-items:center;min-height:40px;font-size:.77rem}
+.owner-card-updated {font-size:.7rem;color:#526a85;margin:.6rem 0 0}
+.app-layout .owner-property-card .owner-card-removal {margin:0 1.2rem;flex:none}
+.owner-workspace-notice {margin-bottom:1.5rem;border:1px solid #91ad9e;border-radius:10px;background:#e0ece4;padding:1rem}
+.owner-workspace-notice .alert {padding:0;border:0;background:transparent;margin:0;font-size:.87rem}
+.owner-workspace-notice>div {display:flex;align-items:center;flex-wrap:wrap;gap:.8rem;margin-top:.5rem;font-size:.8rem}
+.owner-empty {padding:2rem!important;margin:1rem 0;background:#f3efe6}
+.owner-empty h3 {font-size:1.3rem}
+.owner-empty p {font-size:.87rem;color:#526a85;line-height:1.7;max-width:65ch}
+.owner-empty>div {display:flex;flex-wrap:wrap;gap:.8rem}
+.editor-workspace-links {display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.editor-workspace-links .back-link {margin:0}
+.editor-workspace-links .btn {min-height:44px;font-size:.78rem}
+.owner-editor-context {padding:1rem 1.2rem;background:#e6edf5;border:1px solid #91a8c6;border-radius:10px;margin:1rem 0}
+.owner-editor-context p {font-size:.87rem;line-height:1.65;margin:0}
+.owner-editor-context small {display:block;font-size:.73rem;color:#526a85;margin-top:.5rem}
+.app-layout .owner-state.state-attention {background:#f3e8ce;border-color:#c4ad7d;color:#6b501b}
+.app-layout .owner-state.state-live {background:#e0ece4;border-color:#91ad9e;color:#234d3a}
+.app-layout .owner-state.state-review {background:#dce6f3;border-color:#91a8c6;color:#1d3452}
+.owner-save-feedback {padding:.8rem 1rem;margin:1rem 0;background:#e0ece4;border:1px solid #91ad9e;border-radius:8px;font-size:.82rem;line-height:1.65;color:#234d3a}
+.owner-vacancy-guide {border:1px solid #91a8c6;background:#e6edf5;border-radius:10px;padding:1rem 1.2rem;margin:1.2rem 0}
+.owner-vacancy-guide h3 {font-size:1rem;margin:0 0 .5rem}
+.owner-vacancy-guide p {font-size:.83rem;line-height:1.7;margin:0;color:#405a79}
+.owner-vacancy-actions {display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.owner-vacancy-actions .btn {min-height:44px}
+.owner-editor .room-option {border-color:#91a8c6;margin:1.2rem 0;padding:1.2rem}
+.owner-editor .room-option .vacancy-form {margin-bottom:1rem}
+@media(max-width:1100px){.owner-property-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.owner-task-grid{gap:.7rem}.owner-task-grid>a{padding:1rem}}
 @media (max-width: 767px) {
+  .owner-property-grid.is-pair{grid-template-columns:minmax(0,1fr)}.owner-property-grid.is-single .owner-property-card{display:flex}.owner-property-grid.is-single .property-cover{aspect-ratio:16/10;height:auto;min-height:0}.owner-property-grid.is-single .owner-card-actions .btn{width:100%}
+  .app-layout .owner-listings{padding:1.2rem 1rem 2rem}.owner-task-grid{grid-template-columns:minmax(0,1fr)}.owner-task-grid>a{padding:1rem 1.2rem}.owner-task-open{display:none}.owner-property-grid{grid-template-columns:minmax(0,1fr)}.owner-property-copy{padding:1rem}.owner-workspace-heading{align-items:start;flex-direction:column;gap:1rem}.owner-workspace-heading>.btn{width:100%;justify-content:center}.owner-property-views button{padding:.65rem .6rem;font-size:.76rem}.owner-vacancy-actions>.btn{width:100%;justify-content:center}.owner-editor .room-option{padding:1rem}
   .editor-steps { gap: .25rem; margin: 1.1rem 0 1.3rem; }
   .editor-steps button { flex-direction: column; align-items: center; gap: .4rem; padding: .65rem .2rem; text-align: center; font-size: .7rem; }
   .editor-steps button > span { width: 24px; height: 24px; }
@@ -73,3 +148,5 @@
   .owner-preview-details { grid-template-columns: 1fr; }
   .owner-listing-settings > .panel { padding: 1rem; }
 }
+
+.owner-property-card .owner-next-step p {display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}

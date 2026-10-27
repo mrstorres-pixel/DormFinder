@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PropertyRequest;
 use App\Http\Resources\PropertyResource;
 use App\Models\Property;
+use App\Services\AdminBrowse;
 use App\Services\AvailabilityFreshness;
 use App\Services\ListingWorkflow;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -21,7 +23,12 @@ class PropertyController extends Controller
     {
         Gate::authorize('viewAny', Property::class);
         app(AvailabilityFreshness::class)->remind($request->user());
-        $data = $request->validate(['view' => ['nullable', Rule::in(['active', 'archived', 'all'])]]);
+        $data = AdminBrowse::filters($request, [
+            'view' => ['nullable', Rule::in(['active', 'archived', 'all'])],
+            'status' => ['nullable', Rule::in(['draft', 'pending_review', 'approved', 'rejected', 'suspended', 'archived'])],
+            'availability' => ['nullable', Rule::in(['needs_confirmation', 'taken'])],
+            'sort' => ['nullable', Rule::in(['newest', 'oldest', 'updated', 'title_asc', 'title_desc'])],
+        ]);
         $query = $request->user()->properties()->with(ListingController::relations());
         if (($data['view'] ?? 'all') === 'active') {
             $query->where('status', '!=', 'archived');
@@ -29,8 +36,33 @@ class PropertyController extends Controller
             $query->where('status', 'archived');
         }
 
+        if (filled($data['q'] ?? null)) {
+            $pattern = AdminBrowse::pattern($data['q']);
+            $query->where(function (Builder $query) use ($pattern): void {
+                $query->whereRaw('lower(title) LIKE ?', [$pattern])
+                    ->orWhereRaw('lower(coalesce(address, ?)) LIKE ?', ['', $pattern])
+                    ->orWhereRaw('lower(city) LIKE ?', [$pattern]);
+            });
+        }
+        if (filled($data['status'] ?? null)) {
+            $query->where('status', $data['status']);
+        }
+        if (($data['availability'] ?? null) === 'needs_confirmation') {
+            $query->where('status', 'approved')->whereHas('roomOptions', function (Builder $query): void {
+                $query->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS));
+            });
+        } elseif (($data['availability'] ?? null) === 'taken') {
+            $query->where('status', 'approved')->has('roomOptions')->whereDoesntHave('roomOptions', fn (Builder $query) => $query->where('available_units', '>', 0));
+        }
+        $sort = $data['sort'] ?? 'newest';
+        if (str_starts_with($sort, 'title_')) {
+            $query->orderBy('title', $sort === 'title_asc' ? 'asc' : 'desc');
+        } elseif ($sort === 'updated') {
+            $query->orderByDesc('updated_at');
+        }
+
         return PropertyResource::collection(
-            $query->latest('id')->paginate(12)->withQueryString()
+            $query->orderBy('id', $sort === 'oldest' ? 'asc' : 'desc')->paginate($data['per_page'] ?? 12)->withQueryString()
         );
     }
 

@@ -15,7 +15,7 @@ const sections = [
   ['/profile', 'Profile', 'Your account & security', 'M20 21v-2a7 7 0 0 0-14 0v2 M13 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8'],
 ]
 
-const resultNoun = (noun, count) => count === 1 ? ({ listings: 'listing', accounts: 'account', reports: 'report', actions: 'action', submissions: 'submission', results: 'result' })[noun] || noun : noun
+const resultNoun = (noun, count) => count === 1 ? ({ properties: 'property', listings: 'listing', accounts: 'account', reports: 'report', actions: 'action', submissions: 'submission', results: 'result' })[noun] || noun : noun
 
 export function AdminNavigation() {
   const { pathname } = useLocation()
@@ -99,7 +99,7 @@ function FilterForm({ browse, searchLabel = 'Search listings', filters = [], sor
   </form>
 }
 
-export function AdminPager({ browse, noun = 'results' }) {
+export function AdminPager({ browse, noun = 'results', announceRange = true }) {
   const id = useId()
   const { query, page, setPage } = browse
   const meta = query.data?.meta || query.data
@@ -107,7 +107,7 @@ export function AdminPager({ browse, noun = 'results' }) {
   const last = Math.max(1, meta?.last_page || 1)
   if (!total) return null
   const hasRows = query.data?.data?.length > 0
-  return <div className="admin-pagination"><p role="status">{hasRows ? `${meta?.from || (page - 1) * Number(browse.params.get('per_page') || 12) + 1}–${meta?.to || Math.min(total, page * Number(browse.params.get('per_page') || 12))} of ${total} ${resultNoun(noun, total)}` : `No ${noun} on this page · ${total} in total`}</p><div className="admin-page-size"><label htmlFor={id}>Per page</label><select className="form-select" id={id} value={browse.params.get('per_page') || '12'} onChange={event => browse.update({ per_page: event.target.value })}>{[12, 24, 48].map(value => <option key={value}>{value}</option>)}</select></div>{last > 1 && <nav aria-label="Result pages"><button className="btn btn-outline-primary btn-sm" type="button" disabled={page <= 1 || query.isFetching} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} of {last}</span><button className="btn btn-outline-primary btn-sm" type="button" disabled={page >= last || query.isFetching} onClick={() => setPage(page + 1)}>Next</button></nav>}</div>
+  return <div className="admin-pagination"><p role={announceRange ? 'status' : undefined} aria-live={announceRange ? undefined : 'polite'}>{hasRows ? `${meta?.from || (page - 1) * Number(browse.params.get('per_page') || 12) + 1}–${meta?.to || Math.min(total, page * Number(browse.params.get('per_page') || 12))} of ${total} ${resultNoun(noun, total)}` : `No ${noun} on this page · ${total} in total`}</p><div className="admin-page-size"><label htmlFor={id}>Per page</label><select className="form-select" id={id} value={browse.params.get('per_page') || '12'} onChange={event => browse.update({ per_page: event.target.value })}>{[12, 24, 48].map(value => <option key={value}>{value}</option>)}</select></div>{last > 1 && <nav aria-label="Result pages"><button className="btn btn-outline-primary btn-sm" type="button" disabled={page <= 1 || query.isFetching} onClick={() => setPage(page - 1)}>Previous</button><span>Page {page} of {last}</span><button className="btn btn-outline-primary btn-sm" type="button" disabled={page >= last || query.isFetching} onClick={() => setPage(page + 1)}>Next</button></nav>}</div>
 }
 
 export function AdminEmpty({ title = 'No matching results', children, browse }) {

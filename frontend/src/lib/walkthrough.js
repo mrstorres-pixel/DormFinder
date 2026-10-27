@@ -41,7 +41,7 @@ export function walkthroughSteps(role, context = {}) {
     ...shared,
   ]
   if (role === 'landlord') return [
-    step('workspace', 'Your properties, in one place.', 'This is your workspace. Open a property to manage its photos, rooms, details and availability. Removed listings remain available through the Show properties filter.', '/landlord', '[data-tour="owner-workspace"]'),
+    step('workspace', 'Your properties, in one place.', 'This is your workspace. Open a property to manage its photos, rooms, details and availability. Use the property views to find drafts, review submissions and removed listings. Availability updates that need attention are linked above the property list.', '/landlord', '[data-tour="owner-workspace"]'),
     step('add-property', 'Make room for a new listing.', 'Add a property starts a private draft. It stays private while you prepare it and only appears in public search after review.', '/landlord', '[data-tour="add-property"]'),
     step('basics', 'Start with the essentials.', 'Give the property a recognizable name, choose its type and enter its city. You can use these fields after the walkthrough; Next will not create a property.', '/landlord/properties/new', '[data-tour="listing-basics"]', { interactive: false }),
     ...(context.propertyPath ? [
