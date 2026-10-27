@@ -1,5 +1,13 @@
 # Deployment runbook — Codex execution
 
+## Released tab branding and catalog copy cleanup - October 27, 2026
+
+Final frontend application source b414337142bb989cff87761a9b1c8c7f154073ea is READY in dpl_B51vrKunDrdoryKBc9TApAbDtLWb at https://dormfinder-a5hmn49wm-mrstorres-pixels-projects.vercel.app and promoted to https://dormfinder-pink.vercel.app. A clean committed-source archive used the verified existing project prj_Qb4KB7USZuY9HmzezIdVfrpRXiB1 / team team_lakGFdG84Dlw3s6qfEG8IKQc, frontend root, Node 24 and established build configuration. Existing CLI authentication accessed the protected stage; Deployment Protection was retained. Archive export disables automatic CRLF conversion and the favicon SVG has an explicit LF rule.
+
+All 35 staged JS/CSS files and three favicon files match the tested build byte for byte. Staged HTML is equivalent apart from carriage-return encoding. After promotion, the six public entry assets and three icons match, the tab title is exactly DormFinder, and direct/proxied readiness returns 200. Final entry index-DGXDHnun.js and main stylesheet index-D-gkTgQH.css identify the release. All eight final actual-account/catalog/routing Chromium/WebKit cases pass in 1.2 minutes; the bounded post-acceptance runtime-error query returns zero events. Detailed local checks, image review and the resolved address-copy omission are recorded in validation.md.
+
+Source 506ed92 / dpl_59ihyuJpZ2TBZR5VuMFBnRwFnwp8 was staged but not promoted after its SVG newline hash difference. The intermediate e632ed6 / dpl_JyceDzRDfDtMA8kBgCmJsGZ2YpGa was live before the final seeded-address display correction and is the immediate compatible frontend recovery reference. The pre-cleanup frontend is 696c8e5 / dpl_55u4AZ8k4AvutmVhoEbtaU2SAwpK. Re-inspect retained artifacts and current routing before recovery. No backend deployment, migration, production business-data edit, dependency or provider-setting change accompanied this frontend work. Internal catalog flags and stored values remain unchanged; cleanup is in client presentation. Private reports, keys and the user's certificate remain excluded.
+
 ## Released comparison walking routes and minimum selection - October 21, 2026
 
 Application source 696c8e53580593b12ea97094b92dca42b23ce9f7 is live on both existing services. Render dep-dbc191navr4c73egb1d0 finished live at 01:26:27 UTC on srv-db44ecrbc2fs73aj14q0 in the user-confirmed workspace tea-d7ip6vu7r5hc73ccjjng. The free plan, auto-deploy-off setting and established Docker context/entrypoint remain. Readiness returned 200 before frontend promotion. No schema migration, reseeding, environment, credential, dependency or provider configuration change was required.
