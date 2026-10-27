@@ -71,6 +71,10 @@ class ListingSearch
         $data['availability_cutoff'] = now()->subDays(AvailabilityFreshness::REMIND_DAYS);
         $campus = CampusDistance::reference($data['campus_id'] ?? null);
         $query = CampusDistance::annotate(ListingController::publicQuery(), $campus);
+        $query->whereHas('roomOptions', function (Builder $options): void {
+            AvailabilityFreshness::visibleOptions($options);
+            $options->where('available_units', '>', 0);
+        });
         if (isset($data['radius_km'])) {
             CampusDistance::within($query, $campus, (float) $data['radius_km'] * 1000);
         }

@@ -1,7 +1,8 @@
 import { useId, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { campusResults } from '../lib/housing'
 
-export default function CampusSearch({ campuses = [], value = '', onChange, name = 'campus_id', label = 'College or university', helper = 'Choose the specific campus. Nearby housing may not be available yet.', placeholder = 'Search your university, campus, or city', disabled = false, requireQuery = false }) {
+export default function CampusSearch({ campuses = [], value = '', onChange, name = 'campus_id', label = 'College or university', helper = 'Choose the specific campus. Nearby housing may not be available yet.', placeholder = 'Search your university, campus, or city', disabled = false, requireQuery = false, allowSuggestion = true }) {
   const id = useId()
   const selected = campuses.find(campus => String(campus.id) === String(value))
   const [query, setQuery] = useState('')
@@ -27,5 +28,7 @@ export default function CampusSearch({ campuses = [], value = '', onChange, name
       {!results.length && <li role="presentation">No matching campus in our current directory.</li>}
     </ul>}
     {helper && <p className="form-text" id={id + '-help'}>{helper}</p>}
+    {value && !selected && campuses.length > 0 && <p className="form-text">This campus is not currently available for selection. Choose another campus or clear the selection.</p>}
+    {allowSuggestion && query.trim().length > 1 && !results.length && <Link className="campus-missing-link" to={'/campuses/suggest?name=' + encodeURIComponent(query.trim())}>Missing a campus? Suggest it for review</Link>}
   </div>
 }

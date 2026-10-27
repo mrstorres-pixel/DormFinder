@@ -96,7 +96,9 @@ class StudentDiscoveryTest extends TestCase
         $campus = Campus::query()->firstOrFail();
         $this->actingAs(User::factory()->create())->patchJson('/api/v1/me', ['name' => 'Student', 'preferred_campus_id' => $campus->id])->assertOk()->assertJsonPath('data.preferred_campus_id', $campus->id);
         $campus->forceFill(['active' => false])->save();
-        $this->patchJson('/api/v1/me', ['name' => 'Student', 'preferred_campus_id' => $campus->id])->assertUnprocessable();
+        $this->patchJson('/api/v1/me', ['name' => 'Updated Student', 'preferred_campus_id' => $campus->id])->assertOk()->assertJsonPath('data.preferred_campus_id', $campus->id);
+        $other = Campus::factory()->create(['active' => false]);
+        $this->patchJson('/api/v1/me', ['name' => 'Student', 'preferred_campus_id' => $other->id])->assertUnprocessable();
         $this->app['auth']->forgetGuards();
         $this->actingAs(User::factory()->landlord()->create())->patchJson('/api/v1/me', ['name' => 'Owner', 'preferred_campus_id' => $campus->id])->assertUnprocessable();
     }

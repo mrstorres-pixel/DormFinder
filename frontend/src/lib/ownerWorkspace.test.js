@@ -8,8 +8,9 @@ describe('owner workspace decisions', () => {
   it('distinguishes hidden, taken, published and review states without claiming drafts are public', () => {
     expect(ownerListingState(property)).toMatchObject({ step: 'photos', action: 'Continue draft', label: 'Draft · not publicly listed' })
     expect(ownerListingState({ ...property, status: 'approved', availability: { status: 'hidden' } })).toMatchObject({ action: 'Refresh availability', tone: 'attention' })
-    expect(ownerListingState({ ...property, status: 'approved', room_options: [{ ...option, available_units: 0 }], availability: { status: 'current' } })).toMatchObject({ action: 'Update vacancies', label: 'All taken' })
-    expect(ownerListingState({ ...property, status: 'approved', availability: { status: 'current' } }).label).toBe('Published')
+    expect(ownerListingState({ ...property, status: 'approved', room_options: [{ ...option, available_units: 0 }], availability: { status: 'current' } })).toMatchObject({ action: 'Update availability', label: 'Fully occupied' })
+    expect(ownerListingState({ ...property, status: 'approved', owner_paused: true, availability: { status: 'hidden' } })).toMatchObject({ action: 'Resume listing', label: 'Paused' })
+    expect(ownerListingState({ ...property, status: 'approved', availability: { status: 'current' } }).label).toBe('Live')
     expect(ownerListingState({ ...property, status: 'pending_review' }).action).toBe('View submission')
     expect(ownerListingState({ ...property, status: 'rejected', moderation_reason: 'Correct the address.' }).note).toBe('Correct the address.')
   })

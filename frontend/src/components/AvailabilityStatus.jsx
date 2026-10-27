@@ -16,7 +16,7 @@ export default function AvailabilityStatus({ option, askHref, browse }) {
 
 export function OwnerAvailability({ property, compact = false }) {
   const state = property.availability
-  if (property.status !== 'approved' || !state) return null
+  if (property.status !== 'approved' || property.owner_paused || !state) return null
   const hidden = state.status === 'hidden', due = state.status === 'needs_confirmation'
   const taken = property.room_options?.length > 0 && property.room_options.every(option => option.available_units === 0)
   const expires = state.hides_at ? new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeZone: 'Asia/Manila' }).format(new Date(state.hides_at)) : null

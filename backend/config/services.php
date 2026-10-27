@@ -4,6 +4,7 @@ return [
 
     'geocoding' => [
         'url' => env('GEOCODING_URL', 'https://photon.komoot.io/api/'),
+        'reverse_url' => env('GEOCODING_REVERSE_URL', 'https://photon.komoot.io/reverse'),
     ],
 
     /*

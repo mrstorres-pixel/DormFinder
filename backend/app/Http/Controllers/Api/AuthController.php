@@ -62,7 +62,7 @@ class AuthController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'preferred_campus_id' => [$request->user()->role === 'student' ? 'sometimes' : 'prohibited', 'nullable', 'integer', Rule::exists('campuses', 'id')->where('active', true)],
+            'preferred_campus_id' => [$request->user()->role === 'student' ? 'sometimes' : 'prohibited', 'nullable', 'integer', Rule::exists('campuses', 'id')->where(fn ($query) => $query->where('active', true)->orWhere('id', $request->user()->preferred_campus_id))],
             'email' => ['prohibited'], 'role' => ['prohibited'], 'status' => ['prohibited'],
         ]);
         $request->user()->update($data);

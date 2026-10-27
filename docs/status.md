@@ -1,5 +1,15 @@
 # Implementation status
 
+## Owner availability, campus management and connected address picker - October 27
+
+The pending application release adds one vacancy panel per property, complete room-count confirmation, a fully occupied action and separate pause/resume/archive flows. Pausing retains approval, conversations and existing viewing requests. Resuming requires current positive vacancies. My space has Properties, Needs attention and Archived views, one status filter and task counters only when work exists. Fully occupied listings leave default discovery results; in-app freshness reminders skip paused and fully occupied properties. The existing fourteen-day reminder, twenty-seven-day warning and thirty-day expiry remain in-app only.
+
+The visible location picker suggests Philippine addresses after a short typing pause. Selecting a suggestion fills editable street/city fields. Clicking or dragging the entrance pin looks up the nearest mapped address without snapping the chosen coordinates. Obsolete queries are cancelled, saving waits for a pin lookup, and cancelling restores saved fields and coordinates. Unavailable or unmapped addresses retain the pin and provide manual correction. The shared Photon adapter retains authentication, cache, request spacing and its daily usage cap.
+
+Administrators can search and paginate campuses, add/edit a verified branch and pedestrian entrance, deactivate/reactivate it and inspect change history. Existing IDs and inactive profile references are retained. Students and owners can suggest a missing campus privately, inspect feedback and resubmit; administrators can add the verified branch, link an existing campus or request more information. Notifications stay in-app. The walkthrough describes these current flows.
+
+Local checks currently pass: 177 backend tests / 1953 assertions, 106 frontend unit tests, Pint, lint and build; final browser regression and controlled release are in progress. The additive production migration completed with atomic before/after integrity checks for sixteen existing business tables. New private campus tables have RLS, trusted-server grants and no anon/authenticated access; security advisors report no findings. A local production-data backup export was rejected by automatic approval review and was not performed. No business records were exported or reseeded.
+
 ## Owner address search, visibility actions and clearer availability - released October 27
 
 The location step now displays the map immediately. A deliberate Find address search looks up Philippine streets, buildings and places through a bounded server-side Photon adapter, independently of the campus directory. Selecting a result places the pin; the owner checks and adjusts the entrance before saving. Typing/searching alone does not dirty or submit the property form. Empty results, service failure, retry and manual map/coordinate placement remain available; stale search responses are ignored. Requests are authenticated, cached, globally spaced and capped, with no browser credentials forwarded to the geocoder.

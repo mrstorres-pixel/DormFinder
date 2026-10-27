@@ -22,6 +22,7 @@ class RoomOptionController extends Controller
         Gate::authorize('view', $property);
         $data = $request->validate([
             'revision' => ['required', 'integer', 'min:1'],
+            'resume' => ['sometimes', 'boolean'],
             'options' => ['required', 'array', 'min:1', 'max:20'],
             'options.*' => ['array:id,available_units'],
             'options.*.id' => ['required', 'integer', 'distinct'],
@@ -31,6 +32,15 @@ class RoomOptionController extends Controller
             $locked = Property::query()->lockForUpdate()->findOrFail($property->id);
             Gate::authorize('view', $locked);
             abort_unless($locked->status === 'approved' && $locked->revision === $data['revision'], 409);
+            if ($data['resume'] ?? false) {
+                $ids = array_column($data['options'], 'id');
+                sort($ids);
+                if ($ids !== $locked->roomOptions()->orderBy('id')->pluck('id')->all() || array_sum(array_column($data['options'], 'available_units')) < 1) {
+                    throw ValidationException::withMessages(['options' => 'Check every room option and enter at least one actual vacancy before resuming.']);
+                }
+                $locked->owner_paused = false;
+                $locked->save();
+            }
             $changes = [];
             foreach ($data['options'] as $value) {
                 $option = $locked->roomOptions()->lockForUpdate()->findOrFail($value['id']);
@@ -41,7 +51,7 @@ class RoomOptionController extends Controller
                 $option->update(['available_units' => $value['available_units'], 'availability_confirmed_at' => now()]);
             }
             $locked->increment('revision');
-            app(ActivityRecorder::class)->audit($request->user()->id, 'availability_update', 'approved', 'approved', $locked->revision, implode('; ', $changes), $locked->id);
+            app(ActivityRecorder::class)->audit($request->user()->id, ($data['resume'] ?? false) ? 'listing_resume' : 'availability_update', 'approved', 'approved', $locked->revision, implode('; ', $changes), $locked->id);
             app(AvailabilityFreshness::class)->resolveReminders($locked);
 
             return $locked;

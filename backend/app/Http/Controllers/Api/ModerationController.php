@@ -77,6 +77,9 @@ class ModerationController extends Controller
             };
             abort_unless($valid, 409);
             $locked->status = $data['action'] === 'restore' ? 'draft' : ($data['action'] === 'archive' ? 'archived' : 'suspended');
+            if ($owner) {
+                $locked->owner_paused = false;
+            }
             $locked->approved_at = null;
             $locked->submitted_at = null;
             $locked->moderation_reason = $data['reason'];

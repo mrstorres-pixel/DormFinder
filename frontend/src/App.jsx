@@ -31,6 +31,8 @@ const Listings = lazy(() => import('./components/ListingPages').then(module => (
 const ListingDetails = lazy(() => import('./components/ListingPages').then(module => ({ default: module.ListingDetails })))
 const Comparison = lazy(() => import('./components/ListingPages').then(module => ({ default: module.Comparison })))
 const CampusFinder = lazy(() => import('./components/CampusFinder'))
+const AdminCampuses = lazy(() => import('./components/AdminCampuses'))
+const CampusSuggestion = lazy(() => import('./components/CampusSuggestion'))
 const SavedPlaces = lazy(() => import('./components/SavedPlaces'))
 const SavedPlacesRedirect = lazy(() => import('./components/SavedPlaces').then(module => ({ default: module.SavedPlacesRedirect })))
 const Viewings = lazy(() => import('./components/Viewings'))
@@ -166,6 +168,8 @@ const router = createBrowserRouter(createRoutesFromElements(
     <Route path="/guide" element={<Protected><QuickGuide /></Protected>} />
     <Route path="/landlord" element={<Protected role="landlord"><Landlord /></Protected>} />
     <Route path="/landlord/properties/new" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
+    <Route path="/admin/campuses" element={<Protected role="admin"><AdminCampuses /></Protected>} />
+    <Route path="/campuses/suggest" element={<Protected role={['student', 'landlord']}><CampusSuggestion /></Protected>} />
     <Route path="/landlord/properties/:id" element={<Protected role="landlord"><PropertyEditor /></Protected>} />
     <Route path="*" element={<section className="container page-space"><h1>We couldn’t find that page.</h1><Link to="/">Return home</Link></section>} />
   </Route>

@@ -50,6 +50,8 @@ function PropertyForm({ property, onRefresh, refreshing }) {
   const busy = useIsMutating({ mutationKey: ['property-write', property?.id || 'new'] }) > 0
   const [coordinates, setCoordinates] = useState({ latitude: property?.latitude ?? '', longitude: property?.longitude ?? '' })
   const [dirty, setDirty] = useState(false)
+  const [locationLookup, setLocationLookup] = useState(false)
+  const [locationReset, setLocationReset] = useState(0)
   const [locationBaseline, setLocationBaseline] = useState(() => ({ revision: property?.revision, fingerprint: ownerDetailsFingerprint(property) }))
   const [photosDirty, setPhotosDirty] = useState(false)
   const [roomsDirty, setRoomsDirty] = useState(false)
@@ -85,6 +87,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
   })
   function submit(event) {
     event.preventDefault()
+    if (locationLookup) { explain('Wait for the address lookup, or type the address to cancel it, before saving.'); return }
     if (!canReplaceOthers()) return
     const form = new FormData(event.currentTarget)
     const values = Object.fromEntries(form)
@@ -102,6 +105,7 @@ function PropertyForm({ property, onRefresh, refreshing }) {
   }
   async function go(next) {
     if (busy) return
+    if (locationLookup) { explain('Wait for the address lookup before continuing.'); return }
     setStepError('')
     const target = editorSteps.findIndex(([key]) => key === next)
     const current = editorSteps.findIndex(([key]) => key === step)
@@ -160,10 +164,10 @@ function PropertyForm({ property, onRefresh, refreshing }) {
         <Field label="Street address" name="address" defaultValue={property?.address} required maxLength={255} error={errors} />
         <Field label="City" name="city" defaultValue={property?.city || 'Manila'} required maxLength={100} error={errors} />
         <fieldset className="mb-3"><legend className="h3">Shared facilities <small>(optional)</small></legend><p className="small">Select only facilities available at this property.</p><div className="amenity-list">{Object.entries(amenities).map(([value,label]) => <label key={value}><input type="checkbox" name="amenities" value={value} defaultChecked={property?.amenities?.includes(value)} /> {label}</label>)}</div></fieldset><Field label="House rules (optional)" name="house_rules" as="textarea" defaultValue={property?.house_rules} maxLength={2000} rows={3} hint="Include quiet hours, visitor policies, smoking rules or other restrictions." error={errors} /><h3 className="h5 mt-4">Property location <span className="required-field-mark">Required to continue</span></h3><p className="small">Search the street address or click the map, then check the pin at the property entrance.</p>
-        {step === 'location' && <MapPinPicker latitude={coordinates.latitude} longitude={coordinates.longitude} onChange={value => { setCoordinates(value); setDirty(true) }} />}
+        {step === 'location' && <MapPinPicker addressLabel={[property.address, property.city].filter(Boolean).join(', ')} resetToken={locationReset} onLookupStateChange={setLocationLookup} latitude={coordinates.latitude} longitude={coordinates.longitude} onChange={value => { setCoordinates(value); setDirty(true) }} onAddressSelected={place => { for (const [name, value] of [['address', place.street_address], ['city', place.city]]) { if (value && locationForm.current?.elements[name]) { locationForm.current.elements[name].value = value; locationForm.current.elements[name].setCustomValidity('') } } setDirty(true); setStepError('') }} />}
         <div className="row"><div className="col-sm-6"><Field label="Latitude" name="latitude" type="number" step="any" min="-90" max="90" value={coordinates.latitude} onChange={event => setCoordinates(current => ({ ...current,latitude:event.target.value }))} error={errors} /></div><div className="col-sm-6"><Field label="Longitude" name="longitude" type="number" step="any" min="-180" max="180" value={coordinates.longitude} onChange={event => setCoordinates(current => ({ ...current,longitude:event.target.value }))} error={errors} /></div></div>
-        <button type="submit" value="exit" formNoValidate className="btn btn-outline-primary" disabled={mutation.isPending}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
-            {dirty && <button type="button" className="btn btn-outline-secondary ms-2" disabled={mutation.isPending} onClick={() => { clearUnsaved(); setDirty(false); setCoordinates({ latitude: property.latitude ?? '', longitude: property.longitude ?? '' }); for (const field of locationForm.current.elements) field.setCustomValidity?.(''); locationForm.current.reset(); mutation.reset(); setStepError(''); setValidationAttempted(false) }}>Cancel location changes</button>}
+        <button type="submit" value="exit" formNoValidate className="btn btn-outline-primary" disabled={mutation.isPending || locationLookup}>{mutation.isPending ? 'Saving…' : 'Save draft'}</button>
+            {dirty && <button type="button" className="btn btn-outline-secondary ms-2" disabled={mutation.isPending} onClick={() => { clearUnsaved(); setDirty(false); setLocationReset(current => current + 1); setLocationLookup(false); setCoordinates({ latitude: property.latitude ?? '', longitude: property.longitude ?? '' }); for (const field of locationForm.current.elements) field.setCustomValidity?.(''); locationForm.current.reset(); mutation.reset(); setStepError(''); setValidationAttempted(false) }}>Cancel location changes</button>}
       {dirty && <p className="owner-save-feedback" aria-live="polite">Location changes are not saved yet. Save draft keeps your work and returns to My space.</p>}
       </fieldset></form>
     </section></div>
@@ -172,14 +176,14 @@ function PropertyForm({ property, onRefresh, refreshing }) {
       <OwnerPreview property={property} refresh={() => client.invalidateQueries({ queryKey: ['property', String(property.id)] })} />
       <div className="owner-listing-settings"><OwnerListingActions property={property} /></div>
     </div>
-    <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{editable && (step === 'location' || (step === 'rooms' && roomsDirty)) ? 'Save and continue' : 'Continue'}</button>}</div>
+    <div className="editor-step-footer">{step !== 'photos' ? <button type="button" className="btn btn-outline-primary" disabled={busy} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) - 1][0])}>Previous step</button> : <span />}{step !== 'preview' && <button type="button" className="btn btn-primary" disabled={busy || locationLookup} onClick={() => go(editorSteps[editorSteps.findIndex(([key]) => key === step) + 1][0])}>{editable && (step === 'location' || (step === 'rooms' && roomsDirty)) ? 'Save and continue' : 'Continue'}</button>}</div>
   </section>
 }
 
 function OwnerPreview({ property, refresh }) {
   const [chosen, setChosen] = useState('')
   const room = property.room_options.find(option => option.id === Number(chosen)) || property.room_options[0]
-  return <section className="owner-preview" aria-label="Saved listing preview"><div className="section-heading"><h2>Student preview</h2><span className="owner-fine-print">Saved content · {property.status === 'approved' ? (property.availability?.status === 'hidden' ? 'hidden: confirm availability' : 'public') : 'private'}</span></div>
+  return <section className="owner-preview" aria-label="Saved listing preview"><div className="section-heading"><h2>Student preview</h2><span className="owner-fine-print">Saved content · {property.status === 'approved' ? (property.owner_paused ? 'paused' : property.availability?.status === 'hidden' ? 'hidden: confirm availability' : property.room_options.every(option => option.available_units === 0) ? 'fully occupied' : 'public') : 'private'}</span></div>
     <h3>{property.title}</h3><p>{[property.address, property.city].filter(Boolean).join(', ')}</p>
     <PhotoGallery photos={property.photos} refresh={refresh} />
     <div className="owner-preview-details"><div><h3>About this property</h3><p className="preserve-lines">{property.description || 'Add a description in Location & details.'}</p><ListingInformation property={property} /></div><section className="panel"><h3>Rooms and costs</h3>{room ? <><label className="form-label" htmlFor="owner-preview-room">Preview room option</label><select className="form-select" id="owner-preview-room" value={room.id} onChange={event => setChosen(event.target.value)}>{property.room_options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select><p className="room-price mt-3">{pesos(room.monthly_rent_centavos)} <span>/ month · {room.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><details><summary>Costs and room terms</summary><RoomCharges option={room} /></details></> : <p>Add a room option in Rooms & costs.</p>}</section></div>

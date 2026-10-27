@@ -56,7 +56,7 @@ test('owner review notes are padded and archive controls stay visible without a 
     await expectInsetText(note)
     await note.scrollIntoViewIfNeeded()
     if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/layout-owner-review-${testInfo.project.name}-${width}.png` })
-    const action = page.getByRole('region', { name: 'Listing visibility' }).getByRole('button', { name: 'Remove listing', exact: true })
+    const action = page.getByRole('region', { name: 'Listing visibility' }).getByRole('button', { name: 'Archive listing', exact: true })
     await expect(action).toBeVisible()
     expect(await action.evaluate(element => Boolean(element.closest('details')))).toBe(false)
     await expect(page.getByLabel('Reason for listing action')).toHaveCount(0)

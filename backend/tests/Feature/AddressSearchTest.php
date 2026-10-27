@@ -27,7 +27,7 @@ class AddressSearchTest extends TestCase
     {
         Http::fake();
         $this->getJson('/api/v1/landlord/address-search?q=College%20Street')->assertUnauthorized();
-        foreach (['student', 'admin'] as $role) {
+        foreach (['student'] as $role) {
             $this->app['auth']->forgetGuards();
             $this->actingAs(User::factory()->create(['role' => $role]));
             $this->getJson('/api/v1/landlord/address-search?q=College%20Street')->assertForbidden();
@@ -48,7 +48,7 @@ class AddressSearchTest extends TestCase
     {
         $this->owner();
         Http::fake(['photon.komoot.io/*' => Http::response(['features' => [$this->feature(), $this->feature(['countrycode' => 'DE']), $this->feature([], [13, 52]), null, $this->feature(['countrycode' => []])]])]);
-        $this->getJson('/api/v1/landlord/address-search?q=College%20%20Street%20Manila')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.latitude', 14.6)->assertJsonPath('data.0.longitude', 120.99)->assertJsonPath('data.0.label', 'Student Residence, 12 College Street, Manila');
+        $this->getJson('/api/v1/landlord/address-search?q=College%20%20Street%20Manila')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.latitude', 14.6)->assertJsonPath('data.0.longitude', 120.99)->assertJsonPath('data.0.label', 'Student Residence, 12 College Street, Manila')->assertJsonPath('data.0.street_address', '12 College Street')->assertJsonPath('data.0.city', 'Manila');
         $this->getJson('/api/v1/landlord/address-search?q=college%20street%20manila')->assertOk()->assertJsonCount(1, 'data');
         Http::assertSentCount(1);
         Http::assertSent(fn ($request): bool => $request['q'] === 'College Street Manila' && $request['countrycode'] === 'PH' && $request['limit'] === 5 && ! $request->hasHeader('Authorization') && str_contains($request->header('User-Agent')[0], 'DormFinder'));
@@ -94,5 +94,48 @@ class AddressSearchTest extends TestCase
         Cache::put('address-search:daily:'.now()->format('Y-m-d'), 250, 60);
         $this->getJson('/api/v1/landlord/address-search?q=College%20Street')->assertServiceUnavailable();
         Http::assertNothingSent();
+    }
+
+    public function test_admin_can_find_an_entrance_address_without_receiving_landlord_data(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        Http::fake(['photon.komoot.io/*' => Http::response(['features' => [$this->feature()]])]);
+        $this->getJson('/api/v1/landlord/address-search?q=College%20Street')->assertOk()->assertJsonPath('data.0.street_address', '12 College Street')->assertJsonPath('data.0.city', 'Manila')->assertJsonMissingPath('data.0.landlord_id');
+    }
+
+    public function test_reverse_lookup_requires_an_authorized_user_and_philippine_coordinates(): void
+    {
+        Http::fake();
+        $this->getJson('/api/v1/landlord/address-reverse?latitude=14.6&longitude=120.99')->assertUnauthorized();
+        $this->actingAs(User::factory()->create(['role' => 'student']));
+        $this->getJson('/api/v1/landlord/address-reverse?latitude=14.6&longitude=120.99')->assertForbidden();
+        $this->owner();
+        foreach (['latitude=0&longitude=120.99', 'latitude=14.6&longitude=0', 'latitude=bad&longitude=120.99', 'latitude=14.6'] as $parameters) {
+            $this->getJson('/api/v1/landlord/address-reverse?'.$parameters)->assertUnprocessable();
+        }
+        Http::assertNothingSent();
+    }
+
+    public function test_reverse_lookup_returns_a_nearby_address_and_caches_without_forwarding_credentials(): void
+    {
+        $this->owner();
+        Http::fake(['photon.komoot.io/reverse*' => Http::response(['features' => [$this->feature()]])]);
+        for ($index = 0; $index < 2; $index++) {
+            $this->getJson('/api/v1/landlord/address-reverse?latitude=14.600123&longitude=120.990456')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.street_address', '12 College Street')->assertJsonPath('data.0.city', 'Manila');
+        }
+        Http::assertSentCount(1);
+        Http::assertSent(fn ($request): bool => $request['lat'] === 14.60012 && $request['lon'] === 120.99046 && $request['radius'] === 0.2 && $request['limit'] === 1 && ! $request->hasHeader('Authorization'));
+    }
+
+    public function test_reverse_lookup_shares_provider_budget_and_does_not_invent_an_address(): void
+    {
+        $this->owner();
+        Http::fake(['photon.komoot.io/*' => Http::response(['features' => [$this->feature(['countrycode' => 'DE'])]])]);
+        $this->getJson('/api/v1/landlord/address-reverse?latitude=14.6&longitude=120.99')->assertOk()->assertJsonCount(0, 'data');
+        $this->getJson('/api/v1/landlord/address-search?q=College%20Street')->assertTooManyRequests();
+        Cache::forget('address-search:next-request');
+        Cache::put('address-search:daily:'.now()->format('Y-m-d'), 250, 60);
+        $this->getJson('/api/v1/landlord/address-reverse?latitude=14.7&longitude=120.99')->assertServiceUnavailable();
+        Http::assertSentCount(1);
     }
 }

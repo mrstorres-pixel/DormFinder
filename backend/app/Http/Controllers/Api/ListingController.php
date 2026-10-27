@@ -20,7 +20,7 @@ class ListingController extends Controller
 {
     public static function publicQuery(): Builder
     {
-        return Property::query()->where('status', 'approved')->whereHas('landlord', fn ($query) => $query->where('status', 'active'))
+        return Property::query()->where('status', 'approved')->where('owner_paused', false)->whereHas('landlord', fn ($query) => $query->where('status', 'active'))
             ->whereHas('roomOptions', fn ($query) => AvailabilityFreshness::visibleOptions($query));
     }
 

@@ -55,8 +55,8 @@ class DemoListingsTest extends TestCase
             $this->assertSame('ready', $photo->status);
             $this->assertSame(IMAGETYPE_JPEG, getimagesizefromstring(Storage::disk('local')->get($photo->storage_key))[2]);
         }
-        $this->getJson('/api/v1/listings')->assertOk()->assertJsonPath('meta.total', 16)->assertJsonCount(12, 'data')->assertJsonPath('data.0.is_demo', true);
-        $this->getJson('/api/v1/listings?page=2')->assertOk()->assertJsonCount(4, 'data');
+        $this->getJson('/api/v1/listings')->assertOk()->assertJsonPath('meta.total', 15)->assertJsonCount(12, 'data')->assertJsonPath('data.0.is_demo', true);
+        $this->getJson('/api/v1/listings?page=2')->assertOk()->assertJsonCount(3, 'data');
         foreach (Property::where('is_demo', true)->where('status', '!=', 'approved')->get() as $private) {
             $this->getJson('/api/v1/listings/'.$private->id)->assertNotFound();
         }

@@ -169,6 +169,22 @@
 .owner-preview-details>*,.owner-preview .photo-gallery {min-width:0}
 .owner-preview .preserve-lines {overflow-wrap:anywhere}
 .editor-stage:focus {outline:none}
+.owner-counts-intro strong {font-size:1.1rem;display:block;margin-bottom:.6rem}
+.owner-counts-intro p {font-size:.85rem;line-height:1.7}
+.owner-counts-list {display:grid;gap:1rem;margin:1.2rem 0}
+.owner-count-row {display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.65fr);align-items:center;gap:1rem;padding:1rem;border:1px solid #9bafc8;border-radius:10px;background:#f3efe6}
+.owner-count-row h3 {font-size:1rem;line-height:1.5;margin:0 0 .35rem;overflow-wrap:anywhere}
+.owner-count-row p {font-size:.76rem;margin:0 0 .35rem;color:#526a85}
+.owner-count-row .mb-3 {margin-bottom:0!important}
+.owner-count-row .availability-freshness {display:inline-flex;font-size:.7rem;max-width:100%;flex-wrap:wrap}
+.owner-quick-confirmation {font-size:.8rem;line-height:1.65;color:#234d3a;width:100%;margin:.5rem 0}
+.owner-room-availability-action {display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin:1rem 0}
+.owner-card-removal {display:flex;gap:1rem;flex-wrap:wrap;align-items:center}
+.app-layout .owner-property-card .owner-card-actions .owner-card-removal {margin:0;border:0;padding:0}
+.owner-address-results [aria-selected="true"] button {background:#dbe6f3;outline:2px solid #365d9b;outline-offset:-2px}
+.owner-card-removal>.btn-outline-secondary {background:transparent;color:#405a79;border:0;font-size:.8rem;padding:.5rem 0}
+.owner-listing-actions>.btn {margin:.25rem .6rem .25rem 0}
+@media(max-width:575px){.owner-count-row{grid-template-columns:1fr}.owner-room-availability-action>.btn{width:100%}.owner-count-row .form-label{font-size:.8rem}}
 .owner-availability-explainer {margin:1rem 0;padding:.9rem 1rem;background:#e0ece4;border:1px solid #91ad9e;border-radius:9px;font-size:.82rem;line-height:1.7}
 .owner-availability-explainer p {margin:0 0 .5rem}
 .owner-availability-explainer p:last-child {margin-bottom:0}

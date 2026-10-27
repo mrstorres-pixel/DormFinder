@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/api'
@@ -11,15 +11,16 @@ const sections = [
   ['/admin/reports', 'Reports', 'Respond to concerns', 'M4 4h16v13H9l-5 4z M8 8h8 M8 12h5'],
   ['/admin/listings', 'All listings', 'Find any property', 'm3 10 9-7 9 7 M5 9v12h14V9 M9 21v-8h6v8'],
   ['/admin/users', 'Accounts', 'Find students & owners', 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M17 4a4 4 0 0 1 0 8 M22 21v-2a4 4 0 0 0-3-4'],
+  ['/admin/campuses', 'Campuses', 'Branches, entrances & requests', 'm3 9 9-6 9 6-9 6-9-6 M6 11v7c4 3 8 3 12 0v-7 M21 9v9'],
   ['/admin/audit', 'Audit history', 'Trace recorded decisions', 'M4 5h16v16H4z M8 3v4 M16 3v4 M8 11h8 M8 15h5'],
   ['/profile', 'Profile', 'Your account & security', 'M20 21v-2a7 7 0 0 0-14 0v2 M13 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8'],
 ]
 
-const resultNoun = (noun, count) => count === 1 ? ({ properties: 'property', listings: 'listing', accounts: 'account', reports: 'report', actions: 'action', submissions: 'submission', results: 'result' })[noun] || noun : noun
+const resultNoun = (noun, count) => count === 1 ? ({ campuses: 'campus', requests: 'request', properties: 'property', listings: 'listing', accounts: 'account', reports: 'report', actions: 'action', submissions: 'submission', results: 'result' })[noun] || noun : noun
 
 export function AdminNavigation() {
   const { pathname } = useLocation()
-  return <aside className="admin-sidebar"><Link className="admin-workspace-name" to="/admin">Administration<span>DormFinder workspace</span></Link><nav aria-label="Administrator sections" className="admin-sections">{sections.map(([path, label, hint, icon], index) => <div key={path} className="admin-nav-item">{[0, 2, 4, 5].includes(index) && <span className="admin-nav-group">{index === 0 ? 'Daily work' : index === 2 ? 'Directory' : index === 4 ? 'Records' : 'Your account'}</span>}<Link to={path} aria-current={(path === '/admin' ? pathname === path || pathname.startsWith('/admin/reviews/') : pathname === path || (path === '/profile' && pathname.startsWith('/profile/'))) ? 'page' : undefined}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icon} /></svg><span>{label}<small>{hint}</small></span></Link></div>)}</nav><p className="admin-sidebar-note">Review the details. Record a reason. Keep owners informed.</p></aside>
+  return <aside className="admin-sidebar"><Link className="admin-workspace-name" to="/admin">Administration<span>DormFinder workspace</span></Link><nav aria-label="Administrator sections" className="admin-sections">{sections.map(([path, label, hint, icon], index) => <div key={path} className="admin-nav-item">{[0, 2, 5, 6].includes(index) && <span className="admin-nav-group">{index === 0 ? 'Daily work' : index === 2 ? 'Directory' : index === 5 ? 'Records' : 'Your account'}</span>}<Link to={path} aria-current={(path === '/admin' ? pathname === path || pathname.startsWith('/admin/reviews/') : pathname === path || (path === '/profile' && pathname.startsWith('/profile/'))) ? 'page' : undefined}><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icon} /></svg><span>{label}<small>{hint}</small></span></Link></div>)}</nav><p className="admin-sidebar-note">Review the details. Record a reason. Keep owners informed.</p></aside>
 }
 
 export function AdminShell({ children, className = '' }) {
@@ -71,26 +72,22 @@ export function AdminFilterBar(props) {
 function FilterForm({ browse, searchLabel = 'Search listings', filters = [], sorts = [['newest', 'Newest first'], ['oldest', 'Oldest first']], dates = false }) {
   const id = useId()
   const [expandedFor, setExpandedFor] = useState(null)
-  const form = useRef(null)
   const search = useRef(null)
   const { params, defaultSort } = browse
   const signature = params.toString()
   const [searchDraft, setSearchDraft] = useState({ signature, value: params.get('q') || '' })
   if (searchDraft.signature !== signature) setSearchDraft({ signature, value: params.get('q') || '' })
   const expanded = expandedFor === signature
-  useEffect(() => {
-    form.current?.reset()
-  }, [signature])
   const active = [...params].filter(([key, value]) => value && !['page', 'per_page'].includes(key) && !(key === 'sort' && value === defaultSort) && !filters.some(filter => filter.name === key && value === filter.defaultValue))
   const labelFor = (key, value) => key === 'q' ? `Search: ${value}` : ['id', 'user_id', 'property_id'].includes(key) ? `${key === 'property_id' ? 'Listing' : 'Account'} #${value}` : key === 'sort' ? sorts.find(([option]) => option === value)?.[1] || value : key === 'from' ? `From: ${value}` : key === 'to' ? `To: ${value}` : filters.find(filter => filter.name === key)?.options.find(([option]) => option === value)?.[1] || `${key.replaceAll('_', ' ')}: ${value}`
-  return <form ref={form} className="admin-filter-bar" autoComplete="off" onSubmit={event => {
+  return <form className="admin-filter-bar" autoComplete="off" onSubmit={event => {
     event.preventDefault()
     browse.apply({ ...Object.fromEntries(params), ...Object.fromEntries(new FormData(event.currentTarget)) })
     setExpandedFor(null)
     search.current?.focus({ preventScroll: true })
   }}>
     <div className="admin-search-row"><div className="admin-search-field"><label htmlFor={id + '-q'}>{searchLabel}</label><input ref={search} className="form-control" id={id + '-q'} name="q" type="search" maxLength={100} value={searchDraft.value} onChange={event => setSearchDraft({ signature, value: event.target.value })} placeholder={searchLabel} /></div><button className="btn btn-primary" type="submit">Search</button><button className="btn btn-outline-primary admin-filter-toggle" type="button" aria-expanded={expanded} aria-controls={id + '-advanced'} onClick={() => setExpandedFor(expanded ? null : signature)}>Filters & sorting <span aria-hidden="true">{expanded ? '−' : '+'}</span></button></div>
-    <fieldset id={id + '-advanced'} className="admin-advanced" hidden={!expanded} disabled={!expanded}><legend>Refine these results</legend><div className="admin-filter-grid">
+    <fieldset key={signature} id={id + '-advanced'} className="admin-advanced" hidden={!expanded} disabled={!expanded}><legend>Refine these results</legend><div className="admin-filter-grid">
       {filters.filter(filter => !filter.hidden).map(filter => <div key={filter.name}><label htmlFor={id + '-' + filter.name}>{filter.label}</label><select className="form-select" id={id + '-' + filter.name} name={filter.name} defaultValue={params.get(filter.name) || filter.defaultValue || ''}>{filter.options.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></div>)}
       <div><label htmlFor={id + '-sort'}>Sort by</label><select className="form-select" name="sort" id={id + '-sort'} defaultValue={params.get('sort') || defaultSort}>{sorts.map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select></div>
       {dates && <><div><label htmlFor={id + '-from'}>From date</label><input className="form-control" type="date" id={id + '-from'} name="from" defaultValue={params.get('from') || ''} /></div><div><label htmlFor={id + '-to'}>To date</label><input className="form-control" type="date" id={id + '-to'} name="to" defaultValue={params.get('to') || ''} /></div></>}

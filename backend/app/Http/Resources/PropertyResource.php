@@ -14,7 +14,7 @@ class PropertyResource extends JsonResource
             'id' => $this->id, 'title' => $this->title, 'description' => $this->description,
             'property_type' => $this->property_type, 'address' => $this->address, 'city' => $this->city,
             'latitude' => $this->latitude, 'longitude' => $this->longitude,
-            'status' => $this->status, 'revision' => $this->revision,
+            'status' => $this->status, 'revision' => $this->revision, 'owner_paused' => (bool) $this->owner_paused,
             'availability' => $this->when($this->status === 'approved', fn () => AvailabilityFreshness::summary($this->resource)),
             'landlord_id' => $this->when($request->user()?->role === 'admin', $this->landlord_id),
             'landlord_name' => $this->when($request->user()?->role === 'admin' && $this->relationLoaded('landlord'), fn () => $this->landlord?->name),

@@ -51,7 +51,7 @@ class AvailabilityFreshness
         DB::transaction(function () use ($owner): void {
             // Match viewing lock order while allowing notification foreign-key checks.
             User::query()->whereKey($owner->id)->lock('FOR KEY SHARE')->firstOrFail();
-            $owner->properties()->where('status', 'approved')->whereHas('roomOptions', fn ($query) => $query->where('availability_confirmed_at', '<=', now()->subDays(self::REMIND_DAYS)))
+            $owner->properties()->where('status', 'approved')->where('owner_paused', false)->whereHas('roomOptions', fn ($query) => $query->where('available_units', '>', 0))->whereHas('roomOptions', fn ($query) => $query->where('availability_confirmed_at', '<=', now()->subDays(self::REMIND_DAYS)))
                 ->lockForUpdate()->with('roomOptions')->chunkById(100, function ($properties) use ($owner): void {
                     foreach ($properties as $property) {
                         $oldest = $property->roomOptions->min('availability_confirmed_at');

@@ -19,12 +19,37 @@ class AddressSearchController extends Controller
      */
     public function __invoke(Request $request): JsonResponse
     {
-        Gate::authorize('viewAny', Property::class);
+        if ($request->user()->role !== 'admin') {
+            Gate::authorize('viewAny', Property::class);
+        }
         $data = $request->validate(['q' => ['required', 'string', 'min:3', 'max:200']]);
         $query = preg_replace('/\s+/u', ' ', trim($data['q']));
         abort_if(mb_strlen($query) < 3, 422, 'Enter at least three characters of the address.');
         $endpoint = config('services.geocoding.url');
-        $key = 'address-search:v1:'.hash('sha256', $endpoint.'|'.mb_strtolower($query));
+        $key = 'address-search:v2:'.hash('sha256', $endpoint.'|'.mb_strtolower($query));
+
+        return $this->lookup($endpoint, ['q' => $query, 'limit' => 5, 'lang' => 'en', 'countrycode' => 'PH'], $key, 5);
+    }
+
+    public function reverse(Request $request): JsonResponse
+    {
+        if ($request->user()->role !== 'admin') {
+            Gate::authorize('viewAny', Property::class);
+        }
+        $data = $request->validate([
+            'latitude' => ['required', 'numeric', 'between:4,22'],
+            'longitude' => ['required', 'numeric', 'between:116,127.5'],
+        ]);
+        $endpoint = config('services.geocoding.reverse_url');
+        $latitude = round((float) $data['latitude'], 5);
+        $longitude = round((float) $data['longitude'], 5);
+        $key = 'address-reverse:v1:'.hash('sha256', $endpoint.'|'.$latitude.'|'.$longitude);
+
+        return $this->lookup($endpoint, ['lat' => $latitude, 'lon' => $longitude, 'radius' => 0.2, 'limit' => 1, 'lang' => 'en'], $key, 1);
+    }
+
+    private function lookup(string $endpoint, array $parameters, string $key, int $limit): JsonResponse
+    {
         $cached = Cache::get($key);
         if ($cached !== null) {
             return response()->json(['data' => $cached]);
@@ -45,13 +70,13 @@ class AddressSearchController extends Controller
             try {
                 $reply = Http::acceptJson()->withUserAgent('DormFinder/1.0 (https://dormfinder-pink.vercel.app)')
                     ->connectTimeout(3)->timeout(8)->withOptions(['allow_redirects' => false])
-                    ->get($endpoint, ['q' => $query, 'limit' => 5, 'lang' => 'en', 'countrycode' => 'PH']);
+                    ->get($endpoint, $parameters);
                 $payload = strlen($reply->body()) <= 100000 ? $reply->json() : null;
                 if (! $reply->successful() || ! is_array($payload['features'] ?? null) || ! array_is_list($payload['features'])) {
                     return $this->unavailable();
                 }
                 $results = [];
-                foreach (array_slice($payload['features'], 0, 5) as $feature) {
+                foreach (array_slice($payload['features'], 0, $limit) as $feature) {
                     if (! is_array($feature)) {
                         continue;
                     }
@@ -70,7 +95,7 @@ class AddressSearchController extends Controller
                     $parts = [$place['name'] ?? '', trim(($place['housenumber'] ?? '').' '.($place['street'] ?? '')), $place['district'] ?? '', $place['city'] ?? $place['county'] ?? '', $place['state'] ?? ''];
                     $label = implode(', ', array_unique(array_filter($parts, fn ($part): bool => is_string($part) && trim($part) !== '')));
                     if ($label !== '') {
-                        $results[] = ['label' => Str::limit($label, 300), 'latitude' => (float) $point[1], 'longitude' => (float) $point[0]];
+                        $results[] = ['label' => Str::limit($label, 300), 'latitude' => (float) $point[1], 'longitude' => (float) $point[0], 'street_address' => Str::limit(trim(($place['housenumber'] ?? '').' '.($place['street'] ?? '')), 255, ''), 'city' => Str::limit($place['city'] ?? $place['county'] ?? '', 100, '')];
                     }
                 }
                 Cache::put($key, $results, count($results) ? 86400 : 600);

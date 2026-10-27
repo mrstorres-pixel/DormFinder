@@ -1,8 +1,80 @@
 import { test, expect } from '@playwright/test'
 
-test('address search is visible, deliberate and saves the chosen pin without replacing the typed address', async ({ page }, testInfo) => {
+test('bulk availability opens from a property card, confirms every count once and keeps approval', async ({ page }, testInfo) => {
+  const state = await fixture(page)
+  const property = state.properties[16]
+  property.room_options.push({ ...property.room_options[0], id: 171, name: 'Single rooms', inventory_type: 'whole_room', price_basis: 'per_room', total_units: 2, available_units: 1 })
+  await page.goto('/landlord?owner_state=live')
+  const card = page.getByRole('article', { name: 'Campus Residence 17', exact: true })
+  await card.getByRole('button', { name: 'Update availability', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Update availability', exact: true })
+  await expect(dialog.getByLabel('Available beds — Twin beds')).toHaveValue('2')
+  await expect(dialog.getByLabel('Available rooms — Single rooms')).toHaveValue('1')
+  await dialog.getByLabel('Available beds — Twin beds').fill('3')
+  expect(state.writes).toHaveLength(0)
+  state.failAvailability = true
+  await dialog.getByRole('button', { name: 'Confirm these counts', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('Vacancy update unavailable.')
+  await expect(dialog.getByLabel('Available beds — Twin beds')).toHaveValue('3')
+  state.failAvailability = false
+  await dialog.getByRole('button', { name: 'Confirm these counts', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.locator('.owner-workspace-notice')).toContainText('Availability confirmed today')
+  expect(state.writes.at(-1).payload.options).toEqual([{ id: 170, available_units: 3 }, { id: 171, available_units: 1 }])
+  expect(property.status).toBe('approved')
+  for (const width of [1440, 390, 320]) {
+    await page.setViewportSize({ width, height: 900 })
+    await card.getByRole('button', { name: 'Update availability', exact: true }).click()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    if (width !== 320) await page.screenshot({ path: `../.local/owner-bulk-availability-${testInfo.project.name}-${width}.png` })
+    await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+  }
+})
+
+test('pausing hides advertising and resuming requires reviewed positive counts while retaining the approved state', async ({ page }) => {
+  const state = await fixture(page)
+  await page.goto('/landlord?owner_state=live')
+  const card = page.getByRole('article', { name: 'Campus Residence 17', exact: true })
+  await card.getByRole('button', { name: 'Pause listing', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Pause listing', exact: true }).getByRole('button', { name: 'Pause listing', exact: true }).click()
+  await expect(page.locator('.owner-workspace-notice')).toContainText('Listing paused')
+  expect(state.properties[16].owner_paused).toBe(true)
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
+  await page.getByLabel('Property status').selectOption('paused')
+  await page.getByRole('button', { name: 'Apply filters', exact: true }).click()
+  await card.getByRole('button', { name: 'Resume listing', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Resume listing', exact: true })
+  await dialog.getByRole('button', { name: 'Mark fully occupied', exact: true }).click()
+  const before = state.writes.length
+  await dialog.getByRole('button', { name: 'Confirm counts and resume', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('at least one actual vacancy')
+  expect(state.writes).toHaveLength(before)
+  await dialog.getByLabel('Available beds — Twin beds').fill('1')
+  await dialog.getByRole('button', { name: 'Confirm counts and resume', exact: true }).click()
+  await expect(page.locator('.owner-workspace-notice')).toContainText('Listing resumed')
+  expect(state.properties[16]).toMatchObject({ owner_paused: false, status: 'approved' })
+  expect(state.writes.at(-1).payload.resume).toBe(true)
+})
+
+test('bulk count drafts survive cancelled dismissal and a stale revision without overwriting a newer listing', async ({ page }) => {
+  const state = await fixture(page)
+  await page.goto('/landlord/properties/17#rooms')
+  await page.getByRole('button', { name: 'Update availability', exact: true }).click()
+  const dialog = page.getByRole('dialog', { name: 'Update availability', exact: true })
+  await dialog.getByLabel('Available beds — Twin beds').fill('1')
+  page.once('dialog', prompt => prompt.dismiss())
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await expect(dialog.getByLabel('Available beds — Twin beds')).toHaveValue('1')
+  state.properties[16].revision++
+  await dialog.getByRole('button', { name: 'Confirm these counts', exact: true }).click()
+  await expect(dialog.getByRole('alert')).toContainText('listing changed')
+  await expect(dialog.getByLabel('Available beds — Twin beds')).toHaveValue('1')
+  expect(state.properties[16].room_options[0].available_units).toBe(2)
+})
+
+test('address search is visible and fills editable fields while preserving manual corrections', async ({ page }, testInfo) => {
   const state = await fixture(page), requests = []
-  await page.route('**/api/v1/landlord/address-search?**', route => { requests.push(new URL(route.request().url()).searchParams.get('q')); return route.fulfill({ json: { data: [{ label: '12 College Street, Manila', latitude: 14.5991, longitude: 120.9922 }] } }) })
+  await page.route('**/api/v1/landlord/address-search?**', route => { requests.push(new URL(route.request().url()).searchParams.get('q')); return route.fulfill({ json: { data: [{ label: '12 College Street, Manila', latitude: 14.5991, longitude: 120.9922, street_address: '12 College Street', city: 'Manila' }] } }) })
   await page.goto('/landlord/properties/1#location')
   const map = page.getByRole('region', { name: 'Property location picker' })
   await expect(map).toHaveClass(/leaflet-container/)
@@ -16,15 +88,17 @@ test('address search is visible, deliberate and saves the chosen pin without rep
   expect(requests).toEqual([])
   await expect(page.getByRole('button', { name: 'Cancel location changes' })).toHaveCount(0)
   await page.getByLabel('Find the property address').press('Enter')
-  await expect(page.getByRole('list', { name: 'Address search results' })).toBeVisible()
+  await expect(page.getByRole('listbox', { name: 'Address search results' })).toBeVisible()
   expect(state.writes).toHaveLength(0)
   await page.getByRole('button', { name: /12 College Street, Manila.*Place pin here/ }).click()
   await expect(page.getByLabel('Latitude', { exact: true })).toHaveValue('14.599100')
   await expect(page.getByLabel('Longitude', { exact: true })).toHaveValue('120.992200')
   await expect(map.locator('.owner-property-pin svg')).toHaveCount(1)
+  await expect(page.getByLabel('Street address', { exact: true })).toHaveValue('12 College Street')
+  await page.getByLabel('Street address', { exact: true }).fill('Unit 4, 12 College Street')
   await page.getByRole('button', { name: 'Save draft', exact: true }).click()
   await expect(page).toHaveURL(/\/landlord$/)
-  expect(state.writes.at(-1).payload).toMatchObject({ latitude: '14.599100', longitude: '120.992200', address: 'College Street' })
+  expect(state.writes.at(-1).payload).toMatchObject({ latitude: '14.599100', longitude: '120.992200', address: 'Unit 4, 12 College Street' })
   expect(requests).toEqual(['12 College Street, Manila'])
 })
 
@@ -35,7 +109,6 @@ test('address errors and empty results retain manual pin placement and allow a s
   await page.route('**/api/v1/landlord/address-search?**', route => ++attempts === 1 ? route.fulfill({ status: 503, json: { message: 'Address lookup unavailable. Click the map to place the pin.' } }) : route.fulfill({ json: { data: [] } }))
   await page.goto('/landlord/properties/1#location')
   await page.getByLabel('Find the property address').fill('Unknown address')
-  await page.getByRole('button', { name: 'Find address', exact: true }).click()
   await expect(page.getByText('Address lookup unavailable. Click the map to place the pin.')).toBeVisible()
   await expect(page.getByLabel('Find the property address')).toHaveValue('Unknown address')
   await page.getByRole('button', { name: 'Find address', exact: true }).click()
@@ -53,12 +126,11 @@ test('an obsolete address response cannot replace a changed search', async ({ pa
   await page.route('**/api/v1/landlord/address-search?**', async route => { await waiting; await route.fulfill({ json: { data: [{ label: 'Old address result', latitude: 14.6, longitude: 121 }] } }).catch(() => {}) })
   await page.goto('/landlord/properties/1#location')
   await page.getByLabel('Find the property address').fill('Old address')
-  await page.getByRole('button', { name: 'Find address', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Searching…', exact: true })).toBeVisible()
   await page.getByLabel('Find the property address').fill('A different street')
   release()
   await expect(page.getByLabel('Find the property address')).toHaveValue('A different street')
-  await expect(page.getByRole('list', { name: 'Address search results' })).toHaveCount(0)
+  await expect(page.getByRole('listbox', { name: 'Address search results' })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Find address', exact: true })).toBeEnabled()
 })
 
@@ -68,13 +140,13 @@ test('owner removal and restoration are direct confirmed actions without staff r
   const actions = page.getByRole('region', { name: 'Listing visibility' })
   await expect(page.getByLabel('Reason for listing action')).toHaveCount(0)
   await expect(page.getByLabel('Listing action', { exact: true })).toHaveCount(0)
-  await actions.getByRole('button', { name: 'Remove listing', exact: true }).click()
-  let dialog = page.getByRole('dialog', { name: 'Remove listing', exact: true })
-  await dialog.getByRole('button', { name: 'Keep listing', exact: true }).click()
+  await actions.getByRole('button', { name: 'Archive listing', exact: true }).click()
+  let dialog = page.getByRole('dialog', { name: 'Archive listing', exact: true })
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click()
   expect(state.writes).toHaveLength(0)
-  await actions.getByRole('button', { name: 'Remove listing', exact: true }).click()
-  dialog = page.getByRole('dialog', { name: 'Remove listing', exact: true })
-  await dialog.getByRole('button', { name: 'Remove listing', exact: true }).click()
+  await actions.getByRole('button', { name: 'Archive listing', exact: true }).click()
+  dialog = page.getByRole('dialog', { name: 'Archive listing', exact: true })
+  await dialog.getByRole('button', { name: 'Archive listing', exact: true }).click()
   await expect(actions.getByRole('button', { name: 'Restore as draft', exact: true })).toBeVisible()
   expect(state.properties[0].status).toBe('archived')
   await actions.getByRole('button', { name: 'Restore as draft', exact: true }).click()
@@ -85,19 +157,21 @@ test('owner removal and restoration are direct confirmed actions without staff r
   expect(state.writes.map(write => write.payload.action)).toEqual(['archive', 'restore'])
 })
 
-test('property tabs own status while secondary filters only refine availability and order', async ({ page }) => {
+test('three property views keep status filtering in one place and highlight actual next tasks', async ({ page }) => {
   await fixture(page)
   await page.goto('/landlord')
+  await expect(page.getByRole('navigation', { name: 'Property views' }).getByRole('button')).toHaveCount(3)
   await page.getByRole('button', { name: 'Filters & sorting' }).click()
   await expect(page.getByLabel('Show properties', { exact: true })).toHaveCount(0)
   await expect(page.getByLabel('Listing status', { exact: true })).toHaveCount(0)
-  await expect(page.getByLabel('Availability', { exact: true })).toBeVisible()
-  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Needs changes', exact: true }).click()
-  await expect(page).toHaveURL(/status=rejected/)
-  await expect(page.locator('.owner-property-card')).toHaveCount(1)
-  await page.getByRole('button', { name: 'Filters & sorting' }).click()
   await expect(page.getByLabel('Availability', { exact: true })).toHaveCount(0)
-  await expect(page.getByLabel('Sort by')).toBeVisible()
+  await page.getByLabel('Property status').selectOption('rejected')
+  await page.getByRole('button', { name: 'Apply filters', exact: true }).click()
+  await expect(page).toHaveURL(/owner_state=rejected/)
+  await expect(page.locator('.owner-property-card')).toHaveCount(1)
+  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Needs attention', exact: true }).click()
+  await expect(page).toHaveURL(/view=attention/)
+  await expect(page.getByRole('article', { name: 'Campus Residence 26', exact: true }).getByRole('link', { name: /Preview and submit/ })).toBeVisible()
 })
 
 test('long preview content and owner actions fit narrow screens and availability instructions explain refresh', async ({ page }, testInfo) => {
@@ -116,7 +190,8 @@ test('long preview content and owner actions fit narrow screens and availability
   await expect(page.locator('.owner-availability-explainer')).toContainText('14 days')
   await expect(page.locator('.owner-availability-explainer')).toContainText('30 days')
   await expect(page.locator('.owner-availability-explainer')).toContainText('when you return')
-  await page.getByRole('button', { name: 'Confirm vacancies today', exact: true }).click()
+  await page.getByRole('button', { name: 'Update availability', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Update availability', exact: true }).getByRole('button', { name: 'Confirm these counts', exact: true }).click()
   await expect(page.getByRole('status').filter({ hasText: 'Availability confirmed today.' })).toBeVisible()
   expect(state.properties[16].status).toBe('approved')
   expect(state.writes.at(-1).path).toMatch(/\/availability$/)
@@ -127,7 +202,7 @@ async function fixture(page) {
   const properties = Array.from({ length: 26 }, (_, index) => {
     const id = index + 1
     const status = id >= 17 && id <= 20 ? 'approved' : id === 21 ? 'pending_review' : id === 22 ? 'rejected' : id === 23 ? 'archived' : id === 24 ? 'suspended' : 'draft'
-    return { id, title: 'Campus Residence ' + String(id).padStart(2, '0'), status, revision: 1, city: 'Manila', address: 'College Street', description: 'A furnished student residence near campus with a shared study space.', property_type: 'dormitory', latitude: 14.6, longitude: 120.99, amenities: ['wifi'], house_rules: 'Quiet after 10 pm.', updated_at: '2026-10-27T00:00:00Z', moderation_reason: status === 'rejected' ? 'Add a clearer photo of the room entrance.' : null, photos: [{ id, status: 'ready', url: '/images/demo/twin-room.webp', caption: 'Twin room' }], room_options: [{ ...room, id: id * 10, available_units: id === 20 ? 0 : 2 }], ...(status === 'approved' ? { availability: { status: id === 18 ? 'needs_confirmation' : id === 19 ? 'hidden' : 'current', rooms_needing_confirmation: id === 18 || id === 19 ? 1 : 0 } } : {}) }
+    return { id, title: 'Campus Residence ' + String(id).padStart(2, '0'), status, owner_paused: false, revision: 1, city: 'Manila', address: 'College Street', description: 'A furnished student residence near campus with a shared study space.', property_type: 'dormitory', latitude: 14.6, longitude: 120.99, amenities: ['wifi'], house_rules: 'Quiet after 10 pm.', updated_at: '2026-10-27T00:00:00Z', moderation_reason: status === 'rejected' ? 'Add a clearer photo of the room entrance.' : null, photos: [{ id, status: 'ready', url: '/images/demo/twin-room.webp', caption: 'Twin room' }], room_options: [{ ...room, id: id * 10, available_units: id === 20 ? 0 : 2 }], ...(status === 'approved' ? { availability: { status: id === 18 ? 'needs_confirmation' : id === 19 ? 'hidden' : 'current', rooms_needing_confirmation: id === 18 || id === 19 ? 1 : 0 } } : {}) }
   })
   const state = { properties, requests: [], writes: [], detailReads: 0, failList: false, failAvailability: false, changeOnUpload: false }
   await page.route('**/sanctum/csrf-cookie', route => route.fulfill({ status: 204 }))
@@ -143,6 +218,9 @@ async function fixture(page) {
     if (path.endsWith('/landlord/properties')) {
       if (state.failList) return route.fulfill({ status: 503, json: { message: 'Property list unavailable.' } })
       let rows = state.properties.filter(property => url.searchParams.get('view') === 'all' || (url.searchParams.get('view') === 'archived' ? property.status === 'archived' : property.status !== 'archived'))
+      if (url.searchParams.get('view') === 'attention') rows = rows.filter(property => ['draft', 'rejected'].includes(property.status) || property.status === 'approved' && !property.owner_paused && property.room_options.some(option => option.available_units > 0) && property.availability.status !== 'current')
+      const ownerState = url.searchParams.get('owner_state')
+      if (ownerState) rows = rows.filter(property => ownerState === 'paused' ? property.status === 'approved' && property.owner_paused : ownerState === 'taken' ? property.status === 'approved' && !property.owner_paused && property.room_options.every(option => option.available_units === 0) : ownerState === 'live' ? property.status === 'approved' && !property.owner_paused && property.room_options.some(option => option.available_units > 0) && property.availability.status !== 'hidden' : property.status === ownerState)
       if (url.searchParams.get('q')) rows = rows.filter(property => [property.title, property.address, property.city].join(' ').toLowerCase().includes(url.searchParams.get('q').toLowerCase()))
       if (url.searchParams.get('status')) rows = rows.filter(property => property.status === url.searchParams.get('status'))
       if (url.searchParams.get('availability') === 'needs_confirmation') rows = rows.filter(property => property.status === 'approved' && property.availability.status !== 'current')
@@ -163,9 +241,11 @@ async function fixture(page) {
       return route.fulfill({ status: 409, json: { message: 'The listing changed. Review the saved version.' } })
     }
     if (payload.revision !== property.revision) return route.fulfill({ status: 409, json: { message: 'The listing changed. Your edits have been kept.' } })
-    if (suffix === '/availability') {
+    if (suffix === '/visibility') { property.owner_paused = true }
+    else if (suffix === '/availability') {
       if (state.failAvailability) return route.fulfill({ status: 503, json: { message: 'Vacancy update unavailable.' } })
       for (const option of payload.options) Object.assign(property.room_options.find(item => item.id === option.id), { available_units: option.available_units, availability_stale: false, availability_confirmed_at: new Date().toISOString() })
+      if (payload.resume) property.owner_paused = false
       property.availability = { status: 'current', rooms_needing_confirmation: 0 }
     } else if (suffix === '/lifecycle') { property.status = payload.action === 'archive' ? 'archived' : 'draft'; property.moderation_reason = payload.reason }
     else if (suffix.startsWith('/room-options')) {
@@ -194,7 +274,9 @@ test('owner search, views and pagination use the server and the editor returns t
   await expect(page).not.toHaveURL(/page=2/)
   await expect(page.locator('.owner-property-card')).toHaveCount(6)
   expect(state.requests.at(-1).params).toMatchObject({ q: 'Residence 2', view: 'active', sort: 'title_asc' })
-  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'In review', exact: true }).click()
+  await page.getByRole('button', { name: 'Filters & sorting' }).click()
+  await page.getByLabel('Property status').selectOption('pending_review')
+  await page.getByRole('button', { name: 'Apply filters', exact: true }).click()
   await expect(page.locator('.owner-property-card')).toHaveCount(1)
   await expect(page.getByRole('link', { name: /View submission.*Manage property/ })).toBeVisible()
   for (const width of [1440, 768, 390, 320]) {
@@ -210,10 +292,10 @@ test('attention links find all overdue properties and an empty removed view expl
   await page.getByRole('link', { name: /Availability updates/ }).click()
   await expect(page).toHaveURL(/availability=needs_confirmation/)
   await expect(page.locator('.owner-property-card')).toHaveCount(2)
-  await expect(page.getByRole('link', { name: 'Refresh availability', exact: true })).toHaveCount(2)
+  await expect(page.getByRole('button', { name: 'Update availability', exact: true })).toHaveCount(2)
   state.properties = state.properties.filter(property => property.status !== 'archived')
-  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Removed', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'No removed properties', exact: true })).toBeVisible()
+  await page.getByRole('navigation', { name: 'Property views' }).getByRole('button', { name: 'Archived', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'No archived properties', exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Create your first draft', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Show current properties', exact: true }).click()
   await expect(page.locator('.owner-property-card')).toHaveCount(12)
@@ -224,16 +306,18 @@ test('vacancy updates are separate from room edits and marking taken requires a 
   await page.goto('/landlord/properties/17#rooms')
   await expect(page.getByRole('heading', { name: 'Rooms and availability', exact: true })).toBeVisible()
   await expect(page.getByLabel('Room option name', { exact: true })).toHaveCount(0)
-  await page.getByRole('button', { name: 'Set all as taken', exact: true }).click()
-  await expect(page.getByLabel('Available units for Twin beds')).toHaveValue('0')
+  await page.getByRole('button', { name: 'Update availability', exact: true }).click()
+  const counts = page.getByRole('dialog', { name: 'Update availability', exact: true })
+  await counts.getByRole('button', { name: 'Mark fully occupied', exact: true }).click()
+  await expect(counts.getByLabel('Available beds — Twin beds')).toHaveValue('0')
   expect(state.writes).toHaveLength(0)
   state.failAvailability = true
-  await page.getByRole('button', { name: 'Confirm vacancies today', exact: true }).click()
-  await expect(page.getByRole('alert')).toContainText('Vacancy update unavailable.')
-  await expect(page.getByLabel('Available units for Twin beds')).toHaveValue('0')
+  await counts.getByRole('button', { name: 'Confirm these counts', exact: true }).click()
+  await expect(counts.getByRole('alert')).toContainText('Vacancy update unavailable.')
+  await expect(counts.getByLabel('Available beds — Twin beds')).toHaveValue('0')
   state.failAvailability = false
-  await page.getByRole('button', { name: 'Confirm vacancies today', exact: true }).click()
-  await expect(page.getByText('Marked sold out. Availability confirmed today.', { exact: true })).toBeVisible()
+  await counts.getByRole('button', { name: 'Confirm these counts', exact: true }).click()
+  await expect(page.getByText('Marked fully occupied. Messages and viewing history are kept.', { exact: true })).toBeVisible()
   expect(state.properties.find(property => property.id === 17).status).toBe('approved')
   await page.getByRole('button', { name: 'Add another room option', exact: true }).click()
   await expect(page.getByLabel('Room option name', { exact: true })).toBeFocused()

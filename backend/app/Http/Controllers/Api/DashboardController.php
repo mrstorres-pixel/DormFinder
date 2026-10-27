@@ -43,7 +43,7 @@ class DashboardController extends Controller
             if ($user->role === 'student') {
                 $counts['shortlists'] = DB::table('shortlists')->where('student_id', $user->id)->count();
             } else {
-                $counts['stale_listings'] = $user->properties()->where('status', 'approved')->whereHas('roomOptions', fn ($query) => $query->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS)))->count();
+                $counts['stale_listings'] = $user->properties()->where('status', 'approved')->where('owner_paused', false)->whereHas('roomOptions', fn ($query) => $query->where('available_units', '>', 0))->whereHas('roomOptions', fn ($query) => $query->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS)))->count();
             }
         } else {
             $counts['older_reviews'] = Property::query()->where('status', 'pending_review')->where('submitted_at', '<', now()->subDays(2))->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->count();

@@ -40,7 +40,7 @@ export async function verifyModeration({ landlord, reviewer, student, propertyId
     if (name === 'Listing moderation') await page.locator('.review-moderation > summary').click()
     if (name === 'Archive and restore') {
       await page.getByRole('navigation', { name: 'Listing editor steps' }).getByRole('button', { name: 'Preview & review', exact: true }).click()
-      const label = value === 'restore' ? 'Restore as draft' : 'Remove listing'
+      const label = value === 'restore' ? 'Restore as draft' : 'Archive listing'
       await page.getByRole('region', { name: 'Listing visibility' }).getByRole('button', { name: label, exact: true }).click()
       await page.getByRole('dialog', { name: label, exact: true }).getByRole('button', { name: label, exact: true }).click()
       await expect(page.locator('.owner-editor-context')).toBeVisible()

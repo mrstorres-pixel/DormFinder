@@ -1,5 +1,14 @@
 # Validation evidence — October 9, 2026
 
+
+## Connected owner location, availability and campus management - October 27, 2026
+
+The local backend suite passes 177 tests / 1953 assertions. A subsequent focused run after migration-permission additions passes 22 tests / 164 assertions. Frontend unit tests pass 106 tests across 30 files; Pint, lint and the production build pass. Browser evidence covers the complete landlord directory/editor, bulk vacancy confirmation with failure/revision handling, fully occupied/pause/resume/archive distinctions, campus editing/review/history and private suggestions. The final regression run and release acceptance are recorded below when complete.
+
+The address picker uses debounced suggestions and nearest-address lookup after click/drag. Browser cases check keyboard selection, no per-keystroke requests, exact pin-coordinate retention, delayed-response cancellation, restoring saved details, manual-coordinate edits during a lookup, service failure and no implicit save. Shared provider caching, Philippine bounds, request spacing, daily budget and authorization are covered by backend tests. Tests using intercepted tiles intentionally exercise the imagery-failure fallback; live acceptance separately checks actual imagery and bounded real geocoder GETs.
+
+The additive production migration succeeded through Supabase apply_migration. Within one atomic transaction, short-held locks and before/after row-count/digest comparisons verify sixteen existing business tables; no existing records are changed. Properties gain owner_paused=false, campuses gain revision=1, and new private campus_suggestions/campus_actions tables start empty. Ownership, RLS, trusted-server SELECT/INSERT grants and absence of anon/authenticated access and runtime DELETE privileges are verified. Security advisors report no findings. Automatic approval review rejected exporting a production backup to a local dump; that export was not retried or performed. Integrity digests were computed on the server, with no business-record export. Existing backups are untouched.
+
 ## Owner address lookup and simpler visibility controls - October 27, 2026
 
 All 106 frontend tests across 30 files, lint/build, Pint and 13 scoped address-search/freshness backend tests with 118 assertions pass. Backend checks cover active-role authorization before provider calls, invalid input, normalized cache keys, Philippine-only normalized points, malformed/oversized provider replies, cached empty results, failed-provider retry, global request spacing and daily budget. Authorization headers are not forwarded. The existing freshness tests retain timestamp, expiry, notification and approval behavior. No schema, campus record or dependency was changed.

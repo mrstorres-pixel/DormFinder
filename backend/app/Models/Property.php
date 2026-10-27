@@ -18,7 +18,7 @@ class Property extends Model
     protected function casts(): array
     {
         return [
-            'latitude' => 'float', 'longitude' => 'float', 'revision' => 'integer',
+            'latitude' => 'float', 'longitude' => 'float', 'revision' => 'integer', 'owner_paused' => 'boolean',
             'amenities' => 'array', 'is_demo' => 'boolean', 'submitted_at' => 'datetime', 'approved_at' => 'datetime',
         ];
     }

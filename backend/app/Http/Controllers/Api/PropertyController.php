@@ -24,16 +24,40 @@ class PropertyController extends Controller
         Gate::authorize('viewAny', Property::class);
         app(AvailabilityFreshness::class)->remind($request->user());
         $data = AdminBrowse::filters($request, [
-            'view' => ['nullable', Rule::in(['active', 'archived', 'all'])],
+            'view' => ['nullable', Rule::in(['active', 'attention', 'archived', 'all'])],
+            'owner_state' => ['nullable', Rule::in(['draft', 'pending_review', 'live', 'taken', 'paused', 'rejected', 'suspended', 'expired'])],
             'status' => ['nullable', Rule::in(['draft', 'pending_review', 'approved', 'rejected', 'suspended', 'archived'])],
             'availability' => ['nullable', Rule::in(['needs_confirmation', 'taken'])],
             'sort' => ['nullable', Rule::in(['newest', 'oldest', 'updated', 'title_asc', 'title_desc'])],
         ]);
         $query = $request->user()->properties()->with(ListingController::relations());
-        if (($data['view'] ?? 'all') === 'active') {
+        if (in_array($data['view'] ?? 'all', ['active', 'attention'], true)) {
             $query->where('status', '!=', 'archived');
         } elseif (($data['view'] ?? 'all') === 'archived') {
             $query->where('status', 'archived');
+        }
+        if (($data['view'] ?? null) === 'attention') {
+            $query->where(function (Builder $attention): void {
+                $attention->whereIn('status', ['draft', 'rejected'])->orWhere(function (Builder $due): void {
+                    $due->where('status', 'approved')->where('owner_paused', false)->whereHas('roomOptions', fn (Builder $options) => $options->where('available_units', '>', 0))
+                        ->whereHas('roomOptions', fn (Builder $options) => $options->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS)));
+                });
+            });
+        }
+        $ownerState = $data['owner_state'] ?? null;
+        if (in_array($ownerState, ['draft', 'pending_review', 'rejected', 'suspended'], true)) {
+            $query->where('status', $ownerState);
+        } elseif ($ownerState === 'paused') {
+            $query->where('status', 'approved')->where('owner_paused', true);
+        } elseif (in_array($ownerState, ['live', 'taken', 'expired'], true)) {
+            $query->where('status', 'approved')->where('owner_paused', false)->has('roomOptions');
+            if ($ownerState === 'taken') {
+                $query->whereDoesntHave('roomOptions', fn (Builder $options) => $options->where('available_units', '>', 0));
+            } elseif ($ownerState === 'live') {
+                $query->whereHas('roomOptions', fn (Builder $options) => $options->where('available_units', '>', 0)->where('availability_confirmed_at', '>', now()->subDays(AvailabilityFreshness::HIDE_DAYS)));
+            } else {
+                $query->whereHas('roomOptions', fn (Builder $options) => $options->where('available_units', '>', 0))->whereDoesntHave('roomOptions', fn (Builder $options) => $options->where('availability_confirmed_at', '>', now()->subDays(AvailabilityFreshness::HIDE_DAYS)));
+            }
         }
 
         if (filled($data['q'] ?? null)) {
@@ -48,7 +72,7 @@ class PropertyController extends Controller
             $query->where('status', $data['status']);
         }
         if (($data['availability'] ?? null) === 'needs_confirmation') {
-            $query->where('status', 'approved')->whereHas('roomOptions', function (Builder $query): void {
+            $query->where('status', 'approved')->where('owner_paused', false)->whereHas('roomOptions', fn (Builder $options) => $options->where('available_units', '>', 0))->whereHas('roomOptions', function (Builder $query): void {
                 $query->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS));
             });
         } elseif (($data['availability'] ?? null) === 'taken') {
