@@ -1,5 +1,16 @@
 # Deployment runbook — Codex execution
 
+## Anchored map previews and location-context release - October 28, 2026
+
+Application source 7025f1171c186c5eccfeab655685f1782b333517 is live on Render dep-dbgk0pe7bikc73adb600 and Vercel dpl_J2tpesePQsPpzGz96iYvZZyRCXkJ. The staged frontend at https://dormfinder-6q6t38ck2-mrstorres-pixels-projects.vercel.app was promoted to https://dormfinder-pink.vercel.app after all forty JS/CSS files plus three icons matched the tested build byte for byte; HTML matched apart from carriage returns. Public checks match eight entry assets and three icons. Entry index-CtKECkLV.js identifies the release. Existing Vercel project/team, frontend root, Node 24, protection and build settings remain unchanged. Render stays on the existing free Singapore Docker service with auto-deploy off.
+
+The release differentiates neutral, slate, sage and lavender surfaces; attaches the preview to selected price bubbles and fits routes around it; checks coordinates against supported Philippine bounds; exposes owner/admin location queues; omits questionable public pins and distances; and enriches existing notification reads with authorized listing names. Saved coordinates, notification history and listing records are unchanged. No production migration, credential or environment change is required. Direct/proxied health endpoints return 200. The live map reports 49 matching listings, 47 mapped pins and two excluded pins.
+
+Local evidence: 181 backend tests / 1992 assertions, 107 frontend unit tests, lint, Pint, production build and all 88 affected Chromium/WebKit cases pass. The earlier frontend dpl_HuMTFRxZ3oupSojSuesNV219d3hh (source adbcfb0cc2cd8df18e5fb82d0a5924041dd8b9e7) remains the frontend recovery option; keep this compatible backend and the existing additive schema. The previous backend is eaf6c85399231e82bcee42dd2828b57bba5fc6cb / dep-dbg9q4q9lscs739f5t40. Reverting it would remove the location checks, so prefer a forward fix. No rollback was performed. Private artifacts and the user-supplied certificate remain excluded.
+
+
+
+Live acceptance passes all four public-map and owner/admin Chromium/WebKit cases across the recorded passing runs. Checks use real photos, map tiles and walking routes; verify public map exclusions, marker/card attachment, authorized notification names and the admin location queue; and block listing/campus/account mutations. Session API test requests use the same Origin/Referer context as browser requests. Bounded post-release Render and authenticated Vercel CLI error queries return zero records.
 
 ## Listing and navigation usability release - October 27, 2026
 

@@ -93,6 +93,20 @@ test('existing owners and admins can read the deployed editor and filtered direc
     await expect(owner.getByRole('button', { name: 'Start listing', exact: true })).toBeVisible()
 
     const reviewer = await pageFor(admin, /\/admin$/)
+    const browserHeaders = { Origin: baseURL, Referer: baseURL + '/admin', Accept: 'application/json' }
+    const locationQueue = await reviewer.request.get('/api/v1/admin/properties?location_check=needs_correction', { headers: browserHeaders })
+    expect(locationQueue.status()).toBe(200)
+    expect((await locationQueue.json()).data.every(property => property.location_check.status === 'needs_correction')).toBe(true)
+    const notificationResponse = await reviewer.request.get('/api/v1/notifications', { headers: browserHeaders })
+    expect(notificationResponse.status()).toBe(200)
+    const updates = (await notificationResponse.json()).data
+    for (const update of updates.filter(row => /^\/admin\/reviews\/\d+/.test(row.path))) expect(typeof update.listing_title).toBe('string')
+    const named = updates.find(row => row.listing_title)
+    if (named) {
+      await reviewer.getByRole('button', { name: /^Notifications/ }).click()
+      await reviewer.getByRole('button', { name: 'Expand notifications', exact: true }).click()
+      await expect(reviewer.locator('.notification-listing').filter({ hasText: named.listing_title }).first()).toBeVisible()
+    }
     await readPage(reviewer, '/admin', '/admin/reviews')
     await reviewer.getByRole('button', { name: 'Filters & sorting' }).click()
     await reviewer.getByLabel('Search listings', { exact: true }).fill('Synthetic')

@@ -7,6 +7,12 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   expect(directory.ok()).toBe(true)
   const campus = (await directory.json()).data.find(item => item.slug === 'ceu-malolos')
   expect(campus).toBeTruthy()
+  const mapInventory = await page.request.get('/api/v1/listings-map')
+  expect(mapInventory.status()).toBe(200)
+  const inventory = await mapInventory.json()
+  expect(Number.isInteger(inventory.meta.unmapped_count)).toBe(true)
+  expect(inventory.meta.total).toBe(inventory.meta.mapped_total + inventory.meta.unmapped_count)
+  expect(inventory.data.every(property => property.latitude >= 4 && property.latitude <= 22 && property.longitude >= 116 && property.longitude <= 127.5)).toBe(true)
   const listings = await page.request.get('/api/v1/listings', { params: { campus_id: campus.id, radius_km: 2, sort: 'distance' } })
   expect(listings.ok()).toBe(true)
   const property = (await listings.json()).data[0]
@@ -58,6 +64,10 @@ test('a public listing renders real tiles and routes to the campus explicitly ch
   const preview = page.getByRole('article', { name: 'Selected map listing' })
   await expect(preview.getByRole('link', { name: 'View listing', exact: true })).toHaveAttribute('href', new RegExp('/listings/' + property.id))
   expect((await preview.boundingBox()).width).toBeLessThanOrEqual(330)
+  await expect.poll(() => preview.evaluate(card => {
+    const map = card.closest('.campus-map'), box = card.getBoundingClientRect(), bounds = map.getBoundingClientRect(), bubble = map.querySelector('.price-marker.is-selected').getBoundingClientRect(), tip = card.closest('.listing-marker-popup').querySelector('.leaflet-popup-tip-container').getBoundingClientRect()
+    return box.top >= bounds.top && box.bottom <= bounds.bottom && Math.abs(box.bottom - bubble.top) < 30 && Math.abs(tip.x + tip.width / 2 - bubble.x - bubble.width / 2) < 4
+  })).toBe(true)
   if (property.photos.length) await expect.poll(() => preview.locator('.map-place-photo img').evaluate(image => image.complete && image.naturalWidth > 0), { timeout: 15000 }).toBe(true)
   expect(tiles.failed).toBe(0)
   expect(errors).toEqual([])

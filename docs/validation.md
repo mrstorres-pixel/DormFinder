@@ -6,6 +6,8 @@ The local backend suite passes 181 tests / 1992 assertions; the focused location
 
 
 
+Live acceptance passes all four public-map and owner/admin Chromium/WebKit cases across the recorded passing runs. Checks use real photos, map tiles and walking routes; verify public map exclusions, marker/card attachment, authorized notification names and the admin location queue; and block listing/campus/account mutations. Session API test requests use the same Origin/Referer context as browser requests. Bounded post-release Render and authenticated Vercel CLI error queries return zero records.
+
 ## Clearer listing, map, draft and viewing flows - released October 27
 
 The released UI replaces the bottom map strip with a photo-led floating card, photo controls, direct room choices and visible listing/compare actions. Listing maps load immediately; only walking-route calculation is explicitly requested. Campus search copy is campus-specific. Gallery surfaces are opaque navy with contrasting headings and controls. Detailed charges and the owner viewing-reply field are visible; suggesting a new viewing time uses a named action.
