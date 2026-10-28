@@ -1,5 +1,16 @@
 # Deployment runbook — Codex execution
 
+## Owner preview and visibility release - October 28, 2026
+
+Application source cd94fb4771c3b90f19fe45a5fd5c9664f5db37f3 is live in Vercel dpl_5CuEyav8dvgSyuP8YccvNreRdLCx. The staged URL https://dormfinder-qnn7lcob2-mrstorres-pixels-projects.vercel.app was promoted to https://dormfinder-pink.vercel.app after all forty JS/CSS files and three icons matched the tested build byte for byte, with equivalent HTML apart from carriage returns. Public checks match eight entry assets and three icons; entry index-D6RTI07x.js and main stylesheet index-DledRjzP.css identify the release. Existing Vercel project/team, build settings, protection and Node 24 are retained.
+
+The owner preview uses aligned padded cards, consistent heading hierarchy, the same gallery/detail width and directly visible costs. Visibility explanations reflect draft, review, approved, paused, occupied, expired, archived and restricted states. Approved previews expose availability, pause and archive controls; draft previews expose archive with private-draft wording. The review scope is plain text associated with the submission button. Availability-only confirmation retains approval. No backend, data, schema, dependency or environment change is required.
+
+Verification passes 107 frontend unit tests, lint/build, all 52 affected local Chromium/WebKit cases and a final six-case built check of alignment, status-aware controls and submission notes. Direct/proxied API health returns 200. The compatible backend remains source 7025f1171c186c5eccfeab655685f1782b333517 / Render dep-dbgk0pe7bikc73adb600. Recovery can promote the previous frontend dpl_J2tpesePQsPpzGz96iYvZZyRCXkJ (source 7025f1171c186c5eccfeab655685f1782b333517) while retaining that backend and the existing additive schema. No rollback was performed. Private artifacts and the user certificate remain excluded.
+
+
+Live read-only Chromium and WebKit acceptance both pass, including actual owner preview heading alignment, visible costs, private-draft wording, the single draft archive action and the unboxed review note. The check also retains the existing owner location, administrator directory and profile checks, with all non-login writes blocked. Step navigation reuses cached property data, so its test does not require an extra GET for a hash-only change. Public assets match the tested release, direct/proxied health returns 200, and the bounded Vercel error-log query returns zero records.
+
 ## Anchored map previews and location-context release - October 28, 2026
 
 Application source 7025f1171c186c5eccfeab655685f1782b333517 is live on Render dep-dbgk0pe7bikc73adb600 and Vercel dpl_J2tpesePQsPpzGz96iYvZZyRCXkJ. The staged frontend at https://dormfinder-6q6t38ck2-mrstorres-pixels-projects.vercel.app was promoted to https://dormfinder-pink.vercel.app after all forty JS/CSS files plus three icons matched the tested build byte for byte; HTML matched apart from carriage returns. Public checks match eight entry assets and three icons. Entry index-CtKECkLV.js identifies the release. Existing Vercel project/team, frontend root, Node 24, protection and build settings remain unchanged. Render stays on the existing free Singapore Docker service with auto-deploy off.

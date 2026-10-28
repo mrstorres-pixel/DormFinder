@@ -7,6 +7,10 @@ The owner preview aligns About this property and Rooms and costs in matching pad
 
 Verification passes 107 frontend unit tests, lint/build, and all 52 affected Chromium/WebKit cases covering owner creation, preview, state-aware controls, unchanged-count confirmation, archive/restore, unsaved-change guards and shared public listing content. No backend, schema, dependency or environment change is required.
 
+Application source cd94fb4771c3b90f19fe45a5fd5c9664f5db37f3 is live in Vercel dpl_5CuEyav8dvgSyuP8YccvNreRdLCx at https://dormfinder-pink.vercel.app.
+
+Live read-only Chromium and WebKit acceptance both pass, including actual owner preview heading alignment, visible costs, private-draft wording, the single draft archive action and the unboxed review note. The check also retains the existing owner location, administrator directory and profile checks, with all non-login writes blocked. Step navigation reuses cached property data, so its test does not require an extra GET for a hash-only change. Public assets match the tested release, direct/proxied health returns 200, and the bounded Vercel error-log query returns zero records.
+
 ## Anchored map previews, location checks and notification context - October 28, 2026
 
 The palette now distinguishes slate page backgrounds, neutral listing cards, sage costs and featured sections, lavender draft contexts, and navy navigation. Amber remains for actual warnings. Map cards attach to the selected price bubble, including clustered/displaced labels, and follow pan/zoom/resize with automatic space fitting. Oversized remembered views are reset to the supported area.
