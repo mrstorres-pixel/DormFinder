@@ -9,6 +9,7 @@ use App\Models\Property;
 use App\Services\AdminBrowse;
 use App\Services\AvailabilityFreshness;
 use App\Services\ListingWorkflow;
+use App\Services\PropertyLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class PropertyController extends Controller
         app(AvailabilityFreshness::class)->remind($request->user());
         $data = AdminBrowse::filters($request, [
             'view' => ['nullable', Rule::in(['active', 'attention', 'archived', 'all'])],
-            'owner_state' => ['nullable', Rule::in(['draft', 'pending_review', 'live', 'taken', 'paused', 'rejected', 'suspended', 'expired'])],
+            'owner_state' => ['nullable', Rule::in(['draft', 'pending_review', 'live', 'taken', 'paused', 'rejected', 'suspended', 'expired', 'location_check'])],
             'status' => ['nullable', Rule::in(['draft', 'pending_review', 'approved', 'rejected', 'suspended', 'archived'])],
             'availability' => ['nullable', Rule::in(['needs_confirmation', 'taken'])],
             'sort' => ['nullable', Rule::in(['newest', 'oldest', 'updated', 'title_asc', 'title_desc'])],
@@ -41,10 +42,13 @@ class PropertyController extends Controller
                 $attention->whereIn('status', ['draft', 'rejected'])->orWhere(function (Builder $due): void {
                     $due->where('status', 'approved')->where('owner_paused', false)->whereHas('roomOptions', fn (Builder $options) => $options->where('available_units', '>', 0))
                         ->whereHas('roomOptions', fn (Builder $options) => $options->where('availability_confirmed_at', '<=', now()->subDays(AvailabilityFreshness::REMIND_DAYS)));
-                });
+                })->orWhere(fn (Builder $locations) => PropertyLocation::suspicious($locations));
             });
         }
         $ownerState = $data['owner_state'] ?? null;
+        if ($ownerState === 'location_check') {
+            PropertyLocation::suspicious($query->getQuery());
+        }
         if (in_array($ownerState, ['draft', 'pending_review', 'rejected', 'suspended'], true)) {
             $query->where('status', $ownerState);
         } elseif ($ownerState === 'paused') {

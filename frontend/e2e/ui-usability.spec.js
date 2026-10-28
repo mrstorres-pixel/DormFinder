@@ -112,3 +112,46 @@ test('map selection is a photo card with direct room choices and landing filters
   await page.getByLabel('Maximum monthly base rent (PHP)').fill('5000')
   await expect(page.getByRole('button', { name: 'Hide filters 1', exact: true })).toHaveAttribute('aria-expanded', 'true')
 })
+
+test('map preview stays attached to its price bubble through pan, zoom and resize', async ({ page }, testInfo) => {
+  await fixture(page, 'guest')
+  await page.goto('/listings')
+  await page.locator('#listing-card-55').getByRole('button', { name: 'Show on map' }).click()
+  const preview = page.getByRole('article', { name: 'Selected map listing' })
+  async function attached() {
+    await expect(preview).toBeVisible()
+    await expect.poll(() => preview.evaluate(card => {
+      const map = card.closest('.campus-map').getBoundingClientRect(), bubble = card.closest('.campus-map').querySelector('.price-marker.is-selected').getBoundingClientRect(), tip = card.closest('.listing-marker-popup').querySelector('.leaflet-popup-tip-container').getBoundingClientRect(), box = card.getBoundingClientRect()
+      const gap = Math.abs(box.bottom - bubble.top), alignment = Math.abs(tip.x + tip.width / 2 - bubble.x - bubble.width / 2)
+      return { attached: gap < 30 && alignment < 4, inside: box.top >= map.top - 2 && box.left >= map.left - 2 && box.right <= map.right + 2 && box.bottom <= map.bottom - 25, gap, alignment }
+    })).toMatchObject({ attached: true, inside: true })
+  }
+  for (const width of [1440, 768, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await attached()
+    await page.locator('.leaflet-control-zoom-in').click()
+    await attached()
+  }
+  const map = await page.getByRole('region', { name: 'Listing map', exact: true }).boundingBox()
+  await page.mouse.move(map.x + 20, map.y + map.height - 65)
+  await page.mouse.down(); await page.mouse.move(map.x + 55, map.y + map.height - 65, { steps: 8 }); await page.mouse.up()
+  await attached()
+  await page.screenshot({ path: `../.local/anchored-map-${testInfo.project.name}.png` })
+  await preview.getByRole('button', { name: 'Close listing preview' }).focus()
+  await page.keyboard.press('Escape')
+  await expect(preview).toHaveCount(0)
+})
+
+test('questionable overseas pins stay out of maps and notification previews identify the listing', async ({ page }) => {
+  const state = await fixture(page)
+  Object.assign(state.property, { latitude: 60, longitude: 30, location_check: { status: 'needs_correction', can_map: false } })
+  await page.route(/\/api\/v1\/notifications(?:\?|$)/, route => route.fulfill({ json: { data: [{ id: 1, kind: 'viewing', title: 'Your viewing request has an update.', listing_title: state.property.title, path: '/viewings', created_at: new Date().toISOString(), read_at: null }] } }))
+  await page.goto('/listings')
+  await expect(page.locator('#listing-card-55')).toContainText('Location needs correction')
+  await expect(page.getByRole('button', { name: 'Show on map' })).toHaveCount(0)
+  await expect(page.locator('.price-marker,.price-cluster')).toHaveCount(0)
+  await page.getByRole('button', { name: /^Notifications/ }).click()
+  const notifications = page.getByRole('dialog', { name: 'Notifications', exact: true })
+  await expect(notifications.locator('.notification-listing')).toHaveText(state.property.title)
+  await expect(notifications.getByRole('link', { name: 'Your viewing request has an update.' })).toHaveAttribute('href', '/viewings')
+})

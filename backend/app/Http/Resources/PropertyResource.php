@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Services\AvailabilityFreshness;
+use App\Services\PropertyLocation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,7 @@ class PropertyResource extends JsonResource
             'id' => $this->id, 'title' => $this->title, 'description' => $this->description,
             'property_type' => $this->property_type, 'address' => $this->address, 'city' => $this->city,
             'latitude' => $this->latitude, 'longitude' => $this->longitude,
+            'location_check' => PropertyLocation::summary($this->latitude, $this->longitude),
             'status' => $this->status, 'revision' => $this->revision, 'owner_paused' => (bool) $this->owner_paused,
             'availability' => $this->when($this->status === 'approved', fn () => AvailabilityFreshness::summary($this->resource)),
             'landlord_id' => $this->when($request->user()?->role === 'admin', $this->landlord_id),

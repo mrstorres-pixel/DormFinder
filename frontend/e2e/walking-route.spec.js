@@ -51,8 +51,12 @@ test('campus and clustered labels remain separate, with a selectable walking pat
   await expect(map.locator('.walking-route-connection')).toHaveCount(2)
   await expect.poll(async () => map.evaluate(node => {
     const path = node.querySelector('.walking-route-path').getBoundingClientRect(), box = node.getBoundingClientRect(), preview = node.closest('.map-canvas').querySelector('.map-preview').getBoundingClientRect()
-    return path.left >= box.left && path.right <= box.right && path.top >= box.top && (path.right <= preview.left - 10 || path.bottom <= preview.top - 10)
-  })).toBe(true)
+    return { within: path.left >= box.left && path.right <= box.right && path.top >= box.top && path.bottom <= box.bottom, uncovered: path.right <= preview.left - 10 || path.bottom <= preview.top - 10 || path.top >= preview.bottom + 10 || path.left >= preview.right + 10, path: path.toJSON(), preview: preview.toJSON(), map: box.toJSON() }
+  })).toMatchObject({ within: true, uncovered: true }).catch(async error => {
+    console.log(await map.evaluate(node => ['.walking-route-path', '.map-preview', '.campus-pin-label'].map(selector => ({ selector, box: node.closest('.map-canvas').querySelector(selector)?.getBoundingClientRect().toJSON() })).concat([{ selector: 'map', box: node.getBoundingClientRect().toJSON() }])))
+    await page.screenshot({ path: `../.local/route-fit-failure-${testInfo.project.name}.png` })
+    throw error
+  })
   expect(state.calls[0]).toContain('/listings/1/walking-route?campus_id=8')
   await page.screenshot({ path: `../.local/walking-route-${testInfo.project.name}-desktop.png` })
   const preview = page.getByRole('article', { name: 'Selected map listing' })
@@ -61,14 +65,14 @@ test('campus and clustered labels remain separate, with a selectable walking pat
   await expect(preview.getByRole('link', { name: 'View listing', exact: true })).toBeVisible()
   await expect.poll(async () => map.evaluate(node => {
     const path = node.querySelector('.walking-route-path').getBoundingClientRect(), preview = node.closest('.map-canvas').querySelector('.map-preview').getBoundingClientRect()
-    return (path.right <= preview.left - 10 || path.bottom <= preview.top - 10)
+    return (path.right <= preview.left - 10 || path.bottom <= preview.top - 10 || path.top >= preview.bottom + 10 || path.left >= preview.right + 10)
   })).toBe(true)
 
   await page.setViewportSize({ width: 390, height: 844 })
   await expect(page.locator('.walking-route-control').getByText('About 7 min walk · 522 m')).toBeVisible()
   await expect.poll(() => map.evaluate(node => {
     const caption = node.querySelector('.campus-pin-label').getBoundingClientRect(), preview = node.closest('.map-canvas').querySelector('.map-preview').getBoundingClientRect()
-    return caption.bottom < preview.top
+    return caption.bottom < preview.top || caption.top > preview.bottom || caption.right < preview.left || caption.left > preview.right
   })).toBe(true)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: `../.local/walking-route-${testInfo.project.name}-mobile.png`, fullPage: true })

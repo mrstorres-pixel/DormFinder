@@ -57,7 +57,7 @@ export function AdminWorkQueues() {
   const { data: user } = useCurrentUser()
   const { data, error } = useQuery({ queryKey: ['dashboard', user?.id], enabled: user?.role === 'admin', queryFn: async () => (await api.get('/dashboard')).data.data, staleTime: 30_000, retry: false })
   const { pathname } = useLocation()
-  return <nav className="admin-work-queues" aria-label="Daily work queues">{[['/admin', 'Listing reviews', 'pending_reviews', 'Submissions awaiting a decision'], ['/admin/reports', 'Student reports', 'open_reports', 'Concerns awaiting an outcome']].map(([path, label, key, hint]) => <Link to={path} key={key} aria-current={pathname === path ? 'page' : undefined}><span>{label}<small>{hint}</small></span>{Number.isInteger(data?.[key]) && <strong>{data[key]}</strong>}</Link>)}{error && <span className="admin-summary-note">Queue totals are unavailable. You can still open each queue.</span>}</nav>
+  return <nav className="admin-work-queues" aria-label="Daily work queues">{[['/admin', 'Listing reviews', 'pending_reviews', 'Submissions awaiting a decision'], ['/admin/reports', 'Student reports', 'open_reports', 'Concerns awaiting an outcome'], ['/admin/listings?location_check=needs_correction', 'Location checks', 'locations_need_correction', 'Pins outside the service area']].map(([path, label, key, hint]) => <Link to={path} key={key} aria-current={pathname === path ? 'page' : undefined}><span>{label}<small>{hint}</small></span>{Number.isInteger(data?.[key]) && <strong>{data[key]}</strong>}</Link>)}{error && <span className="admin-summary-note">Queue totals are unavailable. You can still open each queue.</span>}</nav>
 }
 
 export function AdminViews({ browse, name, field, options, defaultValue = '' }) {

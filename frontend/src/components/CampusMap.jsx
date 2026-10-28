@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { hasLocationPin } from '../lib/listingReadiness'
 import { preferredOption } from '../lib/housing'
 import { pesos } from '../lib/money'
 import { mapClusters } from '../lib/mapClusters'
@@ -14,7 +16,8 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
   const [engine, setEngine] = useState(null)
   const [failed, setFailed] = useState(false)
   const [moved, setMoved] = useState(false)
-  const pins = JSON.stringify(properties.filter(p => p.latitude != null && p.longitude != null))
+  const [popupHost, setPopupHost] = useState(null)
+  const pins = JSON.stringify(properties.filter(hasLocationPin))
   const campusId = campus?.id ?? null
   const latitude = campus?.latitude
   const longitude = campus?.longitude
@@ -37,7 +40,7 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
       const hasCampus = latitude != null && longitude != null
       map = L.map(element.current, { scrollWheelZoom: false }).setView(hasCampus ? [latitude, longitude] : [14.63, 121.04], hasCampus ? 15 : 10)
       const remembered = initialBounds.current.viewport
-      const restore = remembered && (remembered.campusId ?? null) === campusId
+      const restore = remembered && remembered.zoom >= 5 && hasLocationPin({ latitude: remembered.center?.[0], longitude: remembered.center?.[1] }) && (remembered.campusId ?? null) === campusId
       if (restore) map.setView(remembered.center, remembered.zoom)
       else if (initialBounds.current.bounds && (initialBounds.current.campusId ?? null) === campusId) map.fitBounds(initialBounds.current.bounds)
       fitResults.current = !hasCampus && !restore && !initialBounds.current.bounds
@@ -74,6 +77,22 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
       callbacks.current.onViewportChange?.({ center: [center.lat, center.lng], zoom: map.getZoom(), campusId, needsSearch: false })
     }
     const layer = L.layerGroup().addTo(map)
+    const host = document.createElement('div')
+    L.DomEvent.disableClickPropagation(host)
+    L.DomEvent.disableScrollPropagation(host)
+    const popup = L.popup({ className: 'listing-marker-popup', closeButton: false, closeOnClick: false, keepInView: true, autoPanPaddingTopLeft: [12, 65], autoPanPaddingBottomRight: [12, 35], minWidth: 230, maxWidth: 330 }).setContent(host)
+    let popupFrame
+    const resizePopup = () => {
+      const height = Math.max(220, Math.min(440, map.getSize().y * 0.55))
+      host.style.setProperty('--preview-width', Math.min(330, map.getSize().x - 48) + 'px')
+      host.style.setProperty('--preview-height', height + 'px')
+      host.style.setProperty('--preview-photo-height', Math.max(80, Math.min(190, height * 0.36)) + 'px')
+      cancelAnimationFrame(popupFrame)
+      popupFrame = requestAnimationFrame(() => { if (map.hasLayer(popup)) popup.update() })
+    }
+    const observer = new ResizeObserver(resizePopup)
+    observer.observe(host)
+    popup.on('add', () => setPopupHost(host))
     function draw() {
       layer.clearLayers()
       const groups = mapClusters(JSON.parse(pins), property => map.project([property.latitude, property.longitude], map.getZoom()))
@@ -85,6 +104,12 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
       for (const [index, group] of groups.entries()) {
         const [dx, dy] = offsets[index]
         const position = positions[index]
+        if (group.some(property => property.id === selectedId)) {
+          popup.options.offset = L.point(dx, dy - 23)
+          popup.setLatLng(position.center)
+          if (!map.hasLayer(popup)) popup.addTo(map)
+          resizePopup()
+        }
         if (dx || dy) {
           L.polyline([position.center, map.unproject([position.x + dx, position.y + dy], map.getZoom())], { color: '#52627a', weight: 1.5, interactive: false, className: 'map-label-leader' }).addTo(layer)
           L.circleMarker(position.center, { radius: 3, color: '#2558e5', fillOpacity: 1, interactive: false }).addTo(layer)
@@ -117,8 +142,8 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     const selected = JSON.parse(pins).find(p => p.id === selectedId)
     if (selectedId !== previousSelection.current && selected && !map.getBounds().contains([selected.latitude, selected.longitude])) map.panTo([selected.latitude, selected.longitude])
     previousSelection.current = selectedId
-    draw(); map.on('zoomend', draw)
-    return () => { map.off('zoomend', draw); layer.remove() }
+    draw(); map.on('zoomend', draw); map.on('resize', resizePopup)
+    return () => { observer.disconnect(); cancelAnimationFrame(popupFrame); map.off('zoomend', draw); map.off('resize', resizePopup); popup.remove(); layer.remove() }
   }, [engine, pins, selectedId, campusId, latitude, longitude])
   useEffect(() => {
     if (!engine || engine.campusId !== campusId || !walking.route || selectedLatitude == null || selectedLongitude == null) return
@@ -141,11 +166,11 @@ export default function CampusMap({ properties, campus, selectedId, onSelect, on
     <div className="map-canvas">
     <div className="map-tools">
       {onAreaSearch && moved && engine && <button className="btn btn-primary btn-sm" onClick={searchArea}>Search this area</button>}
-      {engine && (campusId != null ? <button className="btn btn-light btn-sm" onClick={() => engine.map.setView([latitude, longitude], 15)}>Back to campus</button> : properties.some(p => p.latitude != null && p.longitude != null) && <button className="btn btn-light btn-sm" title="Zoom to all matching places" onClick={() => engine.map.fitBounds(properties.filter(p => p.latitude != null && p.longitude != null).map(p => [p.latitude, p.longitude]), { padding: [40, 40], maxZoom: 15 })}>Fit all places</button>)}
+      {engine && (campusId != null ? <button className="btn btn-light btn-sm" onClick={() => engine.map.setView([latitude, longitude], 15)}>Back to campus</button> : properties.some(hasLocationPin) && <button className="btn btn-light btn-sm" title="Zoom to all matching places" onClick={() => engine.map.fitBounds(properties.filter(hasLocationPin).map(p => [p.latitude, p.longitude]), { padding: [40, 40], maxZoom: 15 })}>Fit all places</button>)}
     </div>
     {failed && <p role="status" className="map-failure">Map imagery is unavailable. Listing addresses and search remain usable.</p>}
     <div className="campus-map" ref={element} role="region" aria-label="Listing map" />
-    {typeof children === 'function' ? children(walking) : children}
+    {popupHost && selectedProperty && hasLocationPin(selectedProperty) && createPortal(typeof children === 'function' ? children(walking) : children, popupHost)}
     </div>
     <WalkingRouteControl walking={walking} property={selectedProperty} campus={campus} />
     <div className="map-note" role="note"><p>{!properties.some(property => property.is_demo) && 'Property locations are supplied by owners. '}{campus ? 'Campus distances use an approximate reference and are measured in a straight line.' : 'Choose a campus for distances and walking routes.'}</p></div>

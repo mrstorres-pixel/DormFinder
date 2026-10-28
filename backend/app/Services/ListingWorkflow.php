@@ -18,6 +18,8 @@ class ListingWorkflow
         }
         if ($property->latitude === null || $property->longitude === null) {
             $errors['coordinates'] = 'Add both latitude and longitude before submission.';
+        } elseif (! PropertyLocation::usable($property->latitude, $property->longitude)) {
+            $errors['coordinates'] = 'Correct the property pin: it is outside the Philippines service area.';
         }
         if (! $property->photos()->where('status', 'ready')->exists()) {
             $errors['photos'] = 'Add at least one ready property photo.';

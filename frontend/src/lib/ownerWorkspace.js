@@ -16,6 +16,7 @@ export function ownerRoomFingerprint(option) {
 }
 
 export function ownerListingState(property) {
+  if (property.location_check?.status === 'needs_correction' && ['draft', 'approved', 'rejected'].includes(property.status)) return { label: 'Location needs correction', tone: 'attention', step: 'location', action: 'Fix property location', note: 'The saved pin is outside our Philippines service area. Place it at the property entrance. This pin is excluded from maps and walking routes until corrected.' }
   const options = property.room_options || []
   const taken = options.length > 0 && options.every(option => option.available_units === 0)
   const visibility = property.availability?.status

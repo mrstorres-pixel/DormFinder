@@ -29,6 +29,10 @@ test('desktop map stays beside scrolling results and keeps its preview inside th
   await cards.nth(4).getByRole('button', { name: 'Show on map' }).click()
   const preview = page.getByRole('article', { name: 'Selected map listing' })
   await expect(preview).toBeVisible()
+  await expect.poll(() => preview.evaluate(node => {
+    const card = node.getBoundingClientRect(), map = node.closest('.campus-map').getBoundingClientRect()
+    return card.top >= map.top && card.bottom <= map.bottom && card.left >= map.left && card.right <= map.right
+  })).toBe(true)
   const previewBox = await preview.boundingBox()
   expect(previewBox.width).toBeLessThanOrEqual(330)
   expect(previewBox.y).toBeGreaterThan(88)
@@ -39,6 +43,7 @@ test('desktop map stays beside scrolling results and keeps its preview inside th
   await expect(preview).toHaveCount(0)
   await expect(map).toBeFocused()
   await expect(page.locator('.property-card.is-selected')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Back to campus', exact: true }).click()
   await map.locator('.price-cluster').first().click()
   await expect.poll(() => page.evaluate(() => JSON.parse(sessionStorage.getItem('dormfinder:browse-context:v1'))?.[0]?.value?.viewport?.zoom || 0)).toBeGreaterThan(15)
   await expect(page.getByRole('button', { name: 'Search this area', exact: true })).toBeVisible()

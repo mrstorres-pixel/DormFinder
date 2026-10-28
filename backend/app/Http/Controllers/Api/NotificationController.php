@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Services\AvailabilityFreshness;
+use App\Services\NotificationContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,8 +23,11 @@ class NotificationController extends Controller
         $request->validate(['page' => ['nullable', 'integer', 'between:1,100000']]);
         app(AvailabilityFreshness::class)->remind($request->user());
 
-        return response()->json(DB::table('user_notifications')->where('recipient_id', $request->user()->id)
-            ->select(['id', 'kind', 'title', 'path', 'read_at', 'created_at'])->orderByDesc('id')->paginate(20));
+        $page = DB::table('user_notifications')->where('recipient_id', $request->user()->id)
+            ->select(['id', 'kind', 'title', 'path', 'event_key', 'read_at', 'created_at'])->orderByDesc('id')->paginate(20);
+        $page->setCollection(app(NotificationContext::class)->attach($page->getCollection(), $request->user()));
+
+        return response()->json($page);
     }
 
     public function read(Request $request, int $notification): JsonResponse

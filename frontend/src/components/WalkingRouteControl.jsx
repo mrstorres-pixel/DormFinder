@@ -1,8 +1,10 @@
 import { errorMessage } from '../lib/api'
 import { walkingLabel } from '../lib/walking'
+import { hasLocationPin } from '../lib/listingReadiness'
 
 export default function WalkingRouteControl({ walking, property, campus }) {
   if (!property || !campus) return null
+  if (!hasLocationPin(property)) return <p className="location-check-note">The property location needs correction. Use the address or ask the owner for directions.</p>
   return <section className="walking-route-control" aria-label="Walk to campus">
     <div className="walking-route-actions">
       {!walking.route && <button className="btn btn-outline-primary btn-sm" disabled={walking.loading} onClick={walking.show}>{walking.loading ? 'Finding walking route…' : walking.error ? 'Try walking route again' : 'Walk to campus'}</button>}

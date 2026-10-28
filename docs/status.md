@@ -1,5 +1,14 @@
 # Implementation status
 
+## Anchored map previews, location checks and notification context - October 28, 2026
+
+The palette now distinguishes slate page backgrounds, neutral listing cards, sage costs and featured sections, lavender draft contexts, and navy navigation. Amber remains for actual warnings. Map cards attach to the selected price bubble, including clustered/displaced labels, and follow pan/zoom/resize with automatic space fitting. Oversized remembered views are reset to the supported area.
+
+Property coordinates are checked against the Philippines service-area bounds (latitude 4-22, longitude 116-127.5). Existing suspicious coordinates remain stored and listings remain accessible; their public pins and distances are withheld, and walking requests are rejected before contacting the provider. Owner/admin dashboards, directory filters, listing cards and review screens surface correction tasks. New coordinate saves and review approval enforce the same bounds. These bounds do not certify an address or exact national boundary.
+
+Existing and new listing notifications show the relevant property name. Batched read-time joins enforce owner/participant/report access and add no message previews. Notification history is unchanged. No production data migration, dependency or environment change is needed. Verification passes 181 backend tests / 1992 assertions, 107 frontend unit tests, all 88 affected Chromium/WebKit scenarios, lint, Pint and the production build.
+
+
 
 ## Clearer listing, map, draft and viewing flows - released October 27
 

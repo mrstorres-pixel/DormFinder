@@ -52,7 +52,7 @@ export function ReviewDetails() {
   const property = query.data
   return <AdminShell className="review-workspace review-detail">
     <Link className="back-link" to={queuePath}>← {backLabel}</Link>
-    <header className="review-page-heading"><div><span className="eyebrow">LISTING REVIEW</span><h1>{property.title}</h1><p>{[property.address, property.city].filter(Boolean).join(', ')}</p></div><span className="review-status">{statusLabel(property.status)}</span></header>
+    {property.location_check?.status === "needs_correction" && <p className="alert alert-warning" role="alert">The property pin is outside our Philippines service area. Ask the owner to correct it before approving this listing.</p>}<header className="review-page-heading"><div><span className="eyebrow">LISTING REVIEW</span><h1>{property.title}</h1><p>{[property.address, property.city].filter(Boolean).join(', ')}</p></div><span className="review-status">{statusLabel(property.status)}</span></header>
     <div className="admin-review-brief"><dl><div><dt>Listing reference</dt><dd>#{property.id}</dd></div><div><dt>Owner</dt><dd><Link to={'/admin/users?id=' + property.landlord_id}>{property.landlord_name || 'Owner #' + property.landlord_id}</Link></dd></div><div><dt>Submitted</dt><dd>{submitted(property.submitted_at)}</dd></div><div><dt>Content to check</dt><dd>{property.photos.length} photos · {property.room_options.length} room options</dd></div></dl><Link to={'/admin/audit?property_id=' + property.id}>View listing history</Link></div>
     {query.error && <ErrorNotice error={query.error} retry={() => query.refetch()} />}
     <div className="review-detail-layout">

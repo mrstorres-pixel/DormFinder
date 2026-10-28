@@ -9,6 +9,7 @@ use App\Models\Property;
 use App\Services\AvailabilityFreshness;
 use App\Services\CampusDistance;
 use App\Services\ListingSearch;
+use App\Services\PropertyLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -85,13 +86,15 @@ class ListingController extends Controller
     {
         $query = ListingSearch::query(ListingSearch::parameters($request));
         $total = (clone $query)->reorder()->count();
+        $query = PropertyLocation::mapped($query);
+        $mapped = (clone $query)->reorder()->count();
         $rows = $query->with(['photos' => fn ($photos) => $photos->where('status', 'ready')->limit(1)])->limit(200)->get()->map(function (Property $property) use ($request): array {
             $data = (new PublicPropertyResource($property))->resolve($request);
 
             return array_intersect_key($data, array_flip(['id', 'title', 'address', 'city', 'latitude', 'longitude', 'is_demo', 'photos', 'room_options', 'distance_from_campus']));
         });
 
-        return response()->json(['data' => $rows, 'meta' => ['total' => $total, 'limit' => 200, 'limited' => $total > 200]]);
+        return response()->json(['data' => $rows, 'meta' => ['total' => $total, 'mapped_total' => $mapped, 'unmapped_count' => $total - $mapped, 'limit' => 200, 'limited' => $mapped > 200]]);
     }
 
     public function campuses(): JsonResponse

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Inquiry;
 use App\Models\Property;
 use App\Services\AvailabilityFreshness;
+use App\Services\PropertyLocation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,13 @@ class DashboardController extends Controller
     {
         $user = $request->user();
         $counts = ['unread_notifications' => DB::table('user_notifications')->where('recipient_id', $user->id)->whereNull('read_at')->count()];
+        if (in_array($user->role, ['admin', 'landlord'], true)) {
+            $locations = Property::query()->whereNotIn('status', ['archived', 'suspended']);
+            if ($user->role === 'landlord') {
+                $locations->where('landlord_id', $user->id);
+            }
+            $counts['locations_need_correction'] = PropertyLocation::suspicious($locations)->count();
+        }
         if ($user->role === 'admin') {
             $counts += [
                 'pending_reviews' => Property::query()->where('status', 'pending_review')->whereHas('landlord', fn ($query) => $query->where('status', 'active'))->count(),

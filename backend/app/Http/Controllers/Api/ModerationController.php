@@ -8,6 +8,7 @@ use App\Models\Property;
 use App\Models\User;
 use App\Services\ActivityRecorder;
 use App\Services\AdminBrowse;
+use App\Services\PropertyLocation;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,10 @@ class ModerationController extends Controller
         abort_unless($request->user()->role === 'admin', 403);
         $data = AdminBrowse::filters($request, ['status' => ['nullable', Rule::in(['draft', 'pending_review', 'approved', 'rejected', 'suspended', 'archived'])], 'property_type' => ['nullable', Rule::in(['dormitory', 'apartment', 'boarding_house', 'rental_room'])], 'sort' => ['nullable', Rule::in(['newest', 'oldest', 'title_asc', 'title_desc'])]]);
         $query = Property::query()->with([...ListingController::relations(), 'landlord:id,name']);
+        $request->validate(['location_check' => ['nullable', Rule::in(['needs_correction'])]]);
+        if ($request->input('location_check') === 'needs_correction') {
+            PropertyLocation::suspicious($query);
+        }
         AdminBrowse::propertySearch($query, $data['q'] ?? null);
         if (filled($data['status'] ?? null)) {
             $query->where('status', $data['status']);

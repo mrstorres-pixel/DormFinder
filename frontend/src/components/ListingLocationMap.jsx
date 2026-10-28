@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useCampuses } from '../lib/discovery'
+import { hasLocationPin } from '../lib/listingReadiness'
 import { campusIcon } from '../lib/mapMarkers'
 import { mapLabelLayout } from '../lib/mapLabelLayout'
 import { useWalkingRoute, drawWalkingRoute } from '../lib/walking'
@@ -10,7 +11,7 @@ import { walkingLabel } from '../lib/walking'
 import 'leaflet/dist/leaflet.css'
 import './listing-location-map.css'
 
-const hasPin = place => place.latitude != null && place.longitude != null && Number.isFinite(Number(place.latitude)) && Number.isFinite(Number(place.longitude))
+const hasPin = hasLocationPin
 
 export default function ListingLocationMap({ properties, campus, showDestinationSearch = true, walkingComparison }) {
   const [destination, setDestination] = useState(null)

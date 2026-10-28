@@ -1,6 +1,6 @@
 /* A calm campus palette: navy, slate blue and a little green. */
-:root { --theme-surface: #f1f5fa; --theme-soft: #dce7f5; --theme-line: #a0b3cd; --theme-control: #e9f0f9; --theme-control-line: #7890af; --theme-muted: #435a79; --page: #e5edf6; --paper: #edf3fb; --sage: #deebe3; --card-shadow: 0 7px 24px #1937590b; }
-body { background: #e5edf6; }
+:root { --theme-surface: #f1f2f5; --theme-soft: #dce3ed; --theme-line: #a0aec1; --theme-control: #e7edf4; --theme-control-line: #788aa2; --theme-muted: #43546d; --page: #e5e9ef; --paper: #f1f2f5; --sage: #dfeae4; --secondary-surface: #e7e6f0; --card-shadow: 0 7px 24px #1937590b; }
+body { background: var(--page); }
 .app-layout .room-terms {padding:1rem 0 0;margin-top:1rem;border-top:1px solid var(--line)}
 .app-layout .room-terms h3 {font-size:.9rem;margin:0 0 .75rem}
 .room-utility-terms {font-size:.8rem;line-height:1.65;white-space:pre-wrap;color:var(--muted);overflow-wrap:anywhere}
@@ -204,3 +204,21 @@ body { background: #e5edf6; }
   .app-layout.is-messaging .chat-place { padding-block: .4rem; }
   .app-layout.is-messaging .chat-compose { padding-block: .45rem; }
 }
+
+/* Surfaces have distinct roles; amber remains reserved for warnings. */
+.app-layout .site-header {background:#d7e1ed;border-color:#98a9bd}
+.app-layout .property-card,.app-layout .property-card .listing-card-body {background:var(--paper)}
+.app-layout .listing-detail-main>.panel,.app-layout .auth-panel {background:var(--paper);border-color:var(--line)}
+.app-layout .listing-detail-aside>.panel {background:#e5ebf3}
+.app-layout .room-cost-overview {background:var(--sage);border-color:#9ab6a8}
+.app-layout .featured-homes {background:var(--sage);border-color:#a0b7aa}
+.app-layout .home-campus-form {background:var(--paper)}
+.app-layout .owner-task-grid>a {background:var(--sage);border-color:#9ab6a8}
+.app-layout .owner-editor-context.tone-draft,.app-layout .owner-next-step.tone-draft {background:var(--secondary-surface);border-color:#b2afc8}
+.app-layout .admin-filter-bar,.app-layout .admin-advanced {background:#e4eaf2}
+.app-layout .admin-table tbody tr:nth-child(odd) {background:var(--paper)}
+.app-layout .admin-table tbody tr:nth-child(even) {background:#e4eaf2}
+.app-layout .map-place-copy {background:var(--paper)}
+.app-layout .map-preview-links {background:var(--sage);border-color:#a0b7aa}
+.notification-listing {display:block;font-size:.83rem;line-height:1.5;margin-bottom:.3rem;overflow-wrap:anywhere;color:var(--ink)}
+.location-check-note {display:block;font-size:.75rem;line-height:1.6;color:#7b4c16;margin:.5rem 0;overflow-wrap:anywhere}

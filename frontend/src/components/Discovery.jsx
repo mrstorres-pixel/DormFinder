@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { hasLocationPin } from '../lib/listingReadiness'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useCurrentUser } from '../lib/auth'
 import { distanceLabel } from '../lib/discovery'
@@ -46,7 +47,7 @@ export function ListingCard({ property, campus, chosenOptionId, selectedId, onSe
         <AvailabilityStatus option={option} askHref={destination + "#confirm-availability"} browse={"/listings?" + params.toString()} /><p className="card-room-meta"><span>{option.capacity}-person room</span><span className={option.available_units === 0 || option.availability_stale ? 'room-caution' : ''}>{option.available_units} {option.inventory_type === 'bedspace' ? (option.available_units === 1 ? 'bed' : 'beds') : (option.available_units === 1 ? 'room' : 'rooms')} available</span></p>
       </>}
       {match && <p className="card-match">{match}</p>}
-      <div className="card-actions">{(!user || user.role === 'student') && option && <label><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare<span className="visually-hidden"> {property.title}</span></span></label>}{onSelect && <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button>}<FavoriteButton compact propertyId={property.id} optionId={option?.id} title={property.title} /></div>
+      <div className="card-actions">{(!user || user.role === 'student') && option && <label><input type="checkbox" checked={checked} disabled={!checked && selections.length >= 3} onChange={event => choose(property.id, option.id, event.target.checked)} /><span>Compare<span className="visually-hidden"> {property.title}</span></span></label>}{onSelect && (hasLocationPin(property) ? <button className="btn btn-link btn-sm" onClick={() => onSelect(property.id)}>Show on map</button> : <span className="location-check-note">{property.location_check?.status === "needs_correction" ? "Location needs correction" : "Location not provided"}</span>)}<FavoriteButton compact propertyId={property.id} optionId={option?.id} title={property.title} /></div>
     </div></div>
   </article>
 }

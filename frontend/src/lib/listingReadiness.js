@@ -1,7 +1,7 @@
 export const editorSteps = [['photos', 'Photos'], ['rooms', 'Rooms & costs'], ['location', 'Location & details'], ['preview', 'Preview & review']]
 
 export function hasLocationPin(property) {
-  return [['latitude', 90], ['longitude', 180]].every(([key, limit]) => property[key] != null && String(property[key]).trim() !== '' && Number.isFinite(Number(property[key])) && Math.abs(Number(property[key])) <= limit)
+  return property?.location_check?.can_map !== false && [['latitude', 4, 22], ['longitude', 116, 127.5]].every(([key, min, max]) => property?.[key] != null && String(property[key]).trim() !== '' && Number.isFinite(Number(property[key])) && Number(property[key]) >= min && Number(property[key]) <= max)
 }
 
 export function listingReadiness(property) {

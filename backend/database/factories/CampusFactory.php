@@ -18,7 +18,7 @@ class CampusFactory extends Factory
     public function definition(): array
     {
         return [
-            'slug' => fake()->unique()->slug(), 'name' => 'Synthetic test campus', 'address' => 'Synthetic campus address',
+            'slug' => 'campus-'.fake()->unique()->uuid(), 'name' => 'Synthetic test campus', 'address' => 'Synthetic campus address',
             'latitude' => 14.6, 'longitude' => 121.0, 'active' => true,
             'source_url' => 'https://example.test/campus', 'reference_note' => 'Synthetic reference for tests only.',
         ];

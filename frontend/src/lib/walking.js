@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './api'
+import { hasLocationPin } from './listingReadiness'
 
 export const walkingIdentity = (property, campus) => property && campus ? [property.id, property.latitude, property.longitude, campus.id, campus.latitude, campus.longitude].join(':') : ''
 
@@ -14,7 +15,7 @@ export function useWalkingRoute(property, campus) {
   const client = useQueryClient()
   const identity = walkingIdentity(property, campus)
   const [requested, setRequested] = useState('')
-  const active = !!identity && requested === identity
+  const active = !!identity && hasLocationPin(property) && requested === identity
   const query = useQuery({
     queryKey: ['walking-route', identity], enabled: active,
     queryFn: async ({ signal }) => (await api.get(`/listings/${property.id}/walking-route`, { params: { campus_id: campus.id }, signal })).data.data,
@@ -43,7 +44,7 @@ export function useComparisonWalkingRoutes(properties, campus) {
       let requested = false
       for (const property of properties) {
         if (signal.aborted) throw new DOMException('Aborted', 'AbortError')
-        if (property.latitude == null || property.longitude == null) {
+        if (!hasLocationPin(property)) {
           routes[property.id] = { error: 'No property location pin is available.' }
           continue
         }
@@ -91,10 +92,8 @@ export function drawWalkingRoute(L, map, route, property, campus, preview = fals
       map.invalidateSize({ pan: false })
       const card = preview ? map.getContainer().parentElement.querySelector('.map-preview') : null
       const box = map.getContainer().getBoundingClientRect(), cardBox = card?.getBoundingClientRect()
-      const beside = cardBox && cardBox.width < box.width * 0.6
-      const bottom = cardBox && !beside ? cardBox.height + 105 : 75
-      const right = beside ? cardBox.width + 35 : 35
-      map.fitBounds(path.getBounds().extend(pins), { paddingTopLeft: [35, 80], paddingBottomRight: [right, bottom], maxZoom: 17, animate: false })
+      const top = cardBox ? Math.min(cardBox.height + 70, box.height - 120) : 80
+      map.fitBounds(path.getBounds().extend(pins), { paddingTopLeft: [35, top], paddingBottomRight: [35, 65], maxZoom: 17, animate: false })
     })
   }
   // Leaflet ignores setView during an active zoom transition. Fit after that transition ends.

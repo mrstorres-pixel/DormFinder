@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Campus;
+use App\Services\PropertyLocation;
 use App\Services\WalkingRoute;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class WalkingRouteController extends Controller
     public function __invoke(Request $request, int $property, WalkingRoute $routing): JsonResponse
     {
         $listing = ListingController::publicQuery()->findOrFail($property);
+        abort_unless(PropertyLocation::usable($listing->latitude, $listing->longitude), 422, 'The property location needs correction before walking directions can be calculated.');
         $data = $request->validate(['campus_id' => ['required', 'integer', Rule::exists('campuses', 'id')->where('active', true)]]);
         $campus = Campus::query()->findOrFail($data['campus_id']);
         $result = $routing->between($listing, $campus);

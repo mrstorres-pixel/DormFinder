@@ -23,11 +23,16 @@ class PropertyRequest extends FormRequest
             'property_type' => ['required', Rule::in(['dormitory', 'apartment', 'boarding_house', 'rental_room'])],
             'address' => ['nullable', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:100'],
-            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:-90,90'],
-            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:-180,180'],
+            'latitude' => ['nullable', 'required_with:longitude', 'numeric', 'between:4,22'],
+            'longitude' => ['nullable', 'required_with:latitude', 'numeric', 'between:116,127.5'],
             'revision' => [$this->isMethod('patch') ? 'required' : 'prohibited', 'integer', 'min:1'],
             'landlord_id' => ['prohibited'], 'owner_id' => ['prohibited'],
             'status' => ['prohibited'], 'is_demo' => ['prohibited'],
         ];
+    }
+
+    public function messages(): array
+    {
+        return ['latitude.between' => 'Place the property pin within the Philippines service area.', 'longitude.between' => 'Place the property pin within the Philippines service area.'];
     }
 }

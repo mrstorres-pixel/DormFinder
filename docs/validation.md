@@ -1,5 +1,10 @@
 # Validation evidence — October 9, 2026
 
+## Anchored map and location-context validation - October 28, 2026
+
+The local backend suite passes 181 tests / 1992 assertions; the focused location/notification/routing suite passes 11 tests / 93 assertions. Tests cover retained legacy coordinates, public map exclusions, blocked outbound routing and invalid saves, owner/admin filters and counts, review blocking, contextual names for historical notifications, participant isolation and bounded query counts. The campus factory now uses bounded unique slugs to avoid random length failures. Frontend unit tests pass 107 cases. Browser checks cover native marker anchoring, responsive card containment, visible actions, suspicious-pin exclusions, notification names, galleries, save/navigation and walking-route visibility. The final built UI run passes all 88 affected Chromium/WebKit cases. Lint, Pint and the production build pass; repeated route geometry checks pass after fitting the card and route together.
+
+
 
 ## Clearer listing, map, draft and viewing flows - released October 27
 
