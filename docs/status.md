@@ -1,5 +1,12 @@
 # Implementation status
 
+## Aligned owner preview and status-aware visibility - October 28, 2026
+
+The owner preview aligns About this property and Rooms and costs in matching padded cards with consistent heading levels. The photo gallery follows the same outer width; long descriptions wrap safely and the columns stack on phones. Costs are visible directly. Draft, pending-review, rejected, approved, fully occupied, expired, paused, archived and restricted listings now have relevant visibility explanations. Full approved controls provide Update availability, Pause and Archive; paused controls provide Resume and Archive; private drafts retain Archive with no publication actions. The review scope is a plain accessible note beside submission rather than a separate callout box.
+
+
+Verification passes 107 frontend unit tests, lint/build, and all 52 affected Chromium/WebKit cases covering owner creation, preview, state-aware controls, unchanged-count confirmation, archive/restore, unsaved-change guards and shared public listing content. No backend, schema, dependency or environment change is required.
+
 ## Anchored map previews, location checks and notification context - October 28, 2026
 
 The palette now distinguishes slate page backgrounds, neutral listing cards, sage costs and featured sections, lavender draft contexts, and navy navigation. Amber remains for actual warnings. Map cards attach to the selected price bubble, including clustered/displaced labels, and follow pan/zoom/resize with automatic space fitting. Oversized remembered views are reset to the supported area.

@@ -86,6 +86,19 @@ test('existing owners and admins can read the deployed editor and filtered direc
       await expect(owner.getByLabel('Street address', { exact: true })).toHaveValue(originalAddress)
       await expect(owner.getByLabel('City', { exact: true })).toHaveValue(originalCity)
       await expect(owner.getByRole('button', { name: 'Cancel location changes', exact: true })).toHaveCount(0)
+      await readPage(owner, `/landlord/properties/${editable.id}#preview`, '/landlord/properties/' + editable.id)
+      const about = owner.getByRole('region', { name: 'About this property preview' }), costs = owner.getByRole('region', { name: 'Preview rooms and costs' })
+      await expect(about).toBeVisible()
+      await expect(costs).toBeVisible()
+      const aboutHeading = await about.getByRole('heading').boundingBox(), costsHeading = await costs.getByRole('heading').boundingBox()
+      expect(Math.abs(aboutHeading.y - costsHeading.y)).toBeLessThan(1)
+      await expect(costs.locator('details')).toHaveCount(0)
+      const visibility = owner.getByRole('region', { name: 'Listing visibility' })
+      if (editable.status === 'draft') {
+        await expect(visibility).toContainText('This draft is private')
+        await expect(visibility.getByRole('button')).toHaveCount(1)
+        await expect(owner.locator('.review-preparation .review-boundary-note')).toHaveCSS('border-top-width', '0px')
+      }
     }
     await owner.goto('/landlord/properties/new')
     await expect(owner.getByLabel('Property name')).toHaveAttribute('required', '')

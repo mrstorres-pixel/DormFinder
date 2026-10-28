@@ -55,11 +55,18 @@
 .owner-preview { margin-top: 2rem; border-top: 1px solid var(--line); padding-top: 2rem; }
 .owner-preview h3 { font-size: 1.1rem; }
 .owner-preview > p { font-size: .85rem; color: var(--muted); }
-.owner-preview .photo-gallery { max-width: 850px; }
+.owner-preview .photo-gallery { max-width: none; }
 .owner-preview-details { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; gap: 1.5rem; margin-top: 1.5rem; }
 .owner-preview-details p { font-size: .85rem; }
 .owner-preview-details summary { font-size: .85rem; cursor: pointer; padding: .75rem 0; }
 .owner-preview-details .panel { padding: 1.25rem; }
+.owner-preview-main {display:grid;align-content:start;gap:1rem;min-width:0}
+.owner-preview-main>.panel {margin:0!important}
+.owner-preview-details .panel>h3 {margin:0 0 .85rem;font-size:1.1rem;line-height:1.4}
+.owner-preview-details h4 {font-size:.95rem;margin:1rem 0 .6rem}
+.owner-preview-details .panel>p:last-child {margin-bottom:0}
+.owner-preview-costs .room-charges {margin-top:1rem}
+.owner-preview-costs .charge-list {margin-bottom:0}
 .owner-listing-settings { margin-top: 2rem; }
 .owner-listing-settings > .panel { margin-top: 0 !important; padding: 1.6rem; }
 .app-layout .owner-listings {max-width:1380px;padding-top:2rem;padding-bottom:3rem}
@@ -165,6 +172,8 @@
 .owner-listing-actions {padding:1.35rem 0 0;margin-top:1.5rem;border-top:1px solid #91a8c6}
 .owner-listing-actions h2 {font-size:1.1rem;margin-bottom:.65rem}
 .owner-listing-actions>p {font-size:.85rem;line-height:1.7;max-width:75ch;color:#405a79}
+.owner-visibility-controls {display:flex;align-items:center;flex-wrap:wrap;gap:.65rem}
+.owner-visibility-controls>.owner-quick-confirmation {order:1;flex-basis:100%;margin:.25rem 0 0}
 .owner-action-confirmation {display:flex;flex-wrap:wrap;gap:.7rem}
 .owner-preview-details>*,.owner-preview .photo-gallery {min-width:0}
 .owner-preview .preserve-lines {overflow-wrap:anywhere}
@@ -183,9 +192,9 @@
 .app-layout .owner-property-card .owner-card-actions .owner-card-removal {margin:0;border:0;padding:0}
 .owner-address-results [aria-selected="true"] button {background:#dbe6f3;outline:2px solid #365d9b;outline-offset:-2px}
 .owner-card-removal>.btn-outline-secondary {background:transparent;color:#405a79;border:0;font-size:.8rem;padding:.5rem 0}
-.owner-listing-actions>.btn {margin:.25rem .6rem .25rem 0}
+.owner-visibility-controls>.btn {margin:0}
 @media(max-width:575px){.owner-count-row{grid-template-columns:1fr}.owner-room-availability-action>.btn{width:100%}.owner-count-row .form-label{font-size:.8rem}}
 .owner-availability-explainer {margin:1rem 0;padding:.9rem 1rem;background:#e0ece4;border:1px solid #91ad9e;border-radius:9px;font-size:.82rem;line-height:1.7}
 .owner-availability-explainer p {margin:0 0 .5rem}
 .owner-availability-explainer p:last-child {margin-bottom:0}
-@media(max-width:575px){.owner-address-search-row{flex-direction:column}.owner-listing-actions>.btn{width:100%;margin:.35rem 0}.owner-action-confirmation>.btn{width:100%}}
+@media(max-width:575px){.owner-address-search-row{flex-direction:column}.owner-visibility-controls>.btn{width:100%}.owner-action-confirmation>.btn{width:100%}}

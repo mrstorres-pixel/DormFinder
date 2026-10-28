@@ -1,5 +1,12 @@
 # Validation evidence — October 9, 2026
 
+## Owner preview and visibility validation - October 28, 2026
+
+Preview tests check aligned heading baselines, gallery/detail edges, long-content containment, visible cost information and mobile stacking. Visibility tests exercise draft, pending-review, rejected, approved, paused, expired, fully occupied, archived and restricted states, including an unchanged-count confirmation from the preview that retains approval. Submission tests check the plain review scope note and its accessible association with Submit for review. Existing archive/restore and guarded creation/save flows remain covered.
+
+
+Verification passes 107 frontend unit tests, lint/build, and all 52 affected Chromium/WebKit cases covering owner creation, preview, state-aware controls, unchanged-count confirmation, archive/restore, unsaved-change guards and shared public listing content. No backend, schema, dependency or environment change is required.
+
 ## Anchored map and location-context validation - October 28, 2026
 
 The local backend suite passes 181 tests / 1992 assertions; the focused location/notification/routing suite passes 11 tests / 93 assertions. Tests cover retained legacy coordinates, public map exclusions, blocked outbound routing and invalid saves, owner/admin filters and counts, review blocking, contextual names for historical notifications, participant isolation and bounded query counts. The campus factory now uses bounded unique slugs to avoid random length failures. Frontend unit tests pass 107 cases. Browser checks cover native marker anchoring, responsive card containment, visible actions, suspicious-pin exclusions, notification names, galleries, save/navigation and walking-route visibility. The final built UI run passes all 88 affected Chromium/WebKit cases. Lint, Pint and the production build pass; repeated route geometry checks pass after fitting the card and route together.

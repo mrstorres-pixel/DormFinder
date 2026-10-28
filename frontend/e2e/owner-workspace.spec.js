@@ -157,6 +157,38 @@ test('owner removal and restoration are direct confirmed actions without staff r
   expect(state.writes.map(write => write.payload.action)).toEqual(['archive', 'restore'])
 })
 
+test('visibility copy and available controls follow draft, review and publication states', async ({ page }) => {
+  const state = await fixture(page)
+  state.properties[17].owner_paused = true
+  for (const [id, message, buttons] of [[1, 'This draft is private', 1], [21, 'awaits administrator review', 1], [22, 'make the requested changes', 1], [17, 'This approved listing', 3], [18, 'Advertising is paused', 2], [19, 'confirmation has expired', 3], [20, 'Every room is marked occupied', 3], [23, 'archived and hidden', 1], [24, 'administrator has restricted', 0]]) {
+    await page.goto(`/landlord/properties/${id}#preview`)
+    const visibility = page.getByRole('region', { name: 'Listing visibility' })
+    await expect(visibility).toContainText(message)
+    await expect(visibility.getByRole('button')).toHaveCount(buttons)
+    if (id === 1) {
+      await expect(visibility.getByRole('heading', { name: 'Draft visibility' })).toBeVisible()
+      await expect(visibility.getByRole('button', { name: /Pause listing|Resume listing|Update availability/ })).toHaveCount(0)
+    }
+    if (id === 17) {
+      await visibility.getByRole('button', { name: 'Update availability', exact: true }).click()
+      const dialog = page.getByRole('dialog', { name: 'Update availability', exact: true })
+      await dialog.getByRole('button', { name: 'Confirm these counts', exact: true }).click()
+      await expect(dialog).toHaveCount(0)
+      expect(state.properties[16].status).toBe('approved')
+      expect(state.writes.at(-1)).toMatchObject({ path: '/api/v1/landlord/properties/17/availability', payload: { options: [{ id: 170, available_units: 2 }] } })
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 900 })
+        const layout = await visibility.evaluate(section => {
+          const box = section.getBoundingClientRect(), buttons = [...section.querySelectorAll('.owner-visibility-controls>.btn')].map(button => button.getBoundingClientRect())
+          return { inside: buttons.every(button => button.left >= box.left && button.right <= box.right && button.height >= 40), aligned: buttons.every(button => Math.abs(button.top - buttons[0].top) < 1) || buttons.every(button => Math.abs(button.left - buttons[0].left) < 1) }
+        })
+        expect(layout).toEqual({ inside: true, aligned: true })
+      }
+      await page.setViewportSize({ width: 1280, height: 900 })
+    }
+  }
+})
+
 test('three property views keep status filtering in one place and highlight actual next tasks', async ({ page }) => {
   await fixture(page)
   await page.goto('/landlord')
@@ -179,11 +211,22 @@ test('long preview content and owner actions fit narrow screens and availability
   state.properties[0].description = 'LongDescriptionWithoutSpaces'.repeat(18)
   await page.goto('/landlord/properties/1#preview')
   await expect(page.locator('.owner-preview-details')).toBeVisible()
+  const about = page.getByRole('region', { name: 'About this property preview' })
+  const costs = page.getByRole('region', { name: 'Preview rooms and costs' })
+  await expect(costs.getByText('Known monthly charges', { exact: true })).toBeVisible()
+  await expect(costs.locator('details')).toHaveCount(0)
   for (const width of [1440, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     const blocks = await page.locator('.owner-preview-details > *').evaluateAll(nodes => nodes.map(node => { const rect = node.getBoundingClientRect(); return { x: rect.x, right: rect.right, y: rect.y, bottom: rect.bottom } }))
     expect(blocks[0].right <= blocks[1].x + 1 || blocks[0].bottom <= blocks[1].y + 1).toBe(true)
+    if (width > 767) {
+      const left = await about.getByRole('heading').boundingBox(), right = await costs.getByRole('heading').boundingBox()
+      expect(Math.abs(left.y - right.y)).toBeLessThan(1)
+    }
+    const gallery = await page.locator('.owner-preview .photo-gallery').boundingBox(), details = await page.locator('.owner-preview-details').boundingBox()
+    expect(Math.abs(gallery.x - details.x)).toBeLessThan(1)
+    expect(Math.abs(gallery.x + gallery.width - details.x - details.width)).toBeLessThan(1)
     if ([1440, 390].includes(width)) await page.screenshot({ path: `../.local/owner-preview-refined-${testInfo.project.name}-${width}.png`, fullPage: true })
   }
   await page.goto('/landlord/properties/17#rooms')

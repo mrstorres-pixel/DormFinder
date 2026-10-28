@@ -11,7 +11,6 @@ import OwnerListingActions from './OwnerListingActions'
 import ListingInformation from './ListingInformation'
 import { RoomCharges } from './RoomOptions'
 import PhotoGallery from './PhotoGallery'
-import { pesos } from '../lib/money'
 import { editorSteps, nextEditorStep, listingReadiness, hasLocationPin } from '../lib/listingReadiness'
 import './landlord-workspace.css'
 import { OwnerAvailability } from './AvailabilityStatus'
@@ -195,7 +194,7 @@ function OwnerPreview({ property, refresh }) {
   return <section className="owner-preview" aria-label="Saved listing preview"><div className="section-heading"><h2>Student preview</h2><span className="owner-fine-print">Saved content · {property.status === 'approved' ? (property.owner_paused ? 'paused' : property.availability?.status === 'hidden' ? 'hidden: confirm availability' : property.room_options.every(option => option.available_units === 0) ? 'fully occupied' : 'public') : 'private'}</span></div>
     <h3>{property.title}</h3><p>{[property.address, property.city].filter(Boolean).join(', ')}</p>
     <PhotoGallery photos={property.photos} refresh={refresh} />
-    <div className="owner-preview-details"><div><h3>About this property</h3><p className="preserve-lines">{property.description || 'Add a description in Location & details.'}</p><ListingInformation property={property} /></div><section className="panel"><h3>Rooms and costs</h3>{room ? <><label className="form-label" htmlFor="owner-preview-room">Preview room option</label><select className="form-select" id="owner-preview-room" value={room.id} onChange={event => setChosen(event.target.value)}>{property.room_options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select><p className="room-price mt-3">{pesos(room.monthly_rent_centavos)} <span>/ month · {room.price_basis === 'per_person' ? 'per person' : 'per room'}</span></p><details><summary>Costs and room terms</summary><RoomCharges option={room} /></details></> : <p>Add a room option in Rooms & costs.</p>}</section></div>
+    <div className="owner-preview-details"><div className="owner-preview-main"><section className="panel owner-preview-about" aria-label="About this property preview"><h3>About this property</h3><p className="preserve-lines">{property.description || 'Add a description in Location & details.'}</p></section><ListingInformation property={property} headingLevel={3} /></div><section className="panel owner-preview-costs" aria-label="Preview rooms and costs"><h3>Rooms and costs</h3>{room ? <><label className="form-label" htmlFor="owner-preview-room">Preview room option</label><select className="form-select" id="owner-preview-room" value={room.id} onChange={event => setChosen(event.target.value)}>{property.room_options.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select><RoomCharges option={room} /></> : <p>Add a room option in Rooms & costs.</p>}</section></div>
   </section>
 }
 

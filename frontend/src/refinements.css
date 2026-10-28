@@ -34,6 +34,7 @@ body { background: var(--page); }
 .app-layout .form-label { font-size: .83rem; color: #243e60; }
 .app-layout .panel { border-radius: 10px; box-shadow: none; }
 .app-layout .review-boundary-note { padding: .85rem 1rem; margin: 1.25rem 0 0; border: 1px solid #a0b3cd; border-radius: 8px; background: #e6edf7; color: #435a79; font-size: .8rem; line-height: 1.65; }
+.app-layout .review-preparation .review-boundary-note {padding:0;margin:.75rem 0 0;border:0;border-radius:0;background:transparent;color:var(--muted);font-size:.78rem;max-width:75ch}
 .app-layout .listing-lifecycle .lifecycle-owner-link { min-height: 40px; display: inline-flex; align-items: center; margin: .25rem 0 .9rem; }
 .app-layout .lifecycle-confirmation { align-items: flex-start; font-size: .8rem; line-height: 1.6; }
 .app-layout .lifecycle-confirmation input { flex: none; margin-top: .3rem; }
